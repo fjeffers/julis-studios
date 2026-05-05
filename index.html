@@ -911,7 +911,7 @@
 
     <header>
         <div class="header-top">
-            💖 HANDMADE WITH LOVE · FREE SHIPPING OVER $25 · NEW ITEMS WEEKLY 💖
+            💖 HANDMADE WITH LOVE · FREE SHIPPING OVER $45 · NEW ITEMS WEEKLY 💖
         </div>
         <div class="header-content">
             <button class="btn btn-secondary home-btn" onclick="scrollToHome()">
@@ -1442,10 +1442,13 @@
                 return;
             }
 
-            const subtotal = cart.reduce((s,i) => s + (i.price * i.quantity), 0);
-            const total    = subtotal + settings.shipping + settings.handling;
+            const subtotal      = cart.reduce((s,i) => s + (i.price * i.quantity), 0);
+            const shippingCost  = subtotal >= 45 ? 0 : settings.shipping;
+            const total         = subtotal + shippingCost + settings.handling;
+            const amountToFree  = (45 - subtotal).toFixed(2);
 
             content.innerHTML = `
+                ${subtotal < 45 ? `<div style="background:linear-gradient(135deg,#fff8e1,#fff3cd);border:2px solid #f0c040;border-radius:12px;padding:1rem 1.5rem;margin-bottom:1rem;text-align:center;font-weight:600;color:#856404;">🚚 Add $${amountToFree} more for FREE shipping!</div>` : `<div style="background:linear-gradient(135deg,#d4edda,#c3e6cb);border:2px solid #28a745;border-radius:12px;padding:1rem 1.5rem;margin-bottom:1rem;text-align:center;font-weight:700;color:#155724;font-size:1.1rem;">🎉 You qualify for FREE shipping!</div>`}
                 <div>
                     ${cart.map(item => `
                     <div style="display:flex;gap:1.5rem;padding:1.5rem;background:rgba(46,94,170,0.05);border-radius:15px;margin-bottom:1rem;align-items:center;border:2px solid var(--sky-blue);">
@@ -1462,7 +1465,7 @@
 
                 <div style="background:linear-gradient(135deg,var(--primary-blue),var(--purple));color:white;padding:2rem;border-radius:20px;margin-top:2rem;">
                     <div style="display:flex;justify-content:space-between;margin-bottom:1rem;font-size:1.1rem;"><span>Subtotal:</span><span>$${subtotal.toFixed(2)}</span></div>
-                    <div style="display:flex;justify-content:space-between;margin-bottom:1rem;font-size:1.1rem;"><span>Shipping:</span><span>$${settings.shipping.toFixed(2)}</span></div>
+                    <div style="display:flex;justify-content:space-between;margin-bottom:1rem;font-size:1.1rem;"><span>Shipping:</span><span>${shippingCost === 0 ? '<strong style="color:#90EE90;">FREE 🎉</strong>' : '$' + shippingCost.toFixed(2)}</span></div>
                     <div style="display:flex;justify-content:space-between;margin-bottom:1rem;font-size:1.1rem;"><span>Handling:</span><span>$${settings.handling.toFixed(2)}</span></div>
                     <div style="display:flex;justify-content:space-between;border-top:2px solid rgba(255,255,255,0.3);padding-top:1rem;margin-top:1rem;font-size:1.5rem;font-weight:700;"><span>Total:</span><span>$${total.toFixed(2)}</span></div>
                 </div>
@@ -1535,8 +1538,9 @@
             if (!phone.trim())    { alert('Please enter your phone number! 📱'); return; }
             if (!address.trim())  { alert('Please enter your shipping address! 📦'); return; }
 
-            const subtotal = cart.reduce((s,i) => s + (i.price * i.quantity), 0);
-            const total    = subtotal + settings.shipping + settings.handling;
+            const subtotal     = cart.reduce((s,i) => s + (i.price * i.quantity), 0);
+            const shippingCost = subtotal >= 45 ? 0 : settings.shipping;
+            const total        = subtotal + shippingCost + settings.handling;
 
             alert(`🎉 Order Confirmed!\n\nName: ${name.trim()}\nPhone: ${phone.trim()}\nTotal: $${total.toFixed(2)}\nPayment: ${selectedPayment.toUpperCase()}\n\nThank you! Please complete payment and I'll get your items ready! 💙`);
 
