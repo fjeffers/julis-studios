@@ -1009,7 +1009,7 @@
             </div>
 
             <!-- Add/Edit Product Form -->
-            <form id="productForm">
+            <form id="productForm" onsubmit="return false;">
                 <h3 style="color: var(--purple); margin-bottom: 1.5rem; font-family: 'Comfortaa', sans-serif;">
                     <span id="formTitle">➕ Add New Product</span>
                 </h3>
@@ -1144,6 +1144,10 @@
             renderProductList();
             loadSettings();
 
+            document.getElementById('productForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                addProduct();
+            });
             document.getElementById('submitBtn').addEventListener('click', function(e) {
                 e.preventDefault();
                 addProduct();
