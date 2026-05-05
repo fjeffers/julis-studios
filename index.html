@@ -8,6 +8,8 @@
     
     <!-- EmailJS for sending order notifications -->
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <!-- Supabase for shared product database (all devices see same products) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <style>
         :root {
@@ -1088,12 +1090,35 @@
     </div>
 
     <script>
+        // ─── Supabase (shared product database — same on every device) ───
+        const SUPABASE_URL = 'https://izrjdhuosxtqteftzkhd.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml6cmpkaHVvc3h0cXRlZnR6a2hkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2MjQ3NDUsImV4cCI6MjA5MjIwMDc0NX0.89tLGBgY-Wwy8S-zN1LrZHhfp-AZGLgdOct-L8q7e8M';
+        const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        async function loadProductsFromDB() {
+            const { data, error } = await db.from('julis_products').select('*').order('id', { ascending: true });
+            if (error) { console.error('Load error:', error); return []; }
+            return data || [];
+        }
+
+        async function insertProduct(productData) {
+            const { data, error } = await db.from('julis_products').insert([productData]).select();
+            if (error) throw error;
+            return data[0];
+        }
+
+        async function updateProductInDB(id, productData) {
+            const { error } = await db.from('julis_products').update(productData).eq('id', id);
+            if (error) throw error;
+        }
+
+        async function deleteProductFromDB(id) {
+            const { error } = await db.from('julis_products').delete().eq('id', id);
+            if (error) throw error;
+        }
+
         // ─── Data Storage ────────────────────────────────────────────────
-        let products = JSON.parse(localStorage.getItem('julis_products_v3')) || [
-            { id: 1, name: "Velvet Scrunchie Set", price: 8.99, description: "Set of 3 soft velvet scrunchies in pink, purple, and mint. Perfect for any hairstyle!", image: "" },
-            { id: 2, name: "Sparkly Heart Ring",   price: 6.99, description: "Cute adjustable ring with a sparkly heart charm. Makes a perfect gift!", image: "" },
-            { id: 3, name: "Cozy Patchwork Quilt", price: 45.00, description: "Handmade cozy quilt with beautiful patchwork design. Perfect for cuddling!", image: "" }
-        ];
+        let products = []; // loaded async from Supabase on init
 
         let cart     = JSON.parse(localStorage.getItem('julis_cart_v3'))  || [];
         let settings = JSON.parse(localStorage.getItem('julis_settings')) || {
@@ -1106,7 +1131,6 @@
 
         const NOTIFICATION_EMAIL = 'Ballerinajuli11@gmail.com';
 
-        let nextId = products.length > 0 ? Math.max(...products.map(p => p.id)) + 1 : 1;
         let editingProductId = null;
         let isAdminLoggedIn  = sessionStorage.getItem('adminLoggedIn') === 'true';
         let logoutTimer      = null;
@@ -1138,7 +1162,12 @@
         }
 
         // ─── Init ────────────────────────────────────────────────────────
-        function init() {
+        async function init() {
+            // Show loading state while fetching products from Supabase
+            const grid = document.getElementById('productsGrid');
+            if (grid) grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:4rem;color:var(--purple);font-size:1.2rem;">⏳ Loading products...</div>';
+
+            products = await loadProductsFromDB();
             renderProducts();
             updateCartBadge();
             renderProductList();
@@ -1159,13 +1188,13 @@
         }
 
         // ─── Persist ─────────────────────────────────────────────────────
+        // Products are in Supabase (shared across all devices).
+        // Cart and settings stay in localStorage (per-device is fine).
         function saveData() {
             try {
-                localStorage.setItem('julis_products_v3', JSON.stringify(products));
-                localStorage.setItem('julis_cart_v3',     JSON.stringify(cart));
-                localStorage.setItem('julis_settings',    JSON.stringify(settings));
+                localStorage.setItem('julis_cart_v3',  JSON.stringify(cart));
+                localStorage.setItem('julis_settings', JSON.stringify(settings));
             } catch(e) {
-                alert('⚠️ Storage is full! Images are automatically compressed, but you may have too many products. Try removing unused ones or using slightly smaller photos.');
                 console.error('localStorage save failed:', e);
             }
         }
@@ -1233,7 +1262,7 @@
         }
 
         // ─── Add / Edit Product ──────────────────────────────────────────
-        function addProduct() {
+        async function addProduct() {
             const name        = document.getElementById('productName').value.trim();
             const price       = document.getElementById('productPrice').value;
             const description = document.getElementById('productDescription').value.trim();
@@ -1249,21 +1278,33 @@
                 image: document.getElementById('productImage').value
             };
 
-            if (editingProductId) {
-                const idx = products.findIndex(p => p.id === editingProductId);
-                if (idx !== -1) products[idx] = { id: editingProductId, ...productData };
-                showSuccess('✨ Product updated!');
-                cancelEdit();
-            } else {
-                products.push({ id: nextId++, ...productData });
-                showSuccess('✨ Product added!');
-                document.getElementById('productForm').reset();
-                document.getElementById('productImage').value = '';
-                document.getElementById('imagePreview').classList.add('hidden');
-                document.getElementById('fileLabel').textContent = 'Upload Image';
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+            btn.textContent = '⏳ Saving...';
+
+            try {
+                if (editingProductId) {
+                    await updateProductInDB(editingProductId, productData);
+                    const idx = products.findIndex(p => p.id === editingProductId);
+                    if (idx !== -1) products[idx] = { id: editingProductId, ...productData };
+                    showSuccess('✨ Product updated!');
+                    cancelEdit();
+                } else {
+                    const saved = await insertProduct(productData);
+                    products.push(saved);
+                    showSuccess('✨ Product added!');
+                    document.getElementById('productForm').reset();
+                    document.getElementById('productImage').value = '';
+                    document.getElementById('imagePreview').classList.add('hidden');
+                    document.getElementById('fileLabel').textContent = 'Upload Image';
+                }
+            } catch(err) {
+                alert('❌ Error saving product: ' + err.message);
+            } finally {
+                btn.disabled = false;
+                document.getElementById('submitBtnText').textContent = editingProductId ? '💾 Save Changes' : '✨ Add Product';
             }
 
-            saveData();
             renderProducts();
             renderProductList();
         }
@@ -1305,13 +1346,17 @@
             document.getElementById('cancelEditBtn').classList.add('hidden');
         }
 
-        function deleteProduct(id) {
+        async function deleteProduct(id) {
             if (confirm('Are you sure you want to delete this product? 🗑️')) {
-                products = products.filter(p => p.id !== id);
-                saveData();
-                renderProducts();
-                renderProductList();
-                showSuccess('🗑️ Product deleted!');
+                try {
+                    await deleteProductFromDB(id);
+                    products = products.filter(p => p.id !== id);
+                    renderProducts();
+                    renderProductList();
+                    showSuccess('🗑️ Product deleted!');
+                } catch(err) {
+                    alert('❌ Error deleting product: ' + err.message);
+                }
             }
         }
 
