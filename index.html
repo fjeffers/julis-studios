@@ -1031,10 +1031,10 @@
                 </div>
 
                 <div class="form-group">
-                    <label>Product Image (JPEG/PNG)</label>
+                    <label>Product Image (JPG/PNG/WebP/GIF)</label>
                     <div class="file-upload-wrapper">
                         <input type="file" id="productImageFile" class="file-upload-input"
-                            accept="image/jpeg,image/png,image/jpg" onchange="handleImageUpload(event)">
+                            accept="image/jpeg,image/png,image/jpg,image/webp,image/gif" onchange="handleImageUpload(event)">
                         <div class="file-upload-label">
                             <span>📸</span>
                             <span id="fileLabel">Upload Image</span>
@@ -1156,9 +1156,14 @@
 
         // ─── Persist ─────────────────────────────────────────────────────
         function saveData() {
-            localStorage.setItem('julis_products_v3', JSON.stringify(products));
-            localStorage.setItem('julis_cart_v3',     JSON.stringify(cart));
-            localStorage.setItem('julis_settings',    JSON.stringify(settings));
+            try {
+                localStorage.setItem('julis_products_v3', JSON.stringify(products));
+                localStorage.setItem('julis_cart_v3',     JSON.stringify(cart));
+                localStorage.setItem('julis_settings',    JSON.stringify(settings));
+            } catch(e) {
+                alert('⚠️ Storage is full! Images are automatically compressed, but you may have too many products. Try removing unused ones or using slightly smaller photos.');
+                console.error('localStorage save failed:', e);
+            }
         }
 
         // ─── Settings ────────────────────────────────────────────────────
@@ -1189,20 +1194,36 @@
             }
         }
 
-        // ─── Image upload ─────────────────────────────────────────────────
+        // ─── Image upload (with compression so 50+ products fit in localStorage) ──
         function handleImageUpload(event) {
             const file = event.target.files[0];
-            if (file && ['image/jpeg','image/png','image/jpg'].includes(file.type)) {
+            const allowed = ['image/jpeg','image/png','image/jpg','image/webp','image/gif'];
+            if (file && allowed.includes(file.type)) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    document.getElementById('imagePreview').src = e.target.result;
-                    document.getElementById('imagePreview').classList.remove('hidden');
-                    document.getElementById('productImage').value = e.target.result;
-                    document.getElementById('fileLabel').textContent = file.name;
+                    const img = new Image();
+                    img.onload = function() {
+                        // Resize to max 600px on longest side, compress as JPEG 65%
+                        // Keeps each image ~30-80 KB so 50+ products fit in localStorage
+                        const MAX = 600;
+                        let w = img.width, h = img.height;
+                        if (w > h) { if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; } }
+                        else       { if (h > MAX) { w = Math.round(w * MAX / h); h = MAX; } }
+                        const canvas = document.createElement('canvas');
+                        canvas.width = w;
+                        canvas.height = h;
+                        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                        const compressed = canvas.toDataURL('image/jpeg', 0.65);
+                        document.getElementById('imagePreview').src = compressed;
+                        document.getElementById('imagePreview').classList.remove('hidden');
+                        document.getElementById('productImage').value = compressed;
+                        document.getElementById('fileLabel').textContent = file.name + ' ✅';
+                    };
+                    img.src = e.target.result;
                 };
                 reader.readAsDataURL(file);
             } else {
-                alert('Please upload a JPEG or PNG image.');
+                alert('Please upload a JPEG, PNG, WebP, or GIF image.');
                 event.target.value = '';
             }
         }
