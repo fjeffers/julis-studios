@@ -6,8 +6,6 @@
     <title>Juli's Studios - Handmade with Love</title>
     <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;400;500;600;700&family=Quicksand:wght@300;400;500;600;700&family=Pacifico&family=Dancing+Script:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <!-- EmailJS for sending order notifications -->
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     <!-- Supabase for shared product database (all devices see same products) -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
@@ -1058,6 +1056,7 @@
             </form>
 
             <div class="product-list" id="productList"></div>
+            <div id="ordersList" style="margin-top: 2rem;"></div>
         </div>
 
         <!-- Products Section -->
@@ -1117,24 +1116,47 @@
             if (error) throw error;
         }
 
-        // ─── Data Storage ────────────────────────────────────────────────
-        let products = []; // loaded async from Supabase on init
+        async function loadOrdersFromDB() {
+            const { data, error } = await db.from('julis_orders').select('*').order('created_at', { ascending: false });
+            if (error) { console.error('Orders load error:', error); return []; }
+            return data || [];
+        }
 
-        let cart     = JSON.parse(localStorage.getItem('julis_cart_v3'))  || [];
-        let settings = JSON.parse(localStorage.getItem('julis_settings')) || {
+        async function insertOrderToDB(order) {
+            const { error } = await db.from('julis_orders').insert([order]);
+            if (error) throw error;
+        }
+
+        async function deleteOrderFromDB(id) {
+            const { error } = await db.from('julis_orders').delete().eq('id', id);
+            if (error) throw error;
+        }
+
+        // ─── Data Storage ────────────────────────────────────────────────
+        function safeParse(key) {
+            try { return JSON.parse(localStorage.getItem(key)); }
+            catch (e) { console.warn('Corrupted saved data for ' + key + ' — starting fresh.'); return null; }
+        }
+
+        let products = []; // loaded async from Supabase on init
+        let orders   = []; // loaded async from Supabase on init
+
+        let cart = safeParse('julis_cart_v3') || [];
+        const defaultSettings = {
             shipping: 5.00,
             handling: 2.00,
             adminPassword: 'juli2024',
             zelleEmail: 'your-email@example.com',
             cashAppTag: '$YourCashTag'
         };
+        let settings = { ...defaultSettings, ...(safeParse('julis_settings') || {}) };
 
         const NOTIFICATION_EMAIL = 'Ballerinajuli11@gmail.com';
 
         let editingProductId = null;
         let isAdminLoggedIn  = sessionStorage.getItem('adminLoggedIn') === 'true';
         let logoutTimer      = null;
-        const LOGOUT_TIMEOUT = 30000;
+        const LOGOUT_TIMEOUT = 1800000; // 30 minutes
         let selectedPayment  = null;
         let modalQuantity    = 1;
 
@@ -1144,7 +1166,7 @@
             if (isAdminLoggedIn) {
                 logoutTimer = setTimeout(() => {
                     adminLogout();
-                    alert('⏰ Auto-logged out after 30 seconds of inactivity.');
+                    alert('⏰ Auto-logged out after 30 minutes of inactivity.');
                 }, LOGOUT_TIMEOUT);
             }
         }
@@ -1172,6 +1194,7 @@
             updateCartBadge();
             renderProductList();
             loadSettings();
+            loadOrdersFromDB().then(o => { orders = o; renderOrders(); });
 
             document.getElementById('productForm').addEventListener('submit', function(e) {
                 e.preventDefault();
@@ -1376,11 +1399,11 @@
                 <div class="product-card" onclick="showProductDetail(${p.id})">
                     <div class="product-badge">HANDMADE</div>
                     <div class="product-image">
-                        ${p.image ? `<img src="${p.image}" alt="${p.name}">` : '🎀'}
+                        ${p.image ? `<img src="${p.image}" alt="${escapeHtml(p.name)}">` : '🎀'}
                     </div>
                     <div class="product-info">
-                        <h3 class="product-name">${p.name}</h3>
-                        <p class="product-description">${p.description.substring(0,100)}${p.description.length>100?'...':''}</p>
+                        <h3 class="product-name">${escapeHtml(p.name)}</h3>
+                        <p class="product-description">${escapeHtml(p.description.substring(0,100))}${p.description.length>100?'...':''}</p>
                         <div class="product-footer">
                             <div class="product-price">$${p.price.toFixed(2)}</div>
                             <button class="btn-add-cart" onclick="event.stopPropagation();addToCart(${p.id})">Add to Cart</button>
@@ -1399,7 +1422,7 @@
                 products.map(p => `
                 <div class="product-list-item">
                     <div class="product-list-info">
-                        <strong style="font-size:1.1rem;color:var(--purple);">${p.name}</strong> — $${p.price.toFixed(2)}
+                        <strong style="font-size:1.1rem;color:var(--purple);">${escapeHtml(p.name)}</strong> — $${p.price.toFixed(2)}
                     </div>
                     <div class="product-list-actions">
                         <button class="btn btn-edit" onclick="editProduct(${p.id})">✏️ Edit</button>
@@ -1411,18 +1434,19 @@
         // ─── Product Detail Modal ────────────────────────────────────────
         function showProductDetail(id) {
             const p = products.find(p => p.id === id);
+            if (!p) return;
             modalQuantity = 1;
             document.getElementById('productDetailContent').innerHTML = `
                 <div class="product-detail-grid">
                     <div>
                         <div class="product-detail-image">
-                            ${p.image ? `<img src="${p.image}" alt="${p.name}">` : '🎀'}
+                            ${p.image ? `<img src="${p.image}" alt="${escapeHtml(p.name)}">` : '🎀'}
                         </div>
                     </div>
                     <div class="product-detail-info">
-                        <h2>${p.name}</h2>
+                        <h2>${escapeHtml(p.name)}</h2>
                         <div class="product-detail-price">$${p.price.toFixed(2)}</div>
-                        <p class="product-detail-description">${p.description}</p>
+                        <p class="product-detail-description">${escapeHtml(p.description)}</p>
                         <div class="quantity-selector">
                             <button class="quantity-btn" onclick="changeQuantity(${id},-1)">−</button>
                             <span class="quantity-display" id="modalQuantity">1</span>
@@ -1498,10 +1522,10 @@
                     ${cart.map(item => `
                     <div style="display:flex;gap:1.5rem;padding:1.5rem;background:rgba(46,94,170,0.05);border-radius:15px;margin-bottom:1rem;align-items:center;border:2px solid var(--sky-blue);">
                         <div style="width:100px;height:100px;border-radius:10px;background:linear-gradient(135deg,var(--pale-blue),var(--lavender));display:flex;align-items:center;justify-content:center;font-size:2rem;overflow:hidden;flex-shrink:0;">
-                            ${item.image ? `<img src="${item.image}" style="width:100%;height:100%;object-fit:cover;border-radius:10px;" alt="${item.name}">` : '🎀'}
+                            ${item.image ? `<img src="${item.image}" style="width:100%;height:100%;object-fit:cover;border-radius:10px;" alt="${escapeHtml(item.name)}">` : '🎀'}
                         </div>
                         <div style="flex:1;">
-                            <div style="font-weight:600;font-size:1.2rem;color:var(--navy);margin-bottom:0.5rem;">${item.name}</div>
+                            <div style="font-weight:600;font-size:1.2rem;color:var(--navy);margin-bottom:0.5rem;">${escapeHtml(item.name)}</div>
                             <div style="color:var(--primary-blue);font-weight:700;font-size:1.1rem;">$${item.price.toFixed(2)} × ${item.quantity}</div>
                         </div>
                         <button class="btn-delete" onclick="removeFromCart(${item.id})">Remove</button>
@@ -1518,11 +1542,11 @@
                 <div style="margin-top:2rem;padding-top:2rem;border-top:2px solid var(--sky-blue);">
                     <h3 style="margin-bottom:1.5rem;font-family:Comfortaa,sans-serif;font-size:1.8rem;color:var(--primary-blue);">💳 Payment Method</h3>
                     <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1.5rem 0;">
-                        <div class="payment-option" onclick="selectPayment('zelle', ${total})">
+                        <div class="payment-option" onclick="selectPayment('zelle', ${total}, this)">
                             <div style="font-weight:700;font-size:1.2rem;margin-bottom:0.5rem;color:var(--primary-blue);">💰 Zelle</div>
                             <div style="color:#666;font-size:0.9rem;">Quick Transfer</div>
                         </div>
-                        <div class="payment-option" onclick="selectPayment('cashapp', ${total})">
+                        <div class="payment-option" onclick="selectPayment('cashapp', ${total}, this)">
                             <div style="font-weight:700;font-size:1.2rem;margin-bottom:0.5rem;color:var(--primary-blue);">💵 Cash App</div>
                             <div style="color:#666;font-size:0.9rem;">Instant Payment</div>
                         </div>
@@ -1548,12 +1572,12 @@
                 </div>`;
         }
 
-        function selectPayment(method, totalAmount) {
+        function selectPayment(method, totalAmount, el) {
             selectedPayment = method;
             document.querySelectorAll('.payment-option').forEach(o => {
                 o.classList.remove('selected');
             });
-            event.currentTarget.classList.add('selected');
+            if (el) el.classList.add('selected');
 
             const details = document.getElementById('paymentDetails');
             const info = method === 'zelle'
@@ -1573,7 +1597,7 @@
                 </div>`;
         }
 
-        function checkout() {
+        async function checkout() {
             const name    = (document.getElementById('customerName')    || {}).value || '';
             const phone   = (document.getElementById('customerPhone')   || {}).value || '';
             const address = (document.getElementById('shippingAddress') || {}).value || '';
@@ -1582,18 +1606,86 @@
             if (!name.trim())     { alert('Please enter your full name! 👤');    return; }
             if (!phone.trim())    { alert('Please enter your phone number! 📱'); return; }
             if (!address.trim())  { alert('Please enter your shipping address! 📦'); return; }
+            if (cart.length === 0) { alert('Your cart is empty! 🛒'); return; }
 
             const subtotal     = cart.reduce((s,i) => s + (i.price * i.quantity), 0);
             const shippingCost = subtotal >= 45 ? 0 : settings.shipping;
             const total        = subtotal + shippingCost + settings.handling;
 
-            alert(`🎉 Order Confirmed!\n\nName: ${name.trim()}\nPhone: ${phone.trim()}\nTotal: $${total.toFixed(2)}\nPayment: ${selectedPayment.toUpperCase()}\n\nThank you! Please complete payment and I'll get your items ready! 💙`);
+            const order = {
+                customer_name: name.trim(),
+                phone: phone.trim(),
+                address: address.trim(),
+                payment_method: selectedPayment,
+                items: cart.map(i => ({ name: i.name, quantity: i.quantity, price: i.price })),
+                subtotal: subtotal,
+                shipping: shippingCost,
+                handling: settings.handling,
+                total: total
+            };
+
+            try {
+                await insertOrderToDB(order);
+                alert(`🎉 Order Confirmed!\n\nName: ${order.customer_name}\nPhone: ${order.phone}\nTotal: $${total.toFixed(2)}\nPayment: ${selectedPayment.toUpperCase()}\n\nThank you! Please complete payment and I'll get your items ready! 💙`);
+            } catch (err) {
+                // Couldn't save the order online — fall back to an email draft so it isn't lost
+                console.error('Order save failed:', err);
+                const emailBody =
+                    `New order for Juli's Studios!\n\n` +
+                    `Name: ${order.customer_name}\n` +
+                    `Phone: ${order.phone}\n` +
+                    `Address:\n${order.address}\n\n` +
+                    `Items:\n${order.items.map(i => `${i.name} x ${i.quantity} — $${(i.price * i.quantity).toFixed(2)}`).join('\n')}\n\n` +
+                    `Subtotal: $${subtotal.toFixed(2)}\nShipping: $${shippingCost.toFixed(2)}\nHandling: $${settings.handling.toFixed(2)}\nTotal: $${total.toFixed(2)}\n` +
+                    `Payment method: ${selectedPayment.toUpperCase()}`;
+                alert(`🎉 Order received!\n\nWe couldn't reach the order system, so your email app will open with the order details — please press SEND so Juli gets your order! 💌`);
+                window.location.href = 'mailto:' + NOTIFICATION_EMAIL
+                    + '?subject=' + encodeURIComponent('New Order from ' + order.customer_name + ' — $' + total.toFixed(2))
+                    + '&body=' + encodeURIComponent(emailBody);
+            }
 
             cart = [];
             selectedPayment = null;
             saveData();
             updateCartBadge();
             closeModal('cartModal');
+            loadOrdersFromDB().then(o => { orders = o; renderOrders(); });
+        }
+
+        // ─── Orders (admin) ──────────────────────────────────────────────
+        function renderOrders() {
+            const list = document.getElementById('ordersList');
+            if (!list) return;
+            const heading = '<h3 style="margin:2rem 0 1.5rem;color:var(--purple);font-family:Comfortaa,sans-serif;font-size:1.6rem;">🧾 Orders' + (orders.length ? ' (' + orders.length + ')' : '') + '</h3>';
+            if (orders.length === 0) {
+                list.innerHTML = heading + '<p style="color:#999;text-align:center;padding:1rem;font-style:italic;">No orders yet — they\'ll show up here when customers check out! 🛍️</p>';
+                return;
+            }
+            list.innerHTML = heading + orders.map(o => `
+                <div class="product-list-item" style="align-items:flex-start;">
+                    <div class="product-list-info" style="line-height:1.8;">
+                        <strong style="font-size:1.1rem;color:var(--purple);">${escapeHtml(o.customer_name)}</strong> — $${Number(o.total).toFixed(2)} · ${o.payment_method === 'zelle' ? '💰 Zelle' : '💵 Cash App'}<br>
+                        <span style="color:#666;font-size:0.9rem;">🕐 ${new Date(o.created_at).toLocaleString()} &nbsp;·&nbsp; 📱 ${escapeHtml(o.phone)}</span><br>
+                        <span style="color:#666;font-size:0.9rem;">📦 ${escapeHtml(o.address)}</span><br>
+                        <span style="font-size:0.95rem;">${(o.items || []).map(i => escapeHtml(i.name) + ' × ' + i.quantity).join(', ')}</span>
+                    </div>
+                    <div class="product-list-actions">
+                        <button class="btn-delete" onclick="completeOrder(${o.id})">✅ Done</button>
+                    </div>
+                </div>`).join('');
+        }
+
+        async function completeOrder(id) {
+            if (confirm('Mark this order as done and remove it from the list? ✅')) {
+                try {
+                    await deleteOrderFromDB(id);
+                    orders = orders.filter(o => o.id !== id);
+                    renderOrders();
+                    showSuccess('✅ Order completed!');
+                } catch (err) {
+                    alert('❌ Error removing order: ' + err.message);
+                }
+            }
         }
 
         // ─── Admin Auth ───────────────────────────────────────────────────
@@ -1617,7 +1709,7 @@
                 closeLoginModal();
                 const panel = document.getElementById('adminPanel');
                 panel.classList.remove('hidden');
-                showSuccess('✅ Welcome! Auto-logout after 30 s of inactivity.');
+                showSuccess('✅ Welcome! Auto-logout after 30 minutes of inactivity.');
                 startActivityTracking();
                 setTimeout(() => panel.scrollIntoView({ behavior: 'smooth', block: 'start' }), 200);
             } else {
@@ -1650,6 +1742,12 @@
         }
 
         // ─── Helpers ──────────────────────────────────────────────────────
+        function escapeHtml(str) {
+            return String(str ?? '')
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        }
+
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
         function scrollToHome() { document.getElementById('home').scrollIntoView({ behavior: 'smooth' }); }
 
