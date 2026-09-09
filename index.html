@@ -1023,6 +1023,14 @@
                         <label>Price ($) *</label>
                         <input type="number" id="productPrice" step="0.01" placeholder="e.g., 5.99" required>
                     </div>
+                    <div class="form-group">
+                        <label>How many do you have? *</label>
+                        <input type="number" id="productStock" min="0" step="1" placeholder="e.g., 8" required>
+                        <label style="display:flex;align-items:center;gap:0.5rem;margin-top:0.6rem;font-weight:500;">
+                            <input type="checkbox" id="productUnlimited" style="width:auto;margin:0;">
+                            Made to order (never sells out)
+                        </label>
+                    </div>
                 </div>
 
                 <div class="form-group">
@@ -1125,6 +1133,29 @@
         async function insertOrderToDB(order) {
             const { error } = await db.from('julis_orders').insert([order]);
             if (error) throw error;
+        }
+
+        /**
+         * Take the sold items off the shelf.
+         *
+         * Runs only AFTER the order itself is safely saved: a stock drop with
+         * no order behind it would quietly lose Juli inventory. Made-to-order
+         * items are skipped, and a failure here is logged rather than thrown —
+         * the customer's order is already placed and must not be undone by a
+         * bookkeeping problem.
+         */
+        async function decrementStockFor(cartItems) {
+            for (const item of cartItems) {
+                const p = products.find(x => x.id === item.id);
+                if (!p || p.track_stock === false) continue;
+                const left = Math.max(0, (Number(p.stock_quantity) || 0) - item.quantity);
+                try {
+                    await updateProductInDB(p.id, { stock_quantity: left });
+                    p.stock_quantity = left;
+                } catch (err) {
+                    console.error('Stock update failed for ' + p.name, err);
+                }
+            }
         }
 
         async function deleteOrderFromDB(id) {
@@ -1295,10 +1326,19 @@
                 return;
             }
 
+            const unlimited = document.getElementById('productUnlimited').checked;
+            const stockRaw  = document.getElementById('productStock').value;
+            if (!unlimited && (stockRaw === '' || Number(stockRaw) < 0)) {
+                alert('❌ Please say how many you have (or tick "Made to order").');
+                return;
+            }
+
             const productData = {
                 name, description,
                 price: parseFloat(price),
-                image: document.getElementById('productImage').value
+                image: document.getElementById('productImage').value,
+                stock_quantity: unlimited ? 0 : parseInt(stockRaw, 10),
+                track_stock: !unlimited
             };
 
             const btn = document.getElementById('submitBtn');
@@ -1341,6 +1381,8 @@
             document.getElementById('productPrice').value       = product.price;
             document.getElementById('productDescription').value = product.description;
             document.getElementById('productImage').value       = product.image || '';
+            document.getElementById('productStock').value       = product.stock_quantity ?? 0;
+            document.getElementById('productUnlimited').checked = product.track_stock === false;
             document.getElementById('editProductId').value      = id;
 
             if (product.image) {
@@ -1384,6 +1426,28 @@
         }
 
         // ─── Render Products ─────────────────────────────────────────────
+        // ─── Stock ───────────────────────────────────────────────────────
+        // One place decides what "in stock" means, so the card, the detail
+        // modal, the cart and the checkout can never disagree with each other.
+        function stockOf(p) {
+            if (!p) return 0;
+            if (p.track_stock === false) return Infinity;   // made to order
+            return Math.max(0, Number(p.stock_quantity) || 0);
+        }
+        function isSoldOut(p) { return stockOf(p) <= 0; }
+        function lowStockLeft(p) {
+            const left = stockOf(p);
+            if (left === Infinity || left <= 0) return null;
+            const threshold = Number(p.low_stock_threshold) || 3;
+            return left <= threshold ? left : null;
+        }
+        /** How many more of this item the cart can still take. */
+        function remainingFor(id) {
+            const p = products.find(x => x.id === id);
+            const inCart = (cart.find(i => i.id === id) || {}).quantity || 0;
+            return stockOf(p) - inCart;
+        }
+
         function renderProducts() {
             const grid = document.getElementById('productsGrid');
             if (products.length === 0) {
@@ -1395,21 +1459,27 @@
                 return;
             }
 
-            grid.innerHTML = products.map(p => `
-                <div class="product-card" onclick="showProductDetail(${p.id})">
-                    <div class="product-badge">HANDMADE</div>
+            grid.innerHTML = products.map(p => {
+                const out = isSoldOut(p);
+                const low = lowStockLeft(p);
+                return `
+                <div class="product-card" onclick="showProductDetail(${p.id})" style="${out ? 'opacity:0.72;' : ''}">
+                    <div class="product-badge"${out ? ' style="background:#6b7280;"' : ''}>${out ? 'SOLD OUT' : 'HANDMADE'}</div>
                     <div class="product-image">
-                        ${p.image ? `<img src="${p.image}" alt="${escapeHtml(p.name)}">` : '🎀'}
+                        ${p.image ? `<img src="${p.image}" alt="${escapeHtml(p.name)}"${out ? ' style="filter:grayscale(0.85);"' : ''}>` : '🎀'}
                     </div>
                     <div class="product-info">
                         <h3 class="product-name">${escapeHtml(p.name)}</h3>
                         <p class="product-description">${escapeHtml(p.description.substring(0,100))}${p.description.length>100?'...':''}</p>
+                        ${low ? `<p style="margin:0 0 0.5rem;font-weight:700;color:#c2410c;font-size:0.95rem;">Only ${low} left!</p>` : ''}
                         <div class="product-footer">
                             <div class="product-price">$${p.price.toFixed(2)}</div>
-                            <button class="btn-add-cart" onclick="event.stopPropagation();addToCart(${p.id})">Add to Cart</button>
+                            ${out
+                                ? `<button class="btn-add-cart" disabled style="background:#d1d5db;color:#6b7280;cursor:not-allowed;">Sold Out</button>`
+                                : `<button class="btn-add-cart" onclick="event.stopPropagation();addToCart(${p.id})">Add to Cart</button>`}
                         </div>
                     </div>
-                </div>`).join('');
+                </div>`; }).join('');
         }
 
         function renderProductList() {
@@ -1418,17 +1488,35 @@
                 list.innerHTML = '<p style="color:#999;text-align:center;padding:2rem;font-style:italic;">No products yet! Add one above! ✨</p>';
                 return;
             }
-            list.innerHTML = '<h3 style="margin-bottom:1.5rem;color:var(--purple);font-family:Comfortaa,sans-serif;font-size:1.6rem;">📦 Your Products</h3>' +
-                products.map(p => `
+            // Lead with what needs making, so restocking is the first thing
+            // she sees rather than something to hunt for down the list.
+            const needsRestock = products.filter(p => p.track_stock !== false && (isSoldOut(p) || lowStockLeft(p)));
+            const banner = needsRestock.length === 0 ? '' : `
+                <div style="background:#fff7ed;border:2px solid #fdba74;border-radius:14px;padding:1rem 1.2rem;margin-bottom:1.5rem;">
+                    <div style="font-weight:700;color:#c2410c;margin-bottom:0.4rem;">🧵 Time to make more!</div>
+                    <div style="color:#7c2d12;font-size:0.95rem;line-height:1.7;">
+                        ${needsRestock.map(p => `${escapeHtml(p.name)} — <strong>${isSoldOut(p) ? 'sold out' : stockOf(p) + ' left'}</strong>`).join('<br>')}
+                    </div>
+                </div>`;
+
+            list.innerHTML = '<h3 style="margin-bottom:1.5rem;color:var(--purple);font-family:Comfortaa,sans-serif;font-size:1.6rem;">📦 Your Products</h3>' + banner +
+                products.map(p => {
+                const out = isSoldOut(p);
+                const unlimited = p.track_stock === false;
+                const stockLabel = unlimited
+                    ? '<span style="color:#0369a1;font-weight:600;">made to order</span>'
+                    : `<span style="color:${out ? '#b91c1c' : (lowStockLeft(p) ? '#c2410c' : '#047857')};font-weight:700;">${stockOf(p)} in stock</span>`;
+                return `
                 <div class="product-list-item">
                     <div class="product-list-info">
                         <strong style="font-size:1.1rem;color:var(--purple);">${escapeHtml(p.name)}</strong> — $${p.price.toFixed(2)}
+                        <div style="font-size:0.9rem;margin-top:0.2rem;">${stockLabel}</div>
                     </div>
                     <div class="product-list-actions">
                         <button class="btn btn-edit" onclick="editProduct(${p.id})">✏️ Edit</button>
                         <button class="btn-delete" onclick="deleteProduct(${p.id})">🗑️ Delete</button>
                     </div>
-                </div>`).join('');
+                </div>`; }).join('');
         }
 
         // ─── Product Detail Modal ────────────────────────────────────────
@@ -1461,7 +1549,8 @@
         }
 
         function changeQuantity(productId, change) {
-            modalQuantity = Math.max(1, modalQuantity + change);
+            const room = Math.max(1, remainingFor(productId));
+            modalQuantity = Math.min(room, Math.max(1, modalQuantity + change));
             document.getElementById('modalQuantity').textContent = modalQuantity;
             const p = products.find(p => p.id === productId);
             document.getElementById('modalTotal').textContent = (p.price * modalQuantity).toFixed(2);
@@ -1469,13 +1558,29 @@
 
         // ─── Cart ─────────────────────────────────────────────────────────
         function addToCart(id, quantity = 1) {
-            const product  = products.find(p => p.id === id);
+            const product = products.find(p => p.id === id);
+            if (!product) return;
+            if (isSoldOut(product)) { alert('Sorry — that one just sold out! 💔'); renderProducts(); return; }
+
+            // Cap at what is actually left, counting what is already in the
+            // cart. Selling the same last scrunchie twice means refunding a
+            // customer, which is worse than saying no here.
+            const room = remainingFor(id);
+            if (room <= 0) {
+                alert(`You already have all ${stockOf(product)} of those in your cart! 🛒`);
+                return;
+            }
+            const adding = Math.min(quantity, room);
+
             const existing = cart.find(item => item.id === id);
-            if (existing) existing.quantity += quantity;
-            else cart.push({ ...product, quantity });
+            if (existing) existing.quantity += adding;
+            else cart.push({ ...product, quantity: adding });
+
             saveData();
             updateCartBadge();
-            showSuccess('🛒 Added to cart!');
+            showSuccess(adding < quantity
+                ? `🛒 Added ${adding} — that's all Juli has left!`
+                : '🛒 Added to cart!');
         }
 
         function addToCartFromModal(id) {
@@ -1624,8 +1729,12 @@
                 total: total
             };
 
+            const soldItems = cart.map(i => ({ id: i.id, quantity: i.quantity }));
+
             try {
                 await insertOrderToDB(order);
+                await decrementStockFor(soldItems);
+                renderProducts();
                 alert(`🎉 Order Confirmed!\n\nName: ${order.customer_name}\nPhone: ${order.phone}\nTotal: $${total.toFixed(2)}\nPayment: ${selectedPayment.toUpperCase()}\n\nThank you! Please complete payment and I'll get your items ready! 💙`);
             } catch (err) {
                 // Couldn't save the order online — fall back to an email draft so it isn't lost
