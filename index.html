@@ -1120,7 +1120,7 @@
         <div style="display: flex; gap: 1rem;">
             <button class="btn btn-secondary" onclick="closeLoginModal()"
                 style="flex: 1; background: white; color: var(--navy); border: 2px solid var(--navy);">Cancel</button>
-            <button class="btn btn-primary" onclick="attemptLogin()" style="flex: 1;">Login</button>
+            <button class="btn btn-primary" id="loginButton" onclick="attemptLogin()" style="flex: 1;">Login</button>
         </div>
     </div>
 
@@ -2481,23 +2481,41 @@
             document.getElementById('adminPasswordInput').value = '';
         }
 
-        function attemptLogin() {
+        async function attemptLogin() {
             const pw = document.getElementById('adminPasswordInput').value;
-            if (pw === settings.adminPassword) {
-                isAdminLoggedIn = true;
-                adminExpiresAt = Date.now() + LOGOUT_TIMEOUT;
-                localStorage.setItem(ADMIN_EXPIRY_KEY, String(adminExpiresAt));
-                lastActivityWrite = 0;
-                closeLoginModal();
-                const panel = document.getElementById('adminPanel');
-                panel.classList.remove('hidden');
-                showSuccess('✅ Welcome! You will be signed out after 1 hour without activity.');
-                startActivityTracking();
-                setTimeout(() => panel.scrollIntoView({ behavior: 'smooth', block: 'start' }), 200);
-            } else {
-                alert('❌ Incorrect password!');
-                document.getElementById('adminPasswordInput').value = '';
-                document.getElementById('adminPasswordInput').focus();
+            const button = document.getElementById('loginButton');
+            if (button?.disabled) return;
+            if (button) button.disabled = true;
+            try {
+                let isValid = false;
+                try {
+                    const { data, error } = await db.rpc('julis_check_passcode', {
+                        p_passcode: pw
+                    });
+                    isValid = error ? pw === settings.adminPassword : data === true;
+                } catch {
+                    isValid = pw === settings.adminPassword;
+                }
+
+                if (isValid) {
+                    isAdminLoggedIn = true;
+                    adminPasscode = pw;
+                    adminExpiresAt = Date.now() + LOGOUT_TIMEOUT;
+                    localStorage.setItem(ADMIN_EXPIRY_KEY, String(adminExpiresAt));
+                    lastActivityWrite = 0;
+                    closeLoginModal();
+                    const panel = document.getElementById('adminPanel');
+                    panel.classList.remove('hidden');
+                    showSuccess('✅ Welcome! You will be signed out after 1 hour without activity.');
+                    startActivityTracking();
+                    setTimeout(() => panel.scrollIntoView({ behavior: 'smooth', block: 'start' }), 200);
+                } else {
+                    alert('❌ Incorrect password!');
+                    document.getElementById('adminPasswordInput').value = '';
+                    document.getElementById('adminPasswordInput').focus();
+                }
+            } finally {
+                if (button) button.disabled = false;
             }
         }
 
