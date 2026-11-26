@@ -1120,7 +1120,7 @@
         <div style="display: flex; gap: 1rem;">
             <button class="btn btn-secondary" onclick="closeLoginModal()"
                 style="flex: 1; background: white; color: var(--navy); border: 2px solid var(--navy);">Cancel</button>
-            <button class="btn btn-primary" onclick="attemptLogin()" style="flex: 1;">Login</button>
+            <button class="btn btn-primary" id="loginButton" onclick="attemptLogin()" style="flex: 1;">Login</button>
         </div>
     </div>
 
@@ -1212,7 +1212,7 @@
                     <div class="form-grid">
                         <div class="form-group">
                             <label>Product Name *</label>
-                            <input type="text" id="productName" placeholder="e.g., Pink Velvet Scrunchie" required>
+                            <input type="text" id="productName" placeholder="e.g., Pink Velvet Scrunchie" maxlength="80" required>
                         </div>
                         <div class="form-group">
                             <label>Price ($) *</label>
@@ -1230,7 +1230,7 @@
 
                     <div class="form-group">
                         <label>Description *</label>
-                        <textarea id="productDescription" placeholder="Describe your awesome product!" required></textarea>
+                        <textarea id="productDescription" placeholder="Describe your awesome product!" maxlength="1000" required></textarea>
                     </div>
 
                     <div class="form-group">
@@ -1268,6 +1268,10 @@
                 <div class="settings-panel">
                     <h3 class="settings-title">⚙️ Settings for Juli's Shop</h3>
                     <p class="settings-help">Update your shop details here. Your changes will show up for everyone when online sync is ready.</p>
+                    <p id="julisSettingsUnsyncedNote" class="settings-help hidden" role="status"
+                        style="color: white; background: rgba(255,255,255,0.18); padding: 0.65rem 0.8rem; border-radius: 10px;">
+                        Some changes are only on this device — tap Save Settings to put them online.
+                    </p>
 
                     <div class="settings-section">
                         <h4>✨ My Shop Info</h4>
@@ -1361,7 +1365,7 @@
 
                     <div class="settings-section">
                         <h4>🔐 Password</h4>
-                        <p class="settings-help">Your admin password applies on this device only.</p>
+                        <p class="settings-help">Once online sync is set up, your password works on every device.</p>
                         <div class="form-group">
                             <label for="newPassword" style="color:white;">New Password</label>
                             <input type="password" id="newPassword" placeholder="Enter new password" style="border: 2px solid white;">
@@ -1419,7 +1423,7 @@
 
         async function loadProductsFromDB() {
             const { data, error } = await db.from('julis_products').select('*').order('id', { ascending: true });
-            if (error) { console.error('Load error:', error); return []; }
+            if (error) { console.error('Load error:', error); return null; }
             return data || [];
         }
 
@@ -1461,14 +1465,20 @@
          */
         async function decrementStockFor(cartItems) {
             for (const item of cartItems) {
-                const p = products.find(x => x.id === item.id);
-                if (!p || p.track_stock === false) continue;
-                const left = Math.max(0, (Number(p.stock_quantity) || 0) - item.quantity);
                 try {
-                    await updateProductInDB(p.id, { stock_quantity: left });
-                    p.stock_quantity = left;
+                    const { data, error } = await db.from('julis_products')
+                        .select('id,stock_quantity,track_stock')
+                        .eq('id', item.id)
+                        .maybeSingle();
+                    if (error) throw error;
+                    if (!data || data.track_stock === false) continue;
+                    const left = Math.max(
+                        0,
+                        (Number(data.stock_quantity) || 0) - Number(item.quantity)
+                    );
+                    await updateProductInDB(data.id, { stock_quantity: left });
                 } catch (err) {
-                    console.error('Stock update failed for ' + p.name, err);
+                    console.error('Stock update failed for ' + item.id, err);
                 }
             }
         }
@@ -1486,8 +1496,12 @@
 
         let products = []; // loaded async from Supabase on init
         let orders   = []; // loaded async from Supabase on init
+        let productsLoaded = false;
 
-        let cart = safeParse('julis_cart_v3') || [];
+        let cart = (safeParse('julis_cart_v3') || []).map(item => ({
+            id: item?.id,
+            quantity: item?.quantity
+        }));
         const DEFAULT_WELCOME_MESSAGE = "Hi! I'm Juli, and I love creating handmade treasures just for you! ✨ From cute scrunchies and sparkly rings to cozy quilts, each piece is made with love and care. Browse my collection and find something special that makes you smile! 💖";
         const SOCIAL_PLATFORMS = [
             { key: 'facebook', label: 'Facebook', emoji: '📘', domains: ['facebook.com', 'fb.com'], toUrl: h => `https://www.facebook.com/${h}` },
@@ -1539,11 +1553,19 @@
         }
         const localSettings = safeParse('julis_settings') || {};
         let settings = mergeSettings(localSettings, null);
+        let loadedShared = null;
 
         const NOTIFICATION_EMAIL = 'Ballerinajuli11@gmail.com';
 
         let editingProductId = null;
         const ADMIN_EXPIRY_KEY = 'julis_admin_expires';
+        const UNSYNCED_SETTINGS_KEY = 'julis_settings_unsynced';
+        const PASSWORD_ONLINE_KEY = 'julis_password_online';
+        function isMissingRpc(error) {
+            return error?.code === 'PGRST202' || error?.status === 404 ||
+                /could not find the function/i.test(String(error?.message || ''));
+        }
+        let adminPasscode = '';
         let isAdminLoggedIn  = Number(localStorage.getItem(ADMIN_EXPIRY_KEY)) > Date.now();
         let adminExpiresAt = Number(localStorage.getItem(ADMIN_EXPIRY_KEY) || 0);
         let lastActivityWrite = 0;
@@ -1555,7 +1577,12 @@
         // ─── Activity / Auto-logout ──────────────────────────────────────
         function checkAdminExpiry() {
             const now = Date.now();
-            const storedExpiresAt = Number(localStorage.getItem(ADMIN_EXPIRY_KEY) || 0);
+            const storedExpiry = localStorage.getItem(ADMIN_EXPIRY_KEY);
+            if (isAdminLoggedIn && storedExpiry === null) {
+                adminLogout();
+                return;
+            }
+            const storedExpiresAt = Number(storedExpiry || 0);
             adminExpiresAt = Math.max(adminExpiresAt, storedExpiresAt);
             if ((isAdminLoggedIn || storedExpiresAt > 0) && adminExpiresAt <= now) {
                 adminLogout();
@@ -1588,44 +1615,65 @@
         setInterval(checkAdminExpiry, 30000);
         document.addEventListener('visibilitychange', checkAdminExpiry);
         window.addEventListener('focus', checkAdminExpiry);
+        window.addEventListener('storage', event => {
+            if (event.key === ADMIN_EXPIRY_KEY) checkAdminExpiry();
+        });
 
         async function loadSettingsFromDB() {
             try {
                 const { data, error } = await db.from('julis_settings').select('data').eq('id', 1).maybeSingle();
                 if (error) {
                     console.warn('Shared shop settings unavailable; using this device’s saved settings.', error);
-                    return null;
+                    const tableMissing = error.code === 'PGRST205' || error.code === '42P01' ||
+                        /could not find the table/i.test(String(error.message || ''));
+                    return tableMissing ? null : undefined;
                 }
                 return data?.data || null;
             } catch (error) {
                 console.warn('Shared shop settings unavailable; using this device’s saved settings.', error);
-                return null;
+                return undefined;
             }
         }
 
-        function sharedSettingsPayload() {
+        function sharedSettingsPayload(source) {
+            const s = source || settings;
             return {
-                shipping: settings.shipping,
-                handling: settings.handling,
-                zelleEmail: settings.zelleEmail,
-                cashAppTag: settings.cashAppTag,
-                shopName: settings.shopName,
-                welcomeMessage: settings.welcomeMessage,
-                aboutMe: settings.aboutMe,
+                shipping: s.shipping,
+                handling: s.handling,
+                zelleEmail: s.zelleEmail,
+                cashAppTag: s.cashAppTag,
+                shopName: s.shopName,
+                welcomeMessage: s.welcomeMessage,
+                aboutMe: s.aboutMe,
                 social: SOCIAL_PLATFORMS.reduce((social, { key }) => {
-                    social[key] = settings.social?.[key] || '';
+                    social[key] = s.social?.[key] || '';
                     return social;
                 }, {})
             };
         }
 
-        async function saveSettingsToDB() {
-            const { error } = await db.from('julis_settings').upsert({
-                id: 1,
-                data: sharedSettingsPayload(),
-                updated_at: new Date().toISOString()
+        async function saveSettingsToDB(passcode, patch) {
+            const { data, error } = await db.rpc('julis_save_settings', {
+                p_passcode: passcode,
+                p_patch: patch
             });
             if (error) throw error;
+            if (data === null) {
+                const wrong = new Error('wrong passcode');
+                wrong.code = '28P01';
+                throw wrong;
+            }
+            return data;
+        }
+
+        function updateSettingsUnsyncedNote() {
+            const note = document.getElementById('julisSettingsUnsyncedNote');
+            if (note) {
+                note.classList.toggle(
+                    'hidden',
+                    !localStorage.getItem(UNSYNCED_SETTINGS_KEY)
+                );
+            }
         }
 
         function normalizeSocialValue(platformKey, value) {
@@ -1713,15 +1761,35 @@
             const grid = document.getElementById('productsGrid');
             if (grid) grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:4rem;color:var(--purple);font-size:1.2rem;">⏳ Loading products...</div>';
 
+            const productsPromise = loadProductsFromDB().then(loaded => {
+                products = loaded || [];
+                productsLoaded = loaded !== null;
+                const cartModal = document.getElementById('cartModal');
+                if (cartModal?.style.display === 'flex') {
+                    renderCart();
+                    updateCartBadge();
+                }
+                return loaded;
+            });
             const [loadedProducts, remoteSettings, loadedOrders] = await Promise.all([
-                loadProductsFromDB(),
+                productsPromise,
                 loadSettingsFromDB(),
                 loadOrdersFromDB()
             ]);
-            products = loadedProducts;
+            products = loadedProducts || [];
+            productsLoaded = loadedProducts !== null;
             orders = loadedOrders;
             settings = mergeSettings(localSettings, remoteSettings);
+            // undefined = couldn't reach the server: treat what's on screen as the baseline
+            // so a later save only sends fields Juli actually edits.
+            loadedShared = remoteSettings === undefined
+                ? sharedSettingsPayload(settings)
+                : sharedSettingsPayload(mergeSettings({}, remoteSettings));
+            const pendingPatch = sharedSettingsFrom(safeParse(UNSYNCED_SETTINGS_KEY));
+            if (Object.keys(pendingPatch).length) settings = { ...settings, ...pendingPatch };
             saveData();
+            const cartModal = document.getElementById('cartModal');
+            if (cartModal?.style.display === 'flex') renderCart();
             renderProducts();
             updateCartBadge();
             renderProductList();
@@ -1770,6 +1838,7 @@
                 updateSocialPreview(key);
             });
             renderPublicSettings();
+            updateSettingsUnsyncedNote();
         }
 
         async function saveSettings() {
@@ -1792,24 +1861,107 @@
             settings.social = social;
             saveData();
             loadSettings();
+
+            const shared = sharedSettingsPayload();
+            const base = loadedShared || {};
+            const patch = {};
+            Object.keys(shared).forEach(key => {
+                const changed = key === 'social'
+                    ? JSON.stringify(shared.social) !== JSON.stringify(base.social)
+                    : shared[key] !== base[key];
+                if (changed) patch[key] = shared[key];
+            });
+            if (Object.keys(patch).length === 0) {
+                localStorage.removeItem(UNSYNCED_SETTINGS_KEY);
+                updateSettingsUnsyncedNote();
+                showSuccess('Nothing changed');
+                return;
+            }
+
+            let passcode = adminPasscode;
+            if (!passcode) {
+                passcode = prompt('Enter your admin password to save online:');
+                if (passcode === null) {
+                    localStorage.setItem(UNSYNCED_SETTINGS_KEY, JSON.stringify(patch));
+                    updateSettingsUnsyncedNote();
+                    showSuccess('⚙️ Saved on this device only.');
+                    return;
+                }
+            }
+
             try {
-                await saveSettingsToDB();
+                const remoteSettings = await saveSettingsToDB(passcode, patch);
+                settings = mergeSettings(settings, remoteSettings);
+                adminPasscode = passcode;
+                saveData();
+                loadSettings();
+                loadedShared = sharedSettingsPayload();
+                localStorage.removeItem(UNSYNCED_SETTINGS_KEY);
+                updateSettingsUnsyncedNote();
                 showSuccess('⚙️ Saved! Everyone can see it now.');
             } catch (error) {
-                console.warn('Shared shop settings could not be saved online.', error);
-                showSuccess('⚙️ Saved on this device (online sync not set up yet)');
+                localStorage.setItem(UNSYNCED_SETTINGS_KEY, JSON.stringify(patch));
+                updateSettingsUnsyncedNote();
+                if (
+                    error.code === '28P01' ||
+                    String(error.message || '').toLowerCase().includes('wrong passcode')
+                ) {
+                    adminPasscode = '';
+                    showSuccess('❌ Wrong password (or too many tries — wait 15 minutes). Saved on this device only.');
+                } else {
+                    console.warn('Shared shop settings could not be saved online.', error);
+                    showSuccess('⚙️ Saved on this device (online sync not set up yet)');
+                }
             }
         }
 
-        function changePassword() {
+        async function changePassword() {
             const pw = document.getElementById('newPassword').value;
-            if (!pw || pw.length < 4) { alert('❌ Password must be at least 4 characters!'); return; }
-            if (confirm('🔐 Change your admin password?')) {
-                settings.adminPassword = pw;
-                saveData();
-                document.getElementById('newPassword').value = '';
-                showSuccess('🔑 Password changed!');
+            if (!pw || pw.length < 8) { alert('❌ Password must be at least 8 characters!'); return; }
+            let currentPasscode = adminPasscode;
+            if (!currentPasscode) {
+                currentPasscode = prompt('Enter your current admin password:');
+                if (currentPasscode === null) return;
             }
+            if (!confirm('🔐 Change your admin password?')) return;
+
+            try {
+                const { data, error } = await db.rpc('julis_change_passcode', {
+                    p_old: currentPasscode,
+                    p_new: pw
+                });
+                if (!error && data !== true) {
+                    adminPasscode = '';
+                    alert('❌ Current password is wrong (or too many tries — wait 15 minutes)');
+                    return;
+                }
+                if (!error) {
+                    localStorage.setItem(PASSWORD_ONLINE_KEY, '1');
+                    settings.adminPassword = defaultSettings.adminPassword;
+                    adminPasscode = pw;
+                    saveData();
+                    document.getElementById('newPassword').value = '';
+                    showSuccess('🔑 Password changed on every device!');
+                    return;
+                }
+                if (
+                    !isMissingRpc(error) ||
+                    localStorage.getItem(PASSWORD_ONLINE_KEY) === '1'
+                ) {
+                    alert("❌ Couldn't change your password right now — please try again.");
+                    return;
+                }
+            } catch (error) {
+                console.warn('Shared password could not be changed online.', error);
+                alert("❌ Couldn't change your password right now — please try again.");
+                return;
+            }
+
+            settings.adminPassword = pw;
+            adminPasscode = pw;
+            saveData();
+            document.getElementById('newPassword').value = '';
+            showSuccess('🔑 Password changed on this device');
         }
 
         // ─── Image upload (with compression so 50+ products fit in localStorage) ──
@@ -1852,29 +2004,43 @@
             const price       = document.getElementById('productPrice').value;
             const description = document.getElementById('productDescription').value.trim();
 
-            if (!name || !price || !description) {
+            if (!name || !description) {
                 alert('❌ Please fill in all required fields (Name, Price, Description).');
+                return;
+            }
+            if (name.length > 80 || description.length > 1000) {
+                alert('❌ Product names can be up to 80 characters and descriptions up to 1,000.');
+                return;
+            }
+
+            const numericPrice = Number(price);
+            const roundedPrice = Math.round(numericPrice * 100) / 100;
+            if (!Number.isFinite(numericPrice) || numericPrice <= 0 ||
+                !Number.isFinite(roundedPrice) || roundedPrice <= 0) {
+                alert('❌ Please enter a valid price greater than $0.');
                 return;
             }
 
             const unlimited = document.getElementById('productUnlimited').checked;
             const stockRaw  = document.getElementById('productStock').value;
-            if (!unlimited && (stockRaw === '' || Number(stockRaw) < 0)) {
+            const stockQuantity = Number(stockRaw);
+            if (!unlimited && (stockRaw === '' || !Number.isInteger(stockQuantity) || stockQuantity < 0)) {
                 alert('❌ Please say how many you have (or tick "Made to order").');
                 return;
             }
 
             const productData = {
                 name, description,
-                price: parseFloat(price),
+                price: roundedPrice,
                 image: document.getElementById('productImage').value,
-                stock_quantity: unlimited ? 0 : parseInt(stockRaw, 10),
+                stock_quantity: unlimited ? 0 : stockQuantity,
                 track_stock: !unlimited
             };
 
             const btn = document.getElementById('submitBtn');
+            const submitBtnText = document.getElementById('submitBtnText');
             btn.disabled = true;
-            btn.textContent = '⏳ Saving...';
+            submitBtnText.textContent = '⏳ Saving...';
 
             try {
                 if (editingProductId) {
@@ -1896,7 +2062,7 @@
                 alert('❌ Error saving product: ' + err.message);
             } finally {
                 btn.disabled = false;
-                document.getElementById('submitBtnText').textContent = editingProductId ? '💾 Save Changes' : '✨ Add Product';
+                submitBtnText.textContent = editingProductId ? '💾 Save Changes' : '✨ Add Product';
             }
 
             renderProducts();
@@ -1911,18 +2077,23 @@
             document.getElementById('productName').value        = product.name;
             document.getElementById('productPrice').value       = product.price;
             document.getElementById('productDescription').value = product.description;
-            document.getElementById('productImage').value       = product.image || '';
             document.getElementById('productStock').value       = product.stock_quantity ?? 0;
             document.getElementById('productUnlimited').checked = product.track_stock === false;
             document.getElementById('editProductId').value      = id;
 
-            if (product.image) {
-                document.getElementById('imagePreview').src = product.image;
+            const imageUrl = safeProductImageUrl(product.image);
+            document.getElementById('productImage').value = imageUrl;
+            if (imageUrl) {
+                document.getElementById('imagePreview').src = imageUrl;
                 document.getElementById('imagePreview').classList.remove('hidden');
                 document.getElementById('fileLabel').textContent = 'Current image loaded';
+            } else {
+                document.getElementById('imagePreview').src = '';
+                document.getElementById('imagePreview').classList.add('hidden');
+                document.getElementById('fileLabel').textContent = 'Upload Image';
             }
 
-            document.getElementById('formTitle').innerHTML    = '✏️ Editing: ' + product.name;
+            document.getElementById('formTitle').textContent  = '✏️ Editing: ' + String(product.name || '');
             document.getElementById('submitBtnText').textContent = '💾 Save Changes';
             document.getElementById('cancelEditBtn').classList.remove('hidden');
 
@@ -1943,7 +2114,9 @@
         }
 
         async function deleteProduct(id) {
-            if (confirm('Are you sure you want to delete this product? 🗑️')) {
+            const product = products.find(p => p.id === id);
+            if (!product) return;
+            if (confirm(`Delete "${String(product.name)}"? This can't be undone. 🗑️`)) {
                 try {
                     await deleteProductFromDB(id);
                     products = products.filter(p => p.id !== id);
@@ -1966,6 +2139,54 @@
             return Math.max(0, Number(p.stock_quantity) || 0);
         }
         function isSoldOut(p) { return stockOf(p) <= 0; }
+        function cartLines() {
+            if (!productsLoaded) return [];
+
+            const nextCart = [];
+            const lines = [];
+            let changed = false;
+            cart.forEach(item => {
+                const product = products.find(p => String(p.id) === String(item.id));
+                const rawQuantity = Number(item.quantity);
+                const requested = Number.isFinite(rawQuantity) ? Math.floor(rawQuantity) : 0;
+                if (!product || requested <= 0 || isSoldOut(product)) {
+                    changed = true;
+                    return;
+                }
+
+                const available = stockOf(product);
+                const quantity = Number.isFinite(available)
+                    ? Math.min(requested, Math.floor(available))
+                    : requested;
+                if (quantity <= 0) {
+                    changed = true;
+                    return;
+                }
+                if (
+                    item.id !== product.id ||
+                    item.quantity !== quantity ||
+                    Object.keys(item).some(key => key !== 'id' && key !== 'quantity')
+                ) changed = true;
+
+                nextCart.push({ id: product.id, quantity });
+                lines.push({ product, quantity });
+            });
+
+            if (nextCart.length !== cart.length) changed = true;
+            if (changed) {
+                cart = nextCart;
+                saveData();
+                showSuccess("🛒 Your cart was updated to match what's in stock.");
+            }
+            return lines;
+        }
+        function safeProductImageUrl(image) {
+            if (typeof image !== 'string') return '';
+            return /^data:image\/(jpeg|png|webp|gif);base64,[A-Za-z0-9+/=]+$/.test(image) ||
+                image.startsWith('https://')
+                ? image
+                : '';
+        }
         function lowStockLeft(p) {
             const left = stockOf(p);
             if (left === Infinity || left <= 0) return null;
@@ -1974,8 +2195,10 @@
         }
         /** How many more of this item the cart can still take. */
         function remainingFor(id) {
-            const p = products.find(x => x.id === id);
-            const inCart = (cart.find(i => i.id === id) || {}).quantity || 0;
+            const p = products.find(x => String(x.id) === String(id));
+            const inCart = cartLines()
+                .filter(line => String(line.product.id) === String(id))
+                .reduce((sum, line) => sum + line.quantity, 0);
             return stockOf(p) - inCart;
         }
 
@@ -1993,21 +2216,24 @@
             grid.innerHTML = products.map(p => {
                 const out = isSoldOut(p);
                 const low = lowStockLeft(p);
+                const imageUrl = safeProductImageUrl(p.image);
+                const description = String(p.description || '');
+                const price = Number(p.price).toFixed(2);
                 return `
-                <div class="product-card" onclick="showProductDetail(${p.id})" style="${out ? 'opacity:0.72;' : ''}">
+                <div class="product-card" onclick="showProductDetail(${Number(p.id)})" style="${out ? 'opacity:0.72;' : ''}">
                     <div class="product-badge"${out ? ' style="background:#6b7280;"' : ''}>${out ? 'SOLD OUT' : 'HANDMADE'}</div>
                     <div class="product-image">
-                        ${p.image ? `<img src="${p.image}" alt="${escapeHtml(p.name)}"${out ? ' style="filter:grayscale(0.85);"' : ''}>` : '🎀'}
+                        ${imageUrl ? `<img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(p.name)}"${out ? ' style="filter:grayscale(0.85);"' : ''}>` : '🎀'}
                     </div>
                     <div class="product-info">
                         <h3 class="product-name">${escapeHtml(p.name)}</h3>
-                        <p class="product-description">${escapeHtml(p.description.substring(0,100))}${p.description.length>100?'...':''}</p>
+                        <p class="product-description">${escapeHtml(description.substring(0,100))}${description.length>100?'...':''}</p>
                         ${low ? `<p style="margin:0 0 0.5rem;font-weight:700;color:#c2410c;font-size:0.95rem;">Only ${low} left!</p>` : ''}
                         <div class="product-footer">
-                            <div class="product-price">$${p.price.toFixed(2)}</div>
+                            <div class="product-price">$${price}</div>
                             ${out
                                 ? `<button class="btn-add-cart" disabled style="background:#d1d5db;color:#6b7280;cursor:not-allowed;">Sold Out</button>`
-                                : `<button class="btn-add-cart" onclick="event.stopPropagation();addToCart(${p.id})">Add to Cart</button>`}
+                                : `<button class="btn-add-cart" onclick="event.stopPropagation();addToCart(${Number(p.id)})">Add to Cart</button>`}
                         </div>
                     </div>
                 </div>`; }).join('');
@@ -2041,12 +2267,12 @@
                 return `
                 <div class="product-list-item">
                     <div class="product-list-info">
-                        <strong style="font-size:1.1rem;color:var(--purple);">${escapeHtml(p.name)}</strong> — $${p.price.toFixed(2)}
+                        <strong style="font-size:1.1rem;color:var(--purple);">${escapeHtml(p.name)}</strong> — $${Number(p.price).toFixed(2)}
                         <div style="font-size:0.9rem;margin-top:0.2rem;">${stockLabel}</div>
                     </div>
                     <div class="product-list-actions">
-                        <button class="btn btn-edit" onclick="editProduct(${p.id})">✏️ Edit</button>
-                        <button class="btn-delete" onclick="deleteProduct(${p.id})">🗑️ Delete</button>
+                        <button class="btn btn-edit" onclick="editProduct(${Number(p.id)})">✏️ Edit</button>
+                        <button class="btn-delete" onclick="deleteProduct(${Number(p.id)})">🗑️ Delete</button>
                     </div>
                 </div>`; }).join('');
             renderShopDashboard();
@@ -2057,24 +2283,27 @@
             const p = products.find(p => p.id === id);
             if (!p) return;
             modalQuantity = 1;
+            const imageUrl = safeProductImageUrl(p.image);
+            const description = String(p.description || '');
+            const price = Number(p.price).toFixed(2);
             document.getElementById('productDetailContent').innerHTML = `
                 <div class="product-detail-grid">
                     <div>
                         <div class="product-detail-image">
-                            ${p.image ? `<img src="${p.image}" alt="${escapeHtml(p.name)}">` : '🎀'}
+                            ${imageUrl ? `<img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(p.name)}">` : '🎀'}
                         </div>
                     </div>
                     <div class="product-detail-info">
                         <h2>${escapeHtml(p.name)}</h2>
-                        <div class="product-detail-price">$${p.price.toFixed(2)}</div>
-                        <p class="product-detail-description">${escapeHtml(p.description)}</p>
+                        <div class="product-detail-price">$${price}</div>
+                        <p class="product-detail-description">${escapeHtml(description)}</p>
                         <div class="quantity-selector">
-                            <button class="quantity-btn" onclick="changeQuantity(${id},-1)">−</button>
+                            <button class="quantity-btn" onclick="changeQuantity(${Number(id)},-1)">−</button>
                             <span class="quantity-display" id="modalQuantity">1</span>
-                            <button class="quantity-btn" onclick="changeQuantity(${id},1)">+</button>
+                            <button class="quantity-btn" onclick="changeQuantity(${Number(id)},1)">+</button>
                         </div>
-                        <button class="btn btn-primary btn-large" onclick="addToCartFromModal(${id})">
-                            Add to Cart — $<span id="modalTotal">${p.price.toFixed(2)}</span>
+                        <button class="btn btn-primary btn-large" onclick="addToCartFromModal(${Number(id)})">
+                            Add to Cart — $<span id="modalTotal">${price}</span>
                         </button>
                     </div>
                 </div>`;
@@ -2086,7 +2315,7 @@
             modalQuantity = Math.min(room, Math.max(1, modalQuantity + change));
             document.getElementById('modalQuantity').textContent = modalQuantity;
             const p = products.find(p => p.id === productId);
-            document.getElementById('modalTotal').textContent = (p.price * modalQuantity).toFixed(2);
+            document.getElementById('modalTotal').textContent = (Number(p.price) * modalQuantity).toFixed(2);
         }
 
         // ─── Cart ─────────────────────────────────────────────────────────
@@ -2105,9 +2334,9 @@
             }
             const adding = Math.min(quantity, room);
 
-            const existing = cart.find(item => item.id === id);
+            const existing = cart.find(item => String(item.id) === String(product.id));
             if (existing) existing.quantity += adding;
-            else cart.push({ ...product, quantity: adding });
+            else cart.push({ id: product.id, quantity: adding });
 
             saveData();
             updateCartBadge();
@@ -2123,14 +2352,15 @@
         }
 
         function removeFromCart(id) {
-            cart = cart.filter(item => item.id !== id);
+            cart = cart.filter(item => String(item.id) !== String(id));
             saveData();
             updateCartBadge();
             renderCart();
         }
 
         function updateCartBadge() {
-            document.getElementById('cartBadge').textContent = cart.reduce((s,i) => s + i.quantity, 0);
+            document.getElementById('cartBadge').textContent = cartLines()
+                .reduce((sum, line) => sum + line.quantity, 0);
         }
 
         function toggleCart() {
@@ -2140,7 +2370,8 @@
 
         function renderCart() {
             const content = document.getElementById('cartContent');
-            if (cart.length === 0) {
+            const lines = cartLines();
+            if (lines.length === 0) {
                 content.innerHTML = `<div style="text-align:center;padding:4rem;">
                     <div style="font-size:5rem;margin-bottom:1rem;">🛒</div>
                     <h3 style="color:var(--purple);font-family:Comfortaa,sans-serif;font-size:2rem;">Your cart is empty!</h3>
@@ -2149,31 +2380,37 @@
                 return;
             }
 
-            const subtotal      = cart.reduce((s,i) => s + (i.price * i.quantity), 0);
-            const shippingCost  = subtotal >= 45 ? 0 : settings.shipping;
-            const total         = subtotal + shippingCost + settings.handling;
+            const subtotal      = lines.reduce((sum, line) => sum + Number(line.product.price) * line.quantity, 0);
+            const shipping      = Number(settings.shipping) || 0;
+            const handling      = Number(settings.handling) || 0;
+            const shippingCost  = subtotal >= 45 ? 0 : shipping;
+            const total         = subtotal + shippingCost + handling;
             const amountToFree  = (45 - subtotal).toFixed(2);
 
             content.innerHTML = `
                 ${subtotal < 45 ? `<div style="background:linear-gradient(135deg,#fff8e1,#fff3cd);border:2px solid #f0c040;border-radius:12px;padding:1rem 1.5rem;margin-bottom:1rem;text-align:center;font-weight:600;color:#856404;">🚚 Add $${amountToFree} more for FREE shipping!</div>` : `<div style="background:linear-gradient(135deg,#d4edda,#c3e6cb);border:2px solid #28a745;border-radius:12px;padding:1rem 1.5rem;margin-bottom:1rem;text-align:center;font-weight:700;color:#155724;font-size:1.1rem;">🎉 You qualify for FREE shipping!</div>`}
                 <div>
-                    ${cart.map(item => `
+                    ${lines.map(({ product, quantity }) => {
+                    const imageUrl = safeProductImageUrl(product.image);
+                    const price = Number(product.price).toFixed(2);
+                    return `
                     <div style="display:flex;gap:1.5rem;padding:1.5rem;background:rgba(46,94,170,0.05);border-radius:15px;margin-bottom:1rem;align-items:center;border:2px solid var(--sky-blue);">
                         <div style="width:100px;height:100px;border-radius:10px;background:linear-gradient(135deg,var(--pale-blue),var(--lavender));display:flex;align-items:center;justify-content:center;font-size:2rem;overflow:hidden;flex-shrink:0;">
-                            ${item.image ? `<img src="${item.image}" style="width:100%;height:100%;object-fit:cover;border-radius:10px;" alt="${escapeHtml(item.name)}">` : '🎀'}
+                            ${imageUrl ? `<img src="${escapeHtml(imageUrl)}" style="width:100%;height:100%;object-fit:cover;border-radius:10px;" alt="${escapeHtml(product.name)}">` : '🎀'}
                         </div>
                         <div style="flex:1;">
-                            <div style="font-weight:600;font-size:1.2rem;color:var(--navy);margin-bottom:0.5rem;">${escapeHtml(item.name)}</div>
-                            <div style="color:var(--primary-blue);font-weight:700;font-size:1.1rem;">$${item.price.toFixed(2)} × ${item.quantity}</div>
+                            <div style="font-weight:600;font-size:1.2rem;color:var(--navy);margin-bottom:0.5rem;">${escapeHtml(product.name)}</div>
+                            <div style="color:var(--primary-blue);font-weight:700;font-size:1.1rem;">$${price} × ${quantity}</div>
                         </div>
-                        <button class="btn-delete" onclick="removeFromCart(${item.id})">Remove</button>
-                    </div>`).join('')}
+                        <button class="btn-delete" onclick="removeFromCart(${Number(product.id)})">Remove</button>
+                    </div>`;
+                    }).join('')}
                 </div>
 
                 <div style="background:linear-gradient(135deg,var(--primary-blue),var(--purple));color:white;padding:2rem;border-radius:20px;margin-top:2rem;">
                     <div style="display:flex;justify-content:space-between;margin-bottom:1rem;font-size:1.1rem;"><span>Subtotal:</span><span>$${subtotal.toFixed(2)}</span></div>
                     <div style="display:flex;justify-content:space-between;margin-bottom:1rem;font-size:1.1rem;"><span>Shipping:</span><span>${shippingCost === 0 ? '<strong style="color:#90EE90;">FREE 🎉</strong>' : '$' + shippingCost.toFixed(2)}</span></div>
-                    <div style="display:flex;justify-content:space-between;margin-bottom:1rem;font-size:1.1rem;"><span>Handling:</span><span>$${settings.handling.toFixed(2)}</span></div>
+                    <div style="display:flex;justify-content:space-between;margin-bottom:1rem;font-size:1.1rem;"><span>Handling:</span><span>$${handling.toFixed(2)}</span></div>
                     <div style="display:flex;justify-content:space-between;border-top:2px solid rgba(255,255,255,0.3);padding-top:1rem;margin-top:1rem;font-size:1.5rem;font-weight:700;"><span>Total:</span><span>$${total.toFixed(2)}</span></div>
                 </div>
 
@@ -2206,7 +2443,7 @@
                             <textarea id="shippingAddress" placeholder="Street Address&#10;City, State ZIP Code"></textarea>
                         </div>
                     </div>
-                    <button class="btn btn-primary btn-large" onclick="checkout()">💙 Complete Purchase</button>
+                    <button class="btn btn-primary btn-large" id="completePurchaseButton" onclick="checkout()">💙 Complete Purchase</button>
                 </div>`;
         }
 
@@ -2219,8 +2456,8 @@
 
             const details = document.getElementById('paymentDetails');
             const info = method === 'zelle'
-                ? `<strong>Send to:</strong> ${settings.zelleEmail || 'Not set — configure in admin'}`
-                : `<strong>Send to:</strong> ${settings.cashAppTag || 'Not set — configure in admin'}`;
+                ? `<strong>Send to:</strong> ${escapeHtml(settings.zelleEmail || 'Not set — configure in admin')}`
+                : `<strong>Send to:</strong> ${escapeHtml(settings.cashAppTag || 'Not set — configure in admin')}`;
 
             details.innerHTML = `
                 <div style="background:rgba(46,94,170,0.05);padding:1.5rem;border-radius:15px;margin-top:1rem;border-left:4px solid var(--primary-blue);">
@@ -2236,62 +2473,145 @@
         }
 
         async function checkout() {
-            const name    = (document.getElementById('customerName')    || {}).value || '';
-            const phone   = (document.getElementById('customerPhone')   || {}).value || '';
-            const address = (document.getElementById('shippingAddress') || {}).value || '';
-
-            if (!selectedPayment) { alert('Please select a payment method! 💳'); return; }
-            if (!name.trim())     { alert('Please enter your full name! 👤');    return; }
-            if (!phone.trim())    { alert('Please enter your phone number! 📱'); return; }
-            if (!address.trim())  { alert('Please enter your shipping address! 📦'); return; }
-            if (cart.length === 0) { alert('Your cart is empty! 🛒'); return; }
-
-            const subtotal     = cart.reduce((s,i) => s + (i.price * i.quantity), 0);
-            const shippingCost = subtotal >= 45 ? 0 : settings.shipping;
-            const total        = subtotal + shippingCost + settings.handling;
-
-            const order = {
-                customer_name: name.trim(),
-                phone: phone.trim(),
-                address: address.trim(),
-                payment_method: selectedPayment,
-                items: cart.map(i => ({ name: i.name, quantity: i.quantity, price: i.price })),
-                subtotal: subtotal,
-                shipping: shippingCost,
-                handling: settings.handling,
-                total: total
-            };
-
-            const soldItems = cart.map(i => ({ id: i.id, quantity: i.quantity }));
+            const purchaseButton = document.getElementById('completePurchaseButton');
+            if (purchaseButton?.disabled) return;
+            if (purchaseButton) purchaseButton.disabled = true;
+            let orderPlaced = false;
 
             try {
-                await insertOrderToDB(order);
-                await decrementStockFor(soldItems);
-                renderProducts();
-                alert(`🎉 Order Confirmed!\n\nName: ${order.customer_name}\nPhone: ${order.phone}\nTotal: $${total.toFixed(2)}\nPayment: ${selectedPayment.toUpperCase()}\n\nThank you! Please complete payment and I'll get your items ready! 💙`);
-            } catch (err) {
-                // Couldn't save the order online — fall back to an email draft so it isn't lost
-                console.error('Order save failed:', err);
-                const emailBody =
-                    `New order for Juli's Studios!\n\n` +
-                    `Name: ${order.customer_name}\n` +
-                    `Phone: ${order.phone}\n` +
-                    `Address:\n${order.address}\n\n` +
-                    `Items:\n${order.items.map(i => `${i.name} x ${i.quantity} — $${(i.price * i.quantity).toFixed(2)}`).join('\n')}\n\n` +
-                    `Subtotal: $${subtotal.toFixed(2)}\nShipping: $${shippingCost.toFixed(2)}\nHandling: $${settings.handling.toFixed(2)}\nTotal: $${total.toFixed(2)}\n` +
-                    `Payment method: ${selectedPayment.toUpperCase()}`;
-                alert(`🎉 Order received!\n\nWe couldn't reach the order system, so your email app will open with the order details — please press SEND so Juli gets your order! 💌`);
-                window.location.href = 'mailto:' + NOTIFICATION_EMAIL
-                    + '?subject=' + encodeURIComponent('New Order from ' + order.customer_name + ' — $' + total.toFixed(2))
-                    + '&body=' + encodeURIComponent(emailBody);
-            }
+                const name = (document.getElementById('customerName') || {}).value || '';
+                const phone = (document.getElementById('customerPhone') || {}).value || '';
+                const address = (document.getElementById('shippingAddress') || {}).value || '';
 
-            cart = [];
-            selectedPayment = null;
-            saveData();
-            updateCartBadge();
-            closeModal('cartModal');
-            loadOrdersFromDB().then(o => { orders = o; renderOrders(); });
+                if (!selectedPayment) { alert('Please select a payment method! 💳'); return; }
+                if (!name.trim()) { alert('Please enter your full name! 👤'); return; }
+                if (!phone.trim()) { alert('Please enter your phone number! 📱'); return; }
+                if (!address.trim()) { alert('Please enter your shipping address! 📦'); return; }
+
+                const previousLines = cartLines();
+                if (previousLines.length === 0) { alert('Your cart is empty! 🛒'); return; }
+                const summary = lines => lines.map(({ product, quantity }) => ({
+                    id: String(product.id),
+                    quantity,
+                    name: String(product.name || ''),
+                    price: Number(product.price),
+                    stock: stockOf(product)
+                }));
+                const previousSummary = JSON.stringify(summary(previousLines));
+
+                const freshProducts = await loadProductsFromDB();
+                if (freshProducts === null) {
+                    alert("We couldn't reach the shop right now — please try again in a moment.");
+                    return;
+                }
+                products = freshProducts;
+                productsLoaded = true;
+                const lines = cartLines();
+                if (JSON.stringify(summary(lines)) !== previousSummary) {
+                    renderProducts();
+                    renderProductList();
+                    updateCartBadge();
+                    renderCart();
+                    alert('Some items changed — please check your cart and try again.');
+                    return;
+                }
+
+                const subtotal = lines.reduce(
+                    (sum, line) => sum + Number(line.product.price) * line.quantity,
+                    0
+                );
+                const shipping = Number(settings.shipping) || 0;
+                const handling = Number(settings.handling) || 0;
+                const shippingCost = subtotal >= 45 ? 0 : shipping;
+                const total = subtotal + shippingCost + handling;
+                const paymentMethod = selectedPayment;
+                const order = {
+                    customer_name: name.trim(),
+                    phone: phone.trim(),
+                    address: address.trim(),
+                    payment_method: paymentMethod,
+                    items: lines.map(({ product, quantity }) => ({
+                        name: String(product.name || ''),
+                        quantity,
+                        price: Number(product.price)
+                    })),
+                    subtotal,
+                    shipping: shippingCost,
+                    handling,
+                    total
+                };
+                const soldItems = lines.map(({ product, quantity }) => ({
+                    id: product.id,
+                    quantity
+                }));
+
+                const emailOrder = err => {
+                    console.error('Order save failed:', err);
+                    const emailBody =
+                        `New order for Juli's Studios!\n\n` +
+                        `Name: ${order.customer_name}\n` +
+                        `Phone: ${order.phone}\n` +
+                        `Address:\n${order.address}\n\n` +
+                        `Items:\n${order.items.map(i => `${i.name} x ${i.quantity} — $${(i.price * i.quantity).toFixed(2)}`).join('\n')}\n\n` +
+                        `Subtotal: $${subtotal.toFixed(2)}\nShipping: $${shippingCost.toFixed(2)}\nHandling: $${handling.toFixed(2)}\nTotal: $${total.toFixed(2)}\n` +
+                        `Payment method: ${paymentMethod.toUpperCase()}`;
+                    alert(`🎉 Order received!\n\nWe couldn't reach the order system, so your email app will open with the order details — please press SEND so Juli gets your order! 💌`);
+                    window.location.href = 'mailto:' + NOTIFICATION_EMAIL
+                        + '?subject=' + encodeURIComponent('New Order from ' + order.customer_name + ' — $' + total.toFixed(2))
+                        + '&body=' + encodeURIComponent(emailBody);
+                };
+
+                let placeError = null;
+                try {
+                    const { error } = await db.rpc('julis_place_order', {
+                        p_order: order,
+                        p_items: soldItems
+                    });
+                    placeError = error;
+                } catch (error) {
+                    placeError = error;
+                }
+
+                if (placeError && /out of stock/i.test(String(placeError.message || ''))) {
+                    const latest = await loadProductsFromDB();
+                    if (latest !== null) products = latest;
+                    renderProducts();
+                    renderProductList();
+                    updateCartBadge();
+                    renderCart();
+                    alert('Sorry — something in your cart just sold out. Please check your cart and try again.');
+                    return;
+                }
+                if (placeError && isMissingRpc(placeError)) {
+                    try {
+                        await insertOrderToDB(order);
+                    } catch (err) {
+                        emailOrder(err);
+                        return;
+                    }
+                    orderPlaced = true;
+                    await decrementStockFor(soldItems);
+                } else if (placeError) {
+                    emailOrder(placeError);
+                    return;
+                } else {
+                    orderPlaced = true;
+                }
+
+                const refreshedProducts = await loadProductsFromDB();
+                if (refreshedProducts !== null) products = refreshedProducts;
+                renderProducts();
+                renderProductList();
+                cart = [];
+                selectedPayment = null;
+                saveData();
+                updateCartBadge();
+                closeModal('cartModal');
+                alert(`🎉 Order Confirmed!\n\nName: ${order.customer_name}\nPhone: ${order.phone}\nTotal: $${total.toFixed(2)}\nPayment: ${paymentMethod.toUpperCase()}\n\nThank you! Please complete payment and I'll get your items ready! 💙`);
+                loadOrdersFromDB().then(o => { orders = o; renderOrders(); });
+            } finally {
+                if (purchaseButton && !orderPlaced) purchaseButton.disabled = false;
+            }
         }
 
         const ADMIN_TABS = [
@@ -2331,7 +2651,7 @@
         function renderShopDashboard() {
             const tracked = products.filter(product => product.track_stock !== false);
             const inStock = tracked.reduce((sum, product) => sum + stockOf(product), 0);
-            const lowStock = tracked.filter(product => stockOf(product) > 0 && stockOf(product) <= 2);
+            const lowStock = tracked.filter(product => lowStockLeft(product) !== null);
             const soldOut = tracked.filter(product => stockOf(product) <= 0);
             const newOrders = orders.filter(order => String(order.status || '').trim().toLowerCase() !== 'complete');
             document.getElementById('dashboardTotalProducts').textContent = products.length;
@@ -2410,23 +2730,50 @@
             document.getElementById('adminPasswordInput').value = '';
         }
 
-        function attemptLogin() {
+        async function attemptLogin() {
             const pw = document.getElementById('adminPasswordInput').value;
-            if (pw === settings.adminPassword) {
-                isAdminLoggedIn = true;
-                adminExpiresAt = Date.now() + LOGOUT_TIMEOUT;
-                localStorage.setItem(ADMIN_EXPIRY_KEY, String(adminExpiresAt));
-                lastActivityWrite = 0;
-                closeLoginModal();
-                const panel = document.getElementById('adminPanel');
-                panel.classList.remove('hidden');
-                showSuccess('✅ Welcome! You will be signed out after 1 hour without activity.');
-                startActivityTracking();
-                setTimeout(() => panel.scrollIntoView({ behavior: 'smooth', block: 'start' }), 200);
-            } else {
-                alert('❌ Incorrect password!');
-                document.getElementById('adminPasswordInput').value = '';
-                document.getElementById('adminPasswordInput').focus();
+            const button = document.getElementById('loginButton');
+            if (button?.disabled) return;
+            if (button) button.disabled = true;
+            try {
+                let isValid = false;
+                try {
+                    const { data, error } = await db.rpc('julis_check_passcode', {
+                        p_passcode: pw
+                    });
+                    if (!error) {
+                        isValid = data === true;
+                        if (isValid) localStorage.setItem(PASSWORD_ONLINE_KEY, '1');
+                    } else if (isMissingRpc(error) && localStorage.getItem(PASSWORD_ONLINE_KEY) !== '1') {
+                        isValid = pw === settings.adminPassword;
+                    } else {
+                        alert("❌ Couldn't check your password right now — please try again.");
+                        return;
+                    }
+                } catch {
+                    alert("❌ Couldn't check your password right now — please try again.");
+                    return;
+                }
+
+                if (isValid) {
+                    isAdminLoggedIn = true;
+                    adminPasscode = pw;
+                    adminExpiresAt = Date.now() + LOGOUT_TIMEOUT;
+                    localStorage.setItem(ADMIN_EXPIRY_KEY, String(adminExpiresAt));
+                    lastActivityWrite = 0;
+                    closeLoginModal();
+                    const panel = document.getElementById('adminPanel');
+                    panel.classList.remove('hidden');
+                    showSuccess('✅ Welcome! You will be signed out after 1 hour without activity.');
+                    startActivityTracking();
+                    setTimeout(() => panel.scrollIntoView({ behavior: 'smooth', block: 'start' }), 200);
+                } else {
+                    alert('❌ Incorrect password!');
+                    document.getElementById('adminPasswordInput').value = '';
+                    document.getElementById('adminPasswordInput').focus();
+                }
+            } finally {
+                if (button) button.disabled = false;
             }
         }
 
@@ -2446,6 +2793,7 @@
 
         function adminLogout() {
             isAdminLoggedIn = false;
+            adminPasscode = '';
             adminExpiresAt = 0;
             localStorage.removeItem(ADMIN_EXPIRY_KEY);
             lastActivityWrite = 0;
