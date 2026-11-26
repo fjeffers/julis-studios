@@ -28,7 +28,8 @@ begin
       customer_name text, phone text, address text, payment_method text, items jsonb,
       subtotal numeric, shipping numeric, handling numeric, total numeric);
 
-  for item in select * from jsonb_array_elements(p_items) loop
+  -- Lock products in id order so overlapping checkouts can't deadlock.
+  for item in select value from jsonb_array_elements(p_items) order by (value->>'id')::bigint loop
     qty := (item->>'quantity')::int;
     if qty is null or qty < 1 or qty > 100 then
       raise exception 'invalid quantity';
