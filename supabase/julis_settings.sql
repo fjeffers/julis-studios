@@ -46,6 +46,8 @@ declare
     ',', 1)), ''), 'unknown');
   fails int;
 begin
+  -- Serialize tries per client so overlapping requests can't share one failure count.
+  perform pg_advisory_xact_lock(hashtext('julis_passcode:' || k));
   select count(*) into fails from public.julis_passcode_attempts
    where client = k and at > now() - interval '15 minutes';
   if fails >= 5 then
