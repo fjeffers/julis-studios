@@ -1185,6 +1185,37 @@
             background: rgba(46, 94, 170, 0.1);
         }
 
+        .shipping-rate-status {
+            color: white;
+            margin: 0.5rem 0;
+        }
+
+        .shipping-rate-options {
+            border: 1px solid rgba(255,255,255,0.55);
+            border-radius: 10px;
+            margin: 0.75rem 0;
+            padding: 0.65rem 0.8rem;
+        }
+
+        .shipping-rate-options legend {
+            padding: 0 0.35rem;
+            font-weight: 700;
+        }
+
+        .shipping-rate-options label {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.55rem;
+            padding: 0.35rem 0;
+            cursor: pointer;
+        }
+
+        .shipping-rate-options input[type="radio"] {
+            width: auto;
+            flex: 0 0 auto;
+            margin: 0.2rem 0 0;
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             .product-detail-grid {
@@ -1927,11 +1958,11 @@
                     </div>
 
                     <div class="settings-section">
-                        <h4>🚚 Shipping</h4>
-                        <p class="settings-help">Shipping + handling is added to every order.</p>
+                        <h4>🚚 Shipping &amp; Handling</h4>
+                        <p class="settings-help">Shoppers enter their ZIP at checkout and see real USPS/UPS prices.</p>
                         <div class="settings-grid">
                             <div class="form-group">
-                                <label for="shippingCost" style="color:white;">Shipping Cost ($)</label>
+                                <label for="shippingCost" style="color:white;">Backup shipping price (used if live rates are unavailable)</label>
                                 <input type="number" id="shippingCost" step="0.01" value="10.00" style="border: 2px solid white;">
                             </div>
                             <div class="form-group">
@@ -1939,9 +1970,73 @@
                                 <input type="number" id="handlingFee" step="0.01" value="0.00" style="border: 2px solid white;">
                             </div>
                             <div class="form-group">
+                                <label for="defaultPackage" style="color:white;">Package used for orders</label>
+                                <select id="defaultPackage">
+                                    <option value="envelope">Padded envelope</option>
+                                    <option value="small">Small box</option>
+                                    <option value="medium">Medium box</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="defaultItemWeightOz" style="color:white;">Weight per item (oz)</label>
+                                <input type="number" id="defaultItemWeightOz" min="0.1" max="1120" step="0.1">
+                            </div>
+                            <div class="form-group">
                                 <label for="shippingTime" style="color:white;">How long shipping takes</label>
                                 <input type="text" id="shippingTime" maxlength="40"
                                     placeholder="e.g., 7–14 days" style="border: 2px solid white;">
+                            </div>
+                        </div>
+                        <h5 style="color:white;margin:1rem 0 0.5rem;">Package sizes</h5>
+                        <p class="settings-help">Enter each package's outside dimensions in inches and its empty weight in ounces.</p>
+                        <div class="settings-grid">
+                            <div class="form-group">
+                                <label style="color:white;">Padded envelope — Length (in)</label>
+                                <input type="number" id="packageEnvelopeLength" min="0.1" max="36" step="0.1">
+                            </div>
+                            <div class="form-group">
+                                <label style="color:white;">Padded envelope — Width (in)</label>
+                                <input type="number" id="packageEnvelopeWidth" min="0.1" max="36" step="0.1">
+                            </div>
+                            <div class="form-group">
+                                <label style="color:white;">Padded envelope — Height (in)</label>
+                                <input type="number" id="packageEnvelopeHeight" min="0.1" max="36" step="0.1">
+                            </div>
+                            <div class="form-group">
+                                <label style="color:white;">Padded envelope — Empty weight (oz)</label>
+                                <input type="number" id="packageEnvelopeWeightOz" min="0.1" max="1120" step="0.1">
+                            </div>
+                            <div class="form-group">
+                                <label style="color:white;">Small box — Length (in)</label>
+                                <input type="number" id="packageSmallLength" min="0.1" max="36" step="0.1">
+                            </div>
+                            <div class="form-group">
+                                <label style="color:white;">Small box — Width (in)</label>
+                                <input type="number" id="packageSmallWidth" min="0.1" max="36" step="0.1">
+                            </div>
+                            <div class="form-group">
+                                <label style="color:white;">Small box — Height (in)</label>
+                                <input type="number" id="packageSmallHeight" min="0.1" max="36" step="0.1">
+                            </div>
+                            <div class="form-group">
+                                <label style="color:white;">Small box — Empty weight (oz)</label>
+                                <input type="number" id="packageSmallWeightOz" min="0.1" max="1120" step="0.1">
+                            </div>
+                            <div class="form-group">
+                                <label style="color:white;">Medium box — Length (in)</label>
+                                <input type="number" id="packageMediumLength" min="0.1" max="36" step="0.1">
+                            </div>
+                            <div class="form-group">
+                                <label style="color:white;">Medium box — Width (in)</label>
+                                <input type="number" id="packageMediumWidth" min="0.1" max="36" step="0.1">
+                            </div>
+                            <div class="form-group">
+                                <label style="color:white;">Medium box — Height (in)</label>
+                                <input type="number" id="packageMediumHeight" min="0.1" max="36" step="0.1">
+                            </div>
+                            <div class="form-group">
+                                <label style="color:white;">Medium box — Empty weight (oz)</label>
+                                <input type="number" id="packageMediumWeightOz" min="0.1" max="1120" step="0.1">
                             </div>
                         </div>
                     </div>
@@ -2127,10 +2222,39 @@
             { key: 'pinterest', label: 'Pinterest', emoji: '📌', domains: ['pinterest.com'], toUrl: h => `https://www.pinterest.com/${h}` },
             { key: 'etsy', label: 'Etsy', emoji: '🛍️', domains: ['etsy.com'], toUrl: h => `https://www.etsy.com/shop/${h}` }
         ];
+        const DEFAULT_SHIPPING_PACKAGES = {
+            envelope: { label: 'Padded envelope', length: 9, width: 6, height: 1, weightOz: 1 },
+            small: { label: 'Small box', length: 8, width: 6, height: 4, weightOz: 4 },
+            medium: { label: 'Medium box', length: 12, width: 10, height: 6, weightOz: 8 }
+        };
+        const SHIPPING_PACKAGE_KEYS = Object.keys(DEFAULT_SHIPPING_PACKAGES);
+        function positiveShippingValue(value, fallback, max) {
+            const number = Number(value);
+            return Number.isFinite(number) && number > 0 && number <= max ? number : fallback;
+        }
+        function normalizeShippingPackages(value) {
+            const source = value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+            return Object.fromEntries(SHIPPING_PACKAGE_KEYS.map(key => {
+                const fallback = DEFAULT_SHIPPING_PACKAGES[key];
+                const candidate = source[key] && typeof source[key] === 'object' && !Array.isArray(source[key])
+                    ? source[key]
+                    : {};
+                return [key, {
+                    label: fallback.label,
+                    length: positiveShippingValue(candidate.length, fallback.length, 36),
+                    width: positiveShippingValue(candidate.width, fallback.width, 36),
+                    height: positiveShippingValue(candidate.height, fallback.height, 36),
+                    weightOz: positiveShippingValue(candidate.weightOz, fallback.weightOz, 1120)
+                }];
+            }));
+        }
         const defaultSettings = {
             shipping: 10.00,
             handling: 0,
             shippingTime: '7–14 days',
+            packages: DEFAULT_SHIPPING_PACKAGES,
+            defaultPackage: 'small',
+            defaultItemWeightOz: 4,
             adminPassword: 'juli2024',
             zelleEmail: 'your-email@example.com',
             cashAppTag: '$YourCashTag',
@@ -2143,9 +2267,23 @@
         function sharedSettingsFrom(data) {
             if (!data || typeof data !== 'object') return {};
             const shared = {};
-                ['shipping', 'handling', 'shippingTime', 'zelleEmail', 'cashAppTag', 'shopName', 'welcomeMessage', 'aboutMe', 'featuredVideo'].forEach(key => {
+                ['shipping', 'handling', 'shippingTime', 'packages', 'defaultPackage', 'defaultItemWeightOz', 'zelleEmail', 'cashAppTag', 'shopName', 'welcomeMessage', 'aboutMe', 'featuredVideo'].forEach(key => {
                 if (Object.prototype.hasOwnProperty.call(data, key)) shared[key] = data[key];
             });
+            if (Object.prototype.hasOwnProperty.call(shared, 'packages')) {
+                shared.packages = normalizeShippingPackages(shared.packages);
+            }
+            if (Object.prototype.hasOwnProperty.call(shared, 'defaultPackage') &&
+                !SHIPPING_PACKAGE_KEYS.includes(shared.defaultPackage)) {
+                shared.defaultPackage = defaultSettings.defaultPackage;
+            }
+            if (Object.prototype.hasOwnProperty.call(shared, 'defaultItemWeightOz')) {
+                shared.defaultItemWeightOz = positiveShippingValue(
+                    shared.defaultItemWeightOz,
+                    defaultSettings.defaultItemWeightOz,
+                    1120
+                );
+            }
             if (data.social && typeof data.social === 'object') {
                 shared.social = {};
                 SOCIAL_PLATFORMS.forEach(({ key }) => {
@@ -2161,6 +2299,15 @@
                 ...defaultSettings,
                 ...localValues,
                 ...remoteValues,
+                packages: normalizeShippingPackages(remoteValues.packages ?? localValues.packages),
+                defaultPackage: SHIPPING_PACKAGE_KEYS.includes(
+                    remoteValues.defaultPackage ?? localValues.defaultPackage
+                ) ? (remoteValues.defaultPackage ?? localValues.defaultPackage) : defaultSettings.defaultPackage,
+                defaultItemWeightOz: positiveShippingValue(
+                    remoteValues.defaultItemWeightOz ?? localValues.defaultItemWeightOz,
+                    defaultSettings.defaultItemWeightOz,
+                    1120
+                ),
                 shippingTime: String(
                     remoteValues.shippingTime ?? localValues.shippingTime ?? defaultSettings.shippingTime
                 ).trim().slice(0, 40) || defaultSettings.shippingTime,
@@ -2195,6 +2342,13 @@
         const LOGOUT_TIMEOUT = 60 * 60 * 1000;
         const ADMIN_ACTIVITY_EVENTS = ['click', 'keydown', 'input', 'scroll', 'touchstart', 'pointerdown'];
         let selectedPayment  = null;
+        let shippingZip = '';
+        let shippingRates = [];
+        let selectedShippingRate = null;
+        let shippingRateStatus = 'needs-zip';
+        let shippingRateSequence = 0;
+        let shippingRateTimer = null;
+        let shippingRateSignature = '';
         let modalQuantity    = 1;
         let activeCollectionSlug = '';
         let activeProductGallery = [];
@@ -2267,6 +2421,15 @@
                 shipping: s.shipping,
                 handling: s.handling,
                 shippingTime: s.shippingTime,
+                packages: normalizeShippingPackages(s.packages),
+                defaultPackage: SHIPPING_PACKAGE_KEYS.includes(s.defaultPackage)
+                    ? s.defaultPackage
+                    : defaultSettings.defaultPackage,
+                defaultItemWeightOz: positiveShippingValue(
+                    s.defaultItemWeightOz,
+                    defaultSettings.defaultItemWeightOz,
+                    1120
+                ),
                 zelleEmail: s.zelleEmail,
                 cashAppTag: s.cashAppTag,
                 shopName: s.shopName,
@@ -2553,6 +2716,22 @@
             document.getElementById('shippingCost').value = (Number(settings.shipping) || 0).toFixed(2);
             document.getElementById('handlingFee').value  = (Number(settings.handling) || 0).toFixed(2);
             document.getElementById('shippingTime').value = settings.shippingTime || defaultSettings.shippingTime;
+            const packages = normalizeShippingPackages(settings.packages);
+            SHIPPING_PACKAGE_KEYS.forEach(key => {
+                const packageSettings = packages[key];
+                document.getElementById(`package${key[0].toUpperCase()}${key.slice(1)}Length`).value = packageSettings.length;
+                document.getElementById(`package${key[0].toUpperCase()}${key.slice(1)}Width`).value = packageSettings.width;
+                document.getElementById(`package${key[0].toUpperCase()}${key.slice(1)}Height`).value = packageSettings.height;
+                document.getElementById(`package${key[0].toUpperCase()}${key.slice(1)}WeightOz`).value = packageSettings.weightOz;
+            });
+            document.getElementById('defaultPackage').value = SHIPPING_PACKAGE_KEYS.includes(settings.defaultPackage)
+                ? settings.defaultPackage
+                : defaultSettings.defaultPackage;
+            document.getElementById('defaultItemWeightOz').value = positiveShippingValue(
+                settings.defaultItemWeightOz,
+                defaultSettings.defaultItemWeightOz,
+                1120
+            );
             document.getElementById('zelleEmail').value   = settings.zelleEmail  || '';
             document.getElementById('cashAppTag').value   = settings.cashAppTag  || '';
             document.getElementById('shopName').value = settings.shopName || defaultSettings.shopName;
@@ -2567,6 +2746,32 @@
             });
             renderPublicSettings();
             updateSettingsUnsyncedNote();
+        }
+
+        function readShippingPackagesFromForm() {
+            const packages = {};
+            for (const key of SHIPPING_PACKAGE_KEYS) {
+                const prefix = `package${key[0].toUpperCase()}${key.slice(1)}`;
+                const values = {};
+                for (const [field, suffix, max] of [
+                    ['length', 'Length', 36],
+                    ['width', 'Width', 36],
+                    ['height', 'Height', 36],
+                    ['weightOz', 'WeightOz', 1120]
+                ]) {
+                    const input = document.getElementById(prefix + suffix);
+                    const raw = input.value.trim();
+                    const value = raw === '' ? NaN : Number(raw);
+                    if (!Number.isFinite(value) || value <= 0 || value > max) {
+                        alert(`❌ ${DEFAULT_SHIPPING_PACKAGES[key].label} ${field} must be greater than 0 and no more than ${max}.`);
+                        input.focus();
+                        return null;
+                    }
+                    values[field] = value;
+                }
+                packages[key] = { label: DEFAULT_SHIPPING_PACKAGES[key].label, ...values };
+            }
+            return packages;
         }
 
         async function saveSettings() {
@@ -2589,10 +2794,29 @@
             });
             if (hasInvalidSocial) return;
 
+            const packages = readShippingPackagesFromForm();
+            if (!packages) return;
+            const defaultPackage = document.getElementById('defaultPackage').value;
+            if (!SHIPPING_PACKAGE_KEYS.includes(defaultPackage)) {
+                alert('❌ Please choose a valid default package.');
+                return;
+            }
+            const defaultItemWeightInput = document.getElementById('defaultItemWeightOz');
+            const defaultItemWeightRaw = defaultItemWeightInput.value.trim();
+            const defaultItemWeightOz = defaultItemWeightRaw === '' ? NaN : Number(defaultItemWeightRaw);
+            if (!Number.isFinite(defaultItemWeightOz) || defaultItemWeightOz <= 0 || defaultItemWeightOz > 1120) {
+                alert('❌ Default item weight must be greater than 0 and no more than 1120 oz.');
+                defaultItemWeightInput.focus();
+                return;
+            }
+
             settings.shipping   = parseFloat(document.getElementById('shippingCost').value) || 0;
             settings.handling   = parseFloat(document.getElementById('handlingFee').value)  || 0;
             settings.shippingTime = document.getElementById('shippingTime').value.trim().slice(0, 40)
                 || defaultSettings.shippingTime;
+            settings.packages = packages;
+            settings.defaultPackage = defaultPackage;
+            settings.defaultItemWeightOz = defaultItemWeightOz;
             settings.zelleEmail = document.getElementById('zelleEmail').value.trim();
             settings.cashAppTag = document.getElementById('cashAppTag').value.trim();
             settings.shopName = document.getElementById('shopName').value.trim() || defaultSettings.shopName;
@@ -2607,8 +2831,8 @@
             const base = loadedShared || {};
             const patch = {};
             Object.keys(shared).forEach(key => {
-                const changed = key === 'social'
-                    ? JSON.stringify(shared.social) !== JSON.stringify(base.social)
+                const changed = key === 'social' || key === 'packages'
+                    ? JSON.stringify(shared[key]) !== JSON.stringify(base[key])
                     : shared[key] !== base[key];
                 if (changed) patch[key] = shared[key];
             });
@@ -3671,6 +3895,7 @@
 
             saveData();
             updateCartBadge();
+            if (isValidShippingZip(shippingZip)) scheduleShippingRateLookup(shippingZip, true);
             showSuccess(adding < quantity
                 ? `🛒 Added ${adding} — that's all Juli has left!`
                 : '🛒 Added to cart!');
@@ -3691,6 +3916,7 @@
             saveData();
             updateCartBadge();
             renderCart();
+            if (isValidShippingZip(shippingZip)) scheduleShippingRateLookup(shippingZip, true);
         }
 
         function updateCartBadge() {
@@ -3701,6 +3927,180 @@
         function toggleCart() {
             renderCart();
             document.getElementById('cartModal').style.display = 'flex';
+        }
+
+        function shippingItemsForCart() {
+            const quantities = new Map();
+            cartLines().forEach(({ product, quantity }) => {
+                const id = Number(product.id);
+                if (!Number.isInteger(id) || id < 1) return;
+                quantities.set(id, (quantities.get(id) || 0) + quantity);
+            });
+            return Array.from(quantities, ([id, quantity]) => ({ id, quantity }))
+                .sort((a, b) => a.id - b.id);
+        }
+
+        function isValidShippingZip(value) {
+            return /^\d{5}$/.test(String(value || '').trim());
+        }
+
+        function shippingQuoteIsReady() {
+            return isValidShippingZip(shippingZip) &&
+                (shippingRateStatus === 'fallback' ||
+                    (shippingRateStatus === 'success' && Boolean(selectedShippingRate)));
+        }
+
+        function shippingAmountForCart() {
+            if (shippingRateStatus === 'success' && selectedShippingRate) {
+                return Number(selectedShippingRate.amount);
+            }
+            return Number(settings.shipping) || 0;
+        }
+
+        function updateShippingRateUi() {
+            const status = document.getElementById('shippingRateStatus');
+            const options = document.getElementById('shippingRateOptions');
+            if (!status || !options) return;
+
+            if (shippingRateStatus === 'loading') {
+                status.textContent = 'Getting shipping prices…';
+            } else if (shippingRateStatus === 'fallback') {
+                status.textContent = `Live rates unavailable — standard shipping $${(Number(settings.shipping) || 0).toFixed(2)}`;
+            } else if (shippingRateStatus === 'success') {
+                status.textContent = 'Choose a shipping service.';
+            } else {
+                status.textContent = 'Enter a valid 5-digit ZIP code to see live rates.';
+            }
+
+            options.innerHTML = shippingRateStatus === 'success'
+                ? `<fieldset class="shipping-rate-options">
+                    <legend>Shipping service</legend>
+                    ${shippingRates.map((rate, index) => `
+                        <label for="shippingRate${index}">
+                            <input type="radio" id="shippingRate${index}" name="shippingRate"
+                                value="${index}" ${rate === selectedShippingRate ? 'checked' : ''}>
+                            ${escapeHtml(rate.provider)} ${escapeHtml(rate.service)} — $${Number(rate.amount).toFixed(2)}
+                            ${rate.days === null ? '' : ` · ~${escapeHtml(rate.days)} ${Number(rate.days) === 1 ? 'day' : 'days'}`}
+                        </label>`).join('')}
+                </fieldset>`
+                : '';
+            options.onchange = event => {
+                const input = event.target.closest('input[name="shippingRate"]');
+                const index = Number(input?.value);
+                if (!input || !Number.isInteger(index) || !shippingRates[index]) return;
+                selectedShippingRate = shippingRates[index];
+                updateCartPricing();
+            };
+        }
+
+        function updateCartPricing() {
+            const lines = cartLines();
+            if (!lines.length) return;
+            const subtotal = lines.reduce(
+                (sum, line) => sum + Number(line.product.price) * line.quantity,
+                0
+            );
+            const shipping = shippingAmountForCart();
+            const handling = Number(settings.handling) || 0;
+            const total = subtotal + shipping + handling;
+            const shippingAmount = document.getElementById('cartShippingAmount');
+            const totalAmount = document.getElementById('cartTotalAmount');
+            if (shippingAmount) shippingAmount.textContent = `$${shipping.toFixed(2)}`;
+            if (totalAmount) totalAmount.textContent = `$${total.toFixed(2)}`;
+            const purchaseButton = document.getElementById('completePurchaseButton');
+            if (purchaseButton) purchaseButton.disabled = !shippingQuoteIsReady();
+            if (selectedPayment) {
+                const option = document.querySelector(`.payment-option[data-payment="${selectedPayment}"]`);
+                if (option) selectPayment(selectedPayment, total, option);
+            }
+        }
+
+        async function requestShippingRates(zip, items, signature, sequence) {
+            try {
+                const response = await fetch('/api/shipping-rates', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ zip, items })
+                });
+                if (!response.ok) throw new Error('shipping rates unavailable');
+                const data = await response.json();
+                const currentItems = shippingItemsForCart();
+                const currentSignature = `${shippingZip}:${JSON.stringify(currentItems)}`;
+                if (sequence !== shippingRateSequence || signature !== currentSignature) return;
+
+                const rates = Array.isArray(data?.rates) ? data.rates
+                    .map(rate => ({
+                        id: String(rate?.id || ''),
+                        provider: String(rate?.provider || ''),
+                        service: String(rate?.service || ''),
+                        amount: Number(rate?.amount),
+                        days: rate?.days === null || rate?.days === undefined ? null : Number(rate.days)
+                    }))
+                    .filter(rate => rate.id && rate.provider && rate.service &&
+                        Number.isFinite(rate.amount) && rate.amount >= 0 &&
+                        (rate.days === null || Number.isFinite(rate.days)))
+                    .sort((a, b) => a.amount - b.amount)
+                    .slice(0, 6)
+                    : [];
+                if (!rates.length) throw new Error('no usable shipping rates');
+                shippingRates = rates;
+                selectedShippingRate = rates[0];
+                shippingRateStatus = 'success';
+            } catch {
+                const currentItems = shippingItemsForCart();
+                const currentSignature = `${shippingZip}:${JSON.stringify(currentItems)}`;
+                if (sequence !== shippingRateSequence || signature !== currentSignature) return;
+                shippingRates = [];
+                selectedShippingRate = null;
+                shippingRateStatus = 'fallback';
+            }
+            updateShippingRateUi();
+            updateCartPricing();
+        }
+
+        function scheduleShippingRateLookup(zipValue, immediate = false) {
+            shippingZip = String(zipValue || '').trim();
+            const items = shippingItemsForCart();
+            if (!isValidShippingZip(shippingZip) || !items.length) {
+                if (shippingRateTimer) clearTimeout(shippingRateTimer);
+                shippingRateTimer = null;
+                shippingRateSequence++;
+                shippingRates = [];
+                selectedShippingRate = null;
+                shippingRateStatus = 'needs-zip';
+                shippingRateSignature = '';
+                updateShippingRateUi();
+                updateCartPricing();
+                return;
+            }
+
+            const signature = `${shippingZip}:${JSON.stringify(items)}`;
+            if (signature === shippingRateSignature &&
+                ['loading', 'success', 'fallback'].includes(shippingRateStatus)) {
+                if (immediate && shippingRateStatus === 'loading' && shippingRateTimer) {
+                    clearTimeout(shippingRateTimer);
+                    shippingRateTimer = null;
+                    requestShippingRates(shippingZip, items, signature, shippingRateSequence);
+                }
+                updateShippingRateUi();
+                updateCartPricing();
+                return;
+            }
+            if (shippingRateTimer) clearTimeout(shippingRateTimer);
+            shippingRateSequence++;
+            const sequence = shippingRateSequence;
+            shippingRateSignature = signature;
+            shippingRates = [];
+            selectedShippingRate = null;
+            shippingRateStatus = 'loading';
+            updateShippingRateUi();
+            updateCartPricing();
+            const request = () => {
+                shippingRateTimer = null;
+                requestShippingRates(shippingZip, items, signature, sequence);
+            };
+            if (immediate) request();
+            else shippingRateTimer = setTimeout(request, 350);
         }
 
         function renderCart() {
@@ -3716,9 +4116,8 @@
             }
 
             const subtotal      = lines.reduce((sum, line) => sum + Number(line.product.price) * line.quantity, 0);
-            const shipping      = Number(settings.shipping) || 0;
+            const shippingCost  = shippingAmountForCart();
             const handling      = Number(settings.handling) || 0;
-            const shippingCost  = shipping;
             const total         = subtotal + shippingCost + handling;
 
             content.innerHTML = `
@@ -3743,20 +4142,22 @@
 
                 <div style="background:linear-gradient(135deg,var(--primary-blue),var(--purple));color:white;padding:2rem;border-radius:20px;margin-top:2rem;">
                     <div style="display:flex;justify-content:space-between;margin-bottom:1rem;font-size:1.1rem;"><span>Subtotal:</span><span>$${subtotal.toFixed(2)}</span></div>
-                    <div style="display:flex;justify-content:space-between;margin-bottom:1rem;font-size:1.1rem;"><span>Shipping:</span><span>$${shippingCost.toFixed(2)}</span></div>
+                    <div style="display:flex;justify-content:space-between;margin-bottom:1rem;font-size:1.1rem;"><span>Shipping:</span><span id="cartShippingAmount">$${shippingCost.toFixed(2)}</span></div>
+                    <div id="shippingRateStatus" class="shipping-rate-status" role="status" aria-live="polite"></div>
+                    <div id="shippingRateOptions"></div>
                     <div class="shipping-time-notice">📦 Ships in ${escapeHtml(settings.shippingTime || defaultSettings.shippingTime)}</div>
                     ${handling > 0 ? `<div style="display:flex;justify-content:space-between;margin-bottom:1rem;font-size:1.1rem;"><span>Handling:</span><span>$${handling.toFixed(2)}</span></div>` : ''}
-                    <div style="display:flex;justify-content:space-between;border-top:2px solid rgba(255,255,255,0.3);padding-top:1rem;margin-top:1rem;font-size:1.5rem;font-weight:700;"><span>Total:</span><span>$${total.toFixed(2)}</span></div>
+                    <div style="display:flex;justify-content:space-between;border-top:2px solid rgba(255,255,255,0.3);padding-top:1rem;margin-top:1rem;font-size:1.5rem;font-weight:700;"><span>Total:</span><span id="cartTotalAmount">$${total.toFixed(2)}</span></div>
                 </div>
 
                 <div style="margin-top:2rem;padding-top:2rem;border-top:2px solid var(--sky-blue);">
                     <h3 style="margin-bottom:1.5rem;font-family:Comfortaa,sans-serif;font-size:1.8rem;color:var(--primary-blue);">💳 Payment Method</h3>
                     <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1.5rem 0;">
-                        <div class="payment-option" onclick="selectPayment('zelle', ${total}, this)">
+                        <div class="payment-option" data-payment="zelle" onclick="selectPayment('zelle', ${total}, this)">
                             <div style="font-weight:700;font-size:1.2rem;margin-bottom:0.5rem;color:var(--primary-blue);">💰 Zelle</div>
                             <div style="color:#666;font-size:0.9rem;">Quick Transfer</div>
                         </div>
-                        <div class="payment-option" onclick="selectPayment('cashapp', ${total}, this)">
+                        <div class="payment-option" data-payment="cashapp" onclick="selectPayment('cashapp', ${total}, this)">
                             <div style="font-weight:700;font-size:1.2rem;margin-bottom:0.5rem;color:var(--primary-blue);">💵 Cash App</div>
                             <div style="color:#666;font-size:0.9rem;">Instant Payment</div>
                         </div>
@@ -3777,9 +4178,21 @@
                             <label>Shipping Address *</label>
                             <textarea id="shippingAddress" placeholder="Street Address&#10;City, State ZIP Code"></textarea>
                         </div>
+                        <div class="form-group">
+                            <label for="shippingZip">ZIP Code *</label>
+                            <input type="text" id="shippingZip" inputmode="numeric" pattern="[0-9]{5}"
+                                maxlength="5" autocomplete="postal-code" required
+                                value="${escapeHtml(shippingZip)}" aria-describedby="shippingRateStatus">
+                        </div>
                     </div>
-                    <button class="btn btn-primary btn-large" id="completePurchaseButton" onclick="checkout()">💙 Complete Purchase</button>
+                    <button class="btn btn-primary btn-large" id="completePurchaseButton" onclick="checkout()"
+                        ${shippingQuoteIsReady() ? '' : 'disabled'}>💙 Complete Purchase</button>
                 </div>`;
+            const zipInput = document.getElementById('shippingZip');
+            zipInput?.addEventListener('input', event => scheduleShippingRateLookup(event.target.value));
+            updateShippingRateUi();
+            updateCartPricing();
+            if (isValidShippingZip(shippingZip)) scheduleShippingRateLookup(shippingZip);
         }
 
         function selectPayment(method, totalAmount, el) {
@@ -3809,6 +4222,15 @@
 
         async function checkout() {
             const purchaseButton = document.getElementById('completePurchaseButton');
+            const enteredZip = (document.getElementById('shippingZip') || {}).value || '';
+            if (!isValidShippingZip(enteredZip)) {
+                alert('Please enter a valid 5-digit ZIP code for shipping.');
+                return;
+            }
+            if (enteredZip.trim() !== shippingZip || !shippingQuoteIsReady()) {
+                alert('Please wait for shipping prices or choose a shipping service before checking out.');
+                return;
+            }
             if (purchaseButton?.disabled) return;
             if (purchaseButton) purchaseButton.disabled = true;
             let orderPlaced = false;
@@ -3822,6 +4244,9 @@
                 if (!name.trim()) { alert('Please enter your full name! 👤'); return; }
                 if (!phone.trim()) { alert('Please enter your phone number! 📱'); return; }
                 if (!address.trim()) { alert('Please enter your shipping address! 📦'); return; }
+                const addressWithZip = new RegExp(`(?:^|\\D)${enteredZip.trim()}(?:$|\\D)`).test(address.trim())
+                    ? address.trim()
+                    : `${address.trim()}, ${enteredZip.trim()}`;
 
                 const previousLines = cartLines();
                 if (previousLines.length === 0) { alert('Your cart is empty! 🛒'); return; }
@@ -3856,15 +4281,18 @@
                     (sum, line) => sum + Number(line.product.price) * line.quantity,
                     0
                 );
-                const shipping = Number(settings.shipping) || 0;
+                const shipping = shippingAmountForCart();
                 const handling = Number(settings.handling) || 0;
                 const shippingCost = shipping;
                 const total = subtotal + shippingCost + handling;
                 const paymentMethod = selectedPayment;
+                const shippingService = shippingRateStatus === 'success' && selectedShippingRate
+                    ? `${selectedShippingRate.provider} ${selectedShippingRate.service}`
+                    : 'Standard';
                 const order = {
                     customer_name: name.trim(),
                     phone: phone.trim(),
-                    address: address.trim(),
+                    address: addressWithZip,
                     payment_method: paymentMethod,
                     items: lines.map(({ product, quantity, options }) => ({
                         id: product.id,
@@ -3875,6 +4303,7 @@
                     })),
                     subtotal,
                     shipping: shippingCost,
+                    shipping_service: shippingService,
                     handling,
                     total
                 };
@@ -3898,7 +4327,7 @@
                             const choices = choiceSummaryText(i.options);
                             return `${i.name}${choices ? ` (${choices})` : ''} × ${i.quantity} — $${(i.price * i.quantity).toFixed(2)}`;
                         }).join('\n')}\n\n` +
-                        `Subtotal: $${subtotal.toFixed(2)}\nShipping: $${shippingCost.toFixed(2)}\n📦 Ships in ${settings.shippingTime || defaultSettings.shippingTime}\n` +
+                        `Subtotal: $${subtotal.toFixed(2)}\nShipping service: ${order.shipping_service}\nShipping: $${shippingCost.toFixed(2)}\n📦 Ships in ${settings.shippingTime || defaultSettings.shippingTime}\n` +
                         (handling > 0 ? `Handling: $${handling.toFixed(2)}\n` : '') +
                         `Total: $${total.toFixed(2)}\n` +
                         `Payment method: ${paymentMethod.toUpperCase()}`;
@@ -3954,7 +4383,7 @@
                 saveData();
                 updateCartBadge();
                 closeModal('cartModal');
-                alert(`🎉 Order Confirmed!\n\nName: ${order.customer_name}\nPhone: ${order.phone}\n${handling > 0 ? `Handling: $${handling.toFixed(2)}\n` : ''}Total: $${total.toFixed(2)}\n📦 Ships in ${settings.shippingTime || defaultSettings.shippingTime}\nPayment: ${paymentMethod.toUpperCase()}\n\nThank you! Please complete payment and I'll get your items ready! 💙`);
+                alert(`🎉 Order Confirmed!\n\nName: ${order.customer_name}\nPhone: ${order.phone}\nShipping: ${order.shipping_service} ($${shippingCost.toFixed(2)})\n${handling > 0 ? `Handling: $${handling.toFixed(2)}\n` : ''}Total: $${total.toFixed(2)}\n📦 Ships in ${settings.shippingTime || defaultSettings.shippingTime}\nPayment: ${paymentMethod.toUpperCase()}\n\nThank you! Please complete payment and I'll get your items ready! 💙`);
                 loadOrdersFromDB().then(o => { orders = o; renderOrders(); });
             } finally {
                 if (purchaseButton && !orderPlaced) purchaseButton.disabled = false;
@@ -4262,6 +4691,7 @@
                         <strong style="font-size:1.1rem;color:var(--purple);">${escapeHtml(o.customer_name)}</strong> — $${Number(o.total).toFixed(2)} · ${o.payment_method === 'zelle' ? '💰 Zelle' : '💵 Cash App'}<br>
                         <span style="color:#666;font-size:0.9rem;">🕐 ${new Date(o.created_at).toLocaleString()} &nbsp;·&nbsp; 📱 ${escapeHtml(o.phone)}</span><br>
                         <span style="color:#666;font-size:0.9rem;">📦 ${escapeHtml(o.address)}</span><br>
+                        ${o.shipping_service ? `<span style="color:#666;font-size:0.9rem;">🚚 ${escapeHtml(o.shipping_service)}</span><br>` : ''}
                         <span style="font-size:0.95rem;">${(o.items || []).map(i => {
                             const choices = choiceSummaryText(i.options);
                             return `${escapeHtml(i.name)}${choices ? ` (${escapeHtml(choices)})` : ''} × ${escapeHtml(i.quantity)}`;
