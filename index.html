@@ -1562,7 +1562,12 @@
         // ─── Activity / Auto-logout ──────────────────────────────────────
         function checkAdminExpiry() {
             const now = Date.now();
-            const storedExpiresAt = Number(localStorage.getItem(ADMIN_EXPIRY_KEY) || 0);
+            const storedExpiry = localStorage.getItem(ADMIN_EXPIRY_KEY);
+            if (isAdminLoggedIn && storedExpiry === null) {
+                adminLogout();
+                return;
+            }
+            const storedExpiresAt = Number(storedExpiry || 0);
             adminExpiresAt = Math.max(adminExpiresAt, storedExpiresAt);
             if ((isAdminLoggedIn || storedExpiresAt > 0) && adminExpiresAt <= now) {
                 adminLogout();
@@ -1595,6 +1600,9 @@
         setInterval(checkAdminExpiry, 30000);
         document.addEventListener('visibilitychange', checkAdminExpiry);
         window.addEventListener('focus', checkAdminExpiry);
+        window.addEventListener('storage', event => {
+            if (event.key === ADMIN_EXPIRY_KEY) checkAdminExpiry();
+        });
 
         async function loadSettingsFromDB() {
             try {
@@ -2566,6 +2574,7 @@
 
         function adminLogout() {
             isAdminLoggedIn = false;
+            adminPasscode = '';
             adminExpiresAt = 0;
             localStorage.removeItem(ADMIN_EXPIRY_KEY);
             lastActivityWrite = 0;
