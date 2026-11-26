@@ -4231,8 +4231,18 @@
         }
 
         async function checkout() {
+            const shippingSnapshot = {
+                zip: ((document.getElementById('shippingZip') || {}).value || '').trim(),
+                status: shippingRateStatus,
+                amount: shippingRateStatus === 'success' && selectedShippingRate
+                    ? Number(selectedShippingRate.amount)
+                    : Number(settings.shipping) || 0,
+                service: shippingRateStatus === 'success' && selectedShippingRate
+                    ? `${selectedShippingRate.provider} ${selectedShippingRate.service}`
+                    : 'Standard'
+            };
             const purchaseButton = document.getElementById('completePurchaseButton');
-            const enteredZip = (document.getElementById('shippingZip') || {}).value || '';
+            const enteredZip = shippingSnapshot.zip;
             if (!isValidShippingZip(enteredZip)) {
                 alert('Please enter a valid 5-digit ZIP code for shipping.');
                 return;
@@ -4255,9 +4265,17 @@
                 if (!name.trim()) { alert('Please enter your full name! 👤'); return; }
                 if (!phone.trim()) { alert('Please enter your phone number! 📱'); return; }
                 if (!address.trim()) { alert('Please enter your shipping address! 📦'); return; }
-                const addressWithZip = new RegExp(`(?:^|\\D)${enteredZip.trim()}(?:$|\\D)`).test(address.trim())
+                const addressZipMatches = address.trim().match(/\b\d{5}(?:-\d{4})?\b/g) || [];
+                const addressZip = addressZipMatches.length
+                    ? addressZipMatches[addressZipMatches.length - 1].slice(0, 5)
+                    : '';
+                if (addressZip && addressZip !== shippingSnapshot.zip) {
+                    alert("The ZIP in your address doesn't match the shipping ZIP. Please fix one so they match.");
+                    return;
+                }
+                const addressWithZip = addressZip
                     ? address.trim()
-                    : `${address.trim()}, ${enteredZip.trim()}`;
+                    : `${address.trim()}, ${shippingSnapshot.zip}`;
 
                 const previousLines = cartLines();
                 if (previousLines.length === 0) { alert('Your cart is empty! 🛒'); return; }
@@ -4292,14 +4310,11 @@
                     (sum, line) => sum + Number(line.product.price) * line.quantity,
                     0
                 );
-                const shipping = shippingAmountForCart();
                 const handling = Number(settings.handling) || 0;
-                const shippingCost = shipping;
+                const shippingCost = shippingSnapshot.amount;
                 const total = subtotal + shippingCost + handling;
                 const paymentMethod = selectedPayment;
-                const shippingService = shippingRateStatus === 'success' && selectedShippingRate
-                    ? `${selectedShippingRate.provider} ${selectedShippingRate.service}`
-                    : 'Standard';
+                const shippingService = shippingSnapshot.service;
                 const order = {
                     customer_name: name.trim(),
                     phone: phone.trim(),
