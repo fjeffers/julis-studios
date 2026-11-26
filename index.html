@@ -1560,6 +1560,11 @@
         let editingProductId = null;
         const ADMIN_EXPIRY_KEY = 'julis_admin_expires';
         const UNSYNCED_SETTINGS_KEY = 'julis_settings_unsynced';
+        const PASSWORD_ONLINE_KEY = 'julis_password_online';
+        function isMissingRpc(error) {
+            return error?.code === 'PGRST202' || error?.status === 404 ||
+                /could not find the function/i.test(String(error?.message || ''));
+        }
         let adminPasscode = '';
         let isAdminLoggedIn  = Number(localStorage.getItem(ADMIN_EXPIRY_KEY)) > Date.now();
         let adminExpiresAt = Number(localStorage.getItem(ADMIN_EXPIRY_KEY) || 0);
@@ -1929,15 +1934,22 @@
                     return;
                 }
                 if (!error) {
-                    settings.adminPassword = pw;
+                    localStorage.setItem(PASSWORD_ONLINE_KEY, '1');
+                    settings.adminPassword = defaultSettings.adminPassword;
                     adminPasscode = pw;
                     saveData();
                     document.getElementById('newPassword').value = '';
                     showSuccess('🔑 Password changed on every device!');
                     return;
                 }
+                if (!isMissingRpc(error)) {
+                    alert("❌ Couldn't change your password right now — please try again.");
+                    return;
+                }
             } catch (error) {
                 console.warn('Shared password could not be changed online.', error);
+                alert("❌ Couldn't change your password right now — please try again.");
+                return;
             }
 
             settings.adminPassword = pw;
@@ -2702,9 +2714,18 @@
                     const { data, error } = await db.rpc('julis_check_passcode', {
                         p_passcode: pw
                     });
-                    isValid = error ? pw === settings.adminPassword : data === true;
+                    if (!error) {
+                        isValid = data === true;
+                        if (isValid) localStorage.setItem(PASSWORD_ONLINE_KEY, '1');
+                    } else if (isMissingRpc(error) && localStorage.getItem(PASSWORD_ONLINE_KEY) !== '1') {
+                        isValid = pw === settings.adminPassword;
+                    } else {
+                        alert("❌ Couldn't check your password right now — please try again.");
+                        return;
+                    }
                 } catch {
-                    isValid = pw === settings.adminPassword;
+                    alert("❌ Couldn't check your password right now — please try again.");
+                    return;
                 }
 
                 if (isValid) {
