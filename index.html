@@ -2037,18 +2037,23 @@
             document.getElementById('productName').value        = product.name;
             document.getElementById('productPrice').value       = product.price;
             document.getElementById('productDescription').value = product.description;
-            document.getElementById('productImage').value       = product.image || '';
             document.getElementById('productStock').value       = product.stock_quantity ?? 0;
             document.getElementById('productUnlimited').checked = product.track_stock === false;
             document.getElementById('editProductId').value      = id;
 
-            if (product.image) {
-                document.getElementById('imagePreview').src = product.image;
+            const imageUrl = safeProductImageUrl(product.image);
+            document.getElementById('productImage').value = imageUrl;
+            if (imageUrl) {
+                document.getElementById('imagePreview').src = imageUrl;
                 document.getElementById('imagePreview').classList.remove('hidden');
                 document.getElementById('fileLabel').textContent = 'Current image loaded';
+            } else {
+                document.getElementById('imagePreview').src = '';
+                document.getElementById('imagePreview').classList.add('hidden');
+                document.getElementById('fileLabel').textContent = 'Upload Image';
             }
 
-            document.getElementById('formTitle').innerHTML    = '✏️ Editing: ' + product.name;
+            document.getElementById('formTitle').textContent  = '✏️ Editing: ' + String(product.name || '');
             document.getElementById('submitBtnText').textContent = '💾 Save Changes';
             document.getElementById('cancelEditBtn').classList.remove('hidden');
 
@@ -2094,6 +2099,13 @@
             return Math.max(0, Number(p.stock_quantity) || 0);
         }
         function isSoldOut(p) { return stockOf(p) <= 0; }
+        function safeProductImageUrl(image) {
+            if (typeof image !== 'string') return '';
+            return /^data:image\/(jpeg|png|webp|gif);base64,[A-Za-z0-9+/=]+$/.test(image) ||
+                image.startsWith('https://')
+                ? image
+                : '';
+        }
         function lowStockLeft(p) {
             const left = stockOf(p);
             if (left === Infinity || left <= 0) return null;
@@ -2121,21 +2133,24 @@
             grid.innerHTML = products.map(p => {
                 const out = isSoldOut(p);
                 const low = lowStockLeft(p);
+                const imageUrl = safeProductImageUrl(p.image);
+                const description = String(p.description || '');
+                const price = Number(p.price).toFixed(2);
                 return `
-                <div class="product-card" onclick="showProductDetail(${p.id})" style="${out ? 'opacity:0.72;' : ''}">
+                <div class="product-card" onclick="showProductDetail(${Number(p.id)})" style="${out ? 'opacity:0.72;' : ''}">
                     <div class="product-badge"${out ? ' style="background:#6b7280;"' : ''}>${out ? 'SOLD OUT' : 'HANDMADE'}</div>
                     <div class="product-image">
-                        ${p.image ? `<img src="${p.image}" alt="${escapeHtml(p.name)}"${out ? ' style="filter:grayscale(0.85);"' : ''}>` : '🎀'}
+                        ${imageUrl ? `<img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(p.name)}"${out ? ' style="filter:grayscale(0.85);"' : ''}>` : '🎀'}
                     </div>
                     <div class="product-info">
                         <h3 class="product-name">${escapeHtml(p.name)}</h3>
-                        <p class="product-description">${escapeHtml(p.description.substring(0,100))}${p.description.length>100?'...':''}</p>
+                        <p class="product-description">${escapeHtml(description.substring(0,100))}${description.length>100?'...':''}</p>
                         ${low ? `<p style="margin:0 0 0.5rem;font-weight:700;color:#c2410c;font-size:0.95rem;">Only ${low} left!</p>` : ''}
                         <div class="product-footer">
-                            <div class="product-price">$${p.price.toFixed(2)}</div>
+                            <div class="product-price">$${price}</div>
                             ${out
                                 ? `<button class="btn-add-cart" disabled style="background:#d1d5db;color:#6b7280;cursor:not-allowed;">Sold Out</button>`
-                                : `<button class="btn-add-cart" onclick="event.stopPropagation();addToCart(${p.id})">Add to Cart</button>`}
+                                : `<button class="btn-add-cart" onclick="event.stopPropagation();addToCart(${Number(p.id)})">Add to Cart</button>`}
                         </div>
                     </div>
                 </div>`; }).join('');
@@ -2169,12 +2184,12 @@
                 return `
                 <div class="product-list-item">
                     <div class="product-list-info">
-                        <strong style="font-size:1.1rem;color:var(--purple);">${escapeHtml(p.name)}</strong> — $${p.price.toFixed(2)}
+                        <strong style="font-size:1.1rem;color:var(--purple);">${escapeHtml(p.name)}</strong> — $${Number(p.price).toFixed(2)}
                         <div style="font-size:0.9rem;margin-top:0.2rem;">${stockLabel}</div>
                     </div>
                     <div class="product-list-actions">
-                        <button class="btn btn-edit" onclick="editProduct(${p.id})">✏️ Edit</button>
-                        <button class="btn-delete" onclick="deleteProduct(${p.id})">🗑️ Delete</button>
+                        <button class="btn btn-edit" onclick="editProduct(${Number(p.id)})">✏️ Edit</button>
+                        <button class="btn-delete" onclick="deleteProduct(${Number(p.id)})">🗑️ Delete</button>
                     </div>
                 </div>`; }).join('');
             renderShopDashboard();
@@ -2185,24 +2200,27 @@
             const p = products.find(p => p.id === id);
             if (!p) return;
             modalQuantity = 1;
+            const imageUrl = safeProductImageUrl(p.image);
+            const description = String(p.description || '');
+            const price = Number(p.price).toFixed(2);
             document.getElementById('productDetailContent').innerHTML = `
                 <div class="product-detail-grid">
                     <div>
                         <div class="product-detail-image">
-                            ${p.image ? `<img src="${p.image}" alt="${escapeHtml(p.name)}">` : '🎀'}
+                            ${imageUrl ? `<img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(p.name)}">` : '🎀'}
                         </div>
                     </div>
                     <div class="product-detail-info">
                         <h2>${escapeHtml(p.name)}</h2>
-                        <div class="product-detail-price">$${p.price.toFixed(2)}</div>
-                        <p class="product-detail-description">${escapeHtml(p.description)}</p>
+                        <div class="product-detail-price">$${price}</div>
+                        <p class="product-detail-description">${escapeHtml(description)}</p>
                         <div class="quantity-selector">
-                            <button class="quantity-btn" onclick="changeQuantity(${id},-1)">−</button>
+                            <button class="quantity-btn" onclick="changeQuantity(${Number(id)},-1)">−</button>
                             <span class="quantity-display" id="modalQuantity">1</span>
-                            <button class="quantity-btn" onclick="changeQuantity(${id},1)">+</button>
+                            <button class="quantity-btn" onclick="changeQuantity(${Number(id)},1)">+</button>
                         </div>
-                        <button class="btn btn-primary btn-large" onclick="addToCartFromModal(${id})">
-                            Add to Cart — $<span id="modalTotal">${p.price.toFixed(2)}</span>
+                        <button class="btn btn-primary btn-large" onclick="addToCartFromModal(${Number(id)})">
+                            Add to Cart — $<span id="modalTotal">${price}</span>
                         </button>
                     </div>
                 </div>`;
@@ -2214,7 +2232,7 @@
             modalQuantity = Math.min(room, Math.max(1, modalQuantity + change));
             document.getElementById('modalQuantity').textContent = modalQuantity;
             const p = products.find(p => p.id === productId);
-            document.getElementById('modalTotal').textContent = (p.price * modalQuantity).toFixed(2);
+            document.getElementById('modalTotal').textContent = (Number(p.price) * modalQuantity).toFixed(2);
         }
 
         // ─── Cart ─────────────────────────────────────────────────────────
@@ -2285,17 +2303,21 @@
             content.innerHTML = `
                 ${subtotal < 45 ? `<div style="background:linear-gradient(135deg,#fff8e1,#fff3cd);border:2px solid #f0c040;border-radius:12px;padding:1rem 1.5rem;margin-bottom:1rem;text-align:center;font-weight:600;color:#856404;">🚚 Add $${amountToFree} more for FREE shipping!</div>` : `<div style="background:linear-gradient(135deg,#d4edda,#c3e6cb);border:2px solid #28a745;border-radius:12px;padding:1rem 1.5rem;margin-bottom:1rem;text-align:center;font-weight:700;color:#155724;font-size:1.1rem;">🎉 You qualify for FREE shipping!</div>`}
                 <div>
-                    ${cart.map(item => `
+                    ${cart.map(item => {
+                    const imageUrl = safeProductImageUrl(item.image);
+                    const price = Number(item.price).toFixed(2);
+                    return `
                     <div style="display:flex;gap:1.5rem;padding:1.5rem;background:rgba(46,94,170,0.05);border-radius:15px;margin-bottom:1rem;align-items:center;border:2px solid var(--sky-blue);">
                         <div style="width:100px;height:100px;border-radius:10px;background:linear-gradient(135deg,var(--pale-blue),var(--lavender));display:flex;align-items:center;justify-content:center;font-size:2rem;overflow:hidden;flex-shrink:0;">
-                            ${item.image ? `<img src="${item.image}" style="width:100%;height:100%;object-fit:cover;border-radius:10px;" alt="${escapeHtml(item.name)}">` : '🎀'}
+                            ${imageUrl ? `<img src="${escapeHtml(imageUrl)}" style="width:100%;height:100%;object-fit:cover;border-radius:10px;" alt="${escapeHtml(item.name)}">` : '🎀'}
                         </div>
                         <div style="flex:1;">
                             <div style="font-weight:600;font-size:1.2rem;color:var(--navy);margin-bottom:0.5rem;">${escapeHtml(item.name)}</div>
-                            <div style="color:var(--primary-blue);font-weight:700;font-size:1.1rem;">$${item.price.toFixed(2)} × ${item.quantity}</div>
+                            <div style="color:var(--primary-blue);font-weight:700;font-size:1.1rem;">$${price} × ${item.quantity}</div>
                         </div>
                         <button class="btn-delete" onclick="removeFromCart(${item.id})">Remove</button>
-                    </div>`).join('')}
+                    </div>`;
+                    }).join('')}
                 </div>
 
                 <div style="background:linear-gradient(135deg,var(--primary-blue),var(--purple));color:white;padding:2rem;border-radius:20px;margin-top:2rem;">
