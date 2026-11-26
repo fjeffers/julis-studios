@@ -3993,16 +3993,18 @@
             };
         }
 
-        function updateCartPricing() {
-            const lines = cartLines();
-            if (!lines.length) return;
+        function cartTotalForCurrentState(lines = cartLines()) {
             const subtotal = lines.reduce(
                 (sum, line) => sum + Number(line.product.price) * line.quantity,
                 0
             );
-            const shipping = shippingAmountForCart();
-            const handling = Number(settings.handling) || 0;
-            const total = subtotal + shipping + handling;
+            return subtotal + shippingAmountForCart() + (Number(settings.handling) || 0);
+        }
+
+        function updateCartPricing() {
+            const lines = cartLines();
+            if (!lines.length) return;
+            const total = cartTotalForCurrentState(lines);
             const shippingAmount = document.getElementById('cartShippingAmount');
             const totalAmount = document.getElementById('cartTotalAmount');
             if (shippingAmount) shippingAmount.textContent = `$${shipping.toFixed(2)}`;
@@ -4011,7 +4013,7 @@
             if (purchaseButton) purchaseButton.disabled = !shippingQuoteIsReady();
             if (selectedPayment) {
                 const option = document.querySelector(`.payment-option[data-payment="${selectedPayment}"]`);
-                if (option) selectPayment(selectedPayment, total, option);
+                if (option) selectPayment(selectedPayment, option);
             }
         }
 
@@ -4153,11 +4155,11 @@
                 <div style="margin-top:2rem;padding-top:2rem;border-top:2px solid var(--sky-blue);">
                     <h3 style="margin-bottom:1.5rem;font-family:Comfortaa,sans-serif;font-size:1.8rem;color:var(--primary-blue);">💳 Payment Method</h3>
                     <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1.5rem 0;">
-                        <div class="payment-option" data-payment="zelle" onclick="selectPayment('zelle', ${total}, this)">
+                        <div class="payment-option" data-payment="zelle" onclick="selectPayment('zelle', this)">
                             <div style="font-weight:700;font-size:1.2rem;margin-bottom:0.5rem;color:var(--primary-blue);">💰 Zelle</div>
                             <div style="color:#666;font-size:0.9rem;">Quick Transfer</div>
                         </div>
-                        <div class="payment-option" data-payment="cashapp" onclick="selectPayment('cashapp', ${total}, this)">
+                        <div class="payment-option" data-payment="cashapp" onclick="selectPayment('cashapp', this)">
                             <div style="font-weight:700;font-size:1.2rem;margin-bottom:0.5rem;color:var(--primary-blue);">💵 Cash App</div>
                             <div style="color:#666;font-size:0.9rem;">Instant Payment</div>
                         </div>
@@ -4195,7 +4197,8 @@
             if (isValidShippingZip(shippingZip)) scheduleShippingRateLookup(shippingZip);
         }
 
-        function selectPayment(method, totalAmount, el) {
+        function selectPayment(method, el) {
+            const totalAmount = cartTotalForCurrentState();
             selectedPayment = method;
             document.querySelectorAll('.payment-option').forEach(o => {
                 o.classList.remove('selected');
