@@ -2349,6 +2349,7 @@
         let shippingRateSequence = 0;
         let shippingRateTimer = null;
         let shippingRateSignature = '';
+        let checkoutInProgress = false;
         let modalQuantity    = 1;
         let activeCollectionSlug = '';
         let activeProductGallery = [];
@@ -3978,7 +3979,8 @@
                     ${shippingRates.map((rate, index) => `
                         <label for="shippingRate${index}">
                             <input type="radio" id="shippingRate${index}" name="shippingRate"
-                                value="${index}" ${rate === selectedShippingRate ? 'checked' : ''}>
+                                value="${index}" ${rate === selectedShippingRate ? 'checked' : ''}
+                                ${checkoutInProgress ? 'disabled' : ''}>
                             ${escapeHtml(rate.provider)} ${escapeHtml(rate.service)} — $${Number(rate.amount).toFixed(2)}
                             ${rate.days === null ? '' : ` · ~${escapeHtml(rate.days)} ${Number(rate.days) === 1 ? 'day' : 'days'}`}
                         </label>`).join('')}
@@ -4010,7 +4012,12 @@
             if (shippingAmount) shippingAmount.textContent = `$${shipping.toFixed(2)}`;
             if (totalAmount) totalAmount.textContent = `$${total.toFixed(2)}`;
             const purchaseButton = document.getElementById('completePurchaseButton');
-            if (purchaseButton) purchaseButton.disabled = !shippingQuoteIsReady();
+            if (purchaseButton) purchaseButton.disabled = checkoutInProgress || !shippingQuoteIsReady();
+            const zipInput = document.getElementById('shippingZip');
+            if (zipInput) zipInput.disabled = checkoutInProgress;
+            document.querySelectorAll('#shippingRateOptions input[name="shippingRate"]').forEach(input => {
+                input.disabled = checkoutInProgress;
+            });
             if (selectedPayment) {
                 const option = document.querySelector(`.payment-option[data-payment="${selectedPayment}"]`);
                 if (option) selectPayment(selectedPayment, option);
@@ -4234,9 +4241,10 @@
                 alert('Please wait for shipping prices or choose a shipping service before checking out.');
                 return;
             }
-            if (purchaseButton?.disabled) return;
+            if (checkoutInProgress || purchaseButton?.disabled) return;
+            checkoutInProgress = true;
             if (purchaseButton) purchaseButton.disabled = true;
-            let orderPlaced = false;
+            updateCartPricing();
 
             try {
                 const name = (document.getElementById('customerName') || {}).value || '';
@@ -4368,13 +4376,10 @@
                         emailOrder(err);
                         return;
                     }
-                    orderPlaced = true;
                     await decrementStockFor(soldItems);
                 } else if (placeError) {
                     emailOrder(placeError);
                     return;
-                } else {
-                    orderPlaced = true;
                 }
 
                 const refreshedProducts = await loadProductsFromDB();
@@ -4389,7 +4394,8 @@
                 alert(`🎉 Order Confirmed!\n\nName: ${order.customer_name}\nPhone: ${order.phone}\nShipping: ${order.shipping_service} ($${shippingCost.toFixed(2)})\n${handling > 0 ? `Handling: $${handling.toFixed(2)}\n` : ''}Total: $${total.toFixed(2)}\n📦 Ships in ${settings.shippingTime || defaultSettings.shippingTime}\nPayment: ${paymentMethod.toUpperCase()}\n\nThank you! Please complete payment and I'll get your items ready! 💙`);
                 loadOrdersFromDB().then(o => { orders = o; renderOrders(); });
             } finally {
-                if (purchaseButton && !orderPlaced) purchaseButton.disabled = false;
+                checkoutInProgress = false;
+                updateCartPricing();
             }
         }
 
