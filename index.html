@@ -1938,7 +1938,10 @@
                     showSuccess('🔑 Password changed on every device!');
                     return;
                 }
-                if (!isMissingRpc(error)) {
+                if (
+                    !isMissingRpc(error) ||
+                    localStorage.getItem(PASSWORD_ONLINE_KEY) === '1'
+                ) {
                     alert("❌ Couldn't change your password right now — please try again.");
                     return;
                 }
