@@ -1755,6 +1755,8 @@
                 settings.adminPassword = localSettings.adminPassword ?? defaultSettings.adminPassword;
             }
             saveData();
+            const cartModal = document.getElementById('cartModal');
+            if (cartModal?.style.display === 'flex') renderCart();
             renderProducts();
             updateCartBadge();
             renderProductList();
