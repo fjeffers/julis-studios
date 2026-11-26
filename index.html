@@ -1268,6 +1268,10 @@
                 <div class="settings-panel">
                     <h3 class="settings-title">⚙️ Settings for Juli's Shop</h3>
                     <p class="settings-help">Update your shop details here. Your changes will show up for everyone when online sync is ready.</p>
+                    <p id="julisSettingsUnsyncedNote" class="settings-help hidden" role="status"
+                        style="color: white; background: rgba(255,255,255,0.18); padding: 0.65rem 0.8rem; border-radius: 10px;">
+                        Some changes are only on this device — tap Save Settings to put them online.
+                    </p>
 
                     <div class="settings-section">
                         <h4>✨ My Shop Info</h4>
@@ -1539,11 +1543,14 @@
         }
         const localSettings = safeParse('julis_settings') || {};
         let settings = mergeSettings(localSettings, null);
+        let loadedShared = null;
 
         const NOTIFICATION_EMAIL = 'Ballerinajuli11@gmail.com';
 
         let editingProductId = null;
         const ADMIN_EXPIRY_KEY = 'julis_admin_expires';
+        const UNSYNCED_SETTINGS_KEY = 'julis_settings_unsynced';
+        let adminPasscode = '';
         let isAdminLoggedIn  = Number(localStorage.getItem(ADMIN_EXPIRY_KEY)) > Date.now();
         let adminExpiresAt = Number(localStorage.getItem(ADMIN_EXPIRY_KEY) || 0);
         let lastActivityWrite = 0;
@@ -1619,13 +1626,23 @@
             };
         }
 
-        async function saveSettingsToDB() {
-            const { error } = await db.from('julis_settings').upsert({
-                id: 1,
-                data: sharedSettingsPayload(),
-                updated_at: new Date().toISOString()
+        async function saveSettingsToDB(passcode, patch) {
+            const { data, error } = await db.rpc('julis_save_settings', {
+                p_passcode: passcode,
+                p_patch: patch
             });
             if (error) throw error;
+            return data;
+        }
+
+        function updateSettingsUnsyncedNote() {
+            const note = document.getElementById('julisSettingsUnsyncedNote');
+            if (note) {
+                note.classList.toggle(
+                    'hidden',
+                    localStorage.getItem(UNSYNCED_SETTINGS_KEY) !== '1'
+                );
+            }
         }
 
         function normalizeSocialValue(platformKey, value) {
@@ -1721,6 +1738,14 @@
             products = loadedProducts;
             orders = loadedOrders;
             settings = mergeSettings(localSettings, remoteSettings);
+            loadedShared = sharedSettingsPayload();
+            if (localStorage.getItem(UNSYNCED_SETTINGS_KEY) === '1') {
+                settings = mergeSettings(
+                    sharedSettingsFrom(remoteSettings),
+                    sharedSettingsFrom(localSettings)
+                );
+                settings.adminPassword = localSettings.adminPassword ?? defaultSettings.adminPassword;
+            }
             saveData();
             renderProducts();
             updateCartBadge();
@@ -1770,6 +1795,7 @@
                 updateSocialPreview(key);
             });
             renderPublicSettings();
+            updateSettingsUnsyncedNote();
         }
 
         async function saveSettings() {
@@ -1792,12 +1818,57 @@
             settings.social = social;
             saveData();
             loadSettings();
+
+            const shared = sharedSettingsPayload();
+            const base = loadedShared || {};
+            const patch = {};
+            Object.keys(shared).forEach(key => {
+                const changed = key === 'social'
+                    ? JSON.stringify(shared.social) !== JSON.stringify(base.social)
+                    : shared[key] !== base[key];
+                if (changed) patch[key] = shared[key];
+            });
+            if (Object.keys(patch).length === 0) {
+                localStorage.removeItem(UNSYNCED_SETTINGS_KEY);
+                updateSettingsUnsyncedNote();
+                showSuccess('Nothing changed');
+                return;
+            }
+
+            let passcode = adminPasscode;
+            if (!passcode) {
+                passcode = prompt('Enter your admin password to save online:');
+                if (passcode === null) {
+                    localStorage.setItem(UNSYNCED_SETTINGS_KEY, '1');
+                    updateSettingsUnsyncedNote();
+                    showSuccess('⚙️ Saved on this device only.');
+                    return;
+                }
+            }
+
             try {
-                await saveSettingsToDB();
+                const remoteSettings = await saveSettingsToDB(passcode, patch);
+                settings = mergeSettings(settings, remoteSettings);
+                adminPasscode = passcode;
+                saveData();
+                loadSettings();
+                loadedShared = sharedSettingsPayload();
+                localStorage.removeItem(UNSYNCED_SETTINGS_KEY);
+                updateSettingsUnsyncedNote();
                 showSuccess('⚙️ Saved! Everyone can see it now.');
             } catch (error) {
-                console.warn('Shared shop settings could not be saved online.', error);
-                showSuccess('⚙️ Saved on this device (online sync not set up yet)');
+                localStorage.setItem(UNSYNCED_SETTINGS_KEY, '1');
+                updateSettingsUnsyncedNote();
+                if (
+                    error.code === '28P01' ||
+                    String(error.message || '').toLowerCase().includes('wrong passcode')
+                ) {
+                    adminPasscode = '';
+                    showSuccess('❌ Wrong password — saved on this device only');
+                } else {
+                    console.warn('Shared shop settings could not be saved online.', error);
+                    showSuccess('⚙️ Saved on this device (online sync not set up yet)');
+                }
             }
         }
 
