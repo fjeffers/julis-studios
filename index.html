@@ -1624,12 +1624,14 @@
                 const { data, error } = await db.from('julis_settings').select('data').eq('id', 1).maybeSingle();
                 if (error) {
                     console.warn('Shared shop settings unavailable; using this device’s saved settings.', error);
-                    return null;
+                    const tableMissing = error.code === 'PGRST205' || error.code === '42P01' ||
+                        /could not find the table/i.test(String(error.message || ''));
+                    return tableMissing ? null : undefined;
                 }
                 return data?.data || null;
             } catch (error) {
                 console.warn('Shared shop settings unavailable; using this device’s saved settings.', error);
-                return null;
+                return undefined;
             }
         }
 
@@ -1778,7 +1780,11 @@
             productsLoaded = loadedProducts !== null;
             orders = loadedOrders;
             settings = mergeSettings(localSettings, remoteSettings);
-            loadedShared = sharedSettingsPayload(mergeSettings({}, remoteSettings));
+            // undefined = couldn't reach the server: treat what's on screen as the baseline
+            // so a later save only sends fields Juli actually edits.
+            loadedShared = remoteSettings === undefined
+                ? sharedSettingsPayload(settings)
+                : sharedSettingsPayload(mergeSettings({}, remoteSettings));
             const pendingPatch = sharedSettingsFrom(safeParse(UNSYNCED_SETTINGS_KEY));
             if (Object.keys(pendingPatch).length) settings = { ...settings, ...pendingPatch };
             saveData();
