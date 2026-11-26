@@ -1650,6 +1650,11 @@
                 p_patch: patch
             });
             if (error) throw error;
+            if (data === null) {
+                const wrong = new Error('wrong passcode');
+                wrong.code = '28P01';
+                throw wrong;
+            }
             return data;
         }
 
@@ -1895,7 +1900,7 @@
                     String(error.message || '').toLowerCase().includes('wrong passcode')
                 ) {
                     adminPasscode = '';
-                    showSuccess('❌ Wrong password — saved on this device only');
+                    showSuccess('❌ Wrong password (or too many tries — wait 15 minutes). Saved on this device only.');
                 } else {
                     console.warn('Shared shop settings could not be saved online.', error);
                     showSuccess('⚙️ Saved on this device (online sync not set up yet)');
@@ -1905,7 +1910,7 @@
 
         async function changePassword() {
             const pw = document.getElementById('newPassword').value;
-            if (!pw || pw.length < 4) { alert('❌ Password must be at least 4 characters!'); return; }
+            if (!pw || pw.length < 8) { alert('❌ Password must be at least 8 characters!'); return; }
             let currentPasscode = adminPasscode;
             if (!currentPasscode) {
                 currentPasscode = prompt('Enter your current admin password:');
@@ -1914,19 +1919,16 @@
             if (!confirm('🔐 Change your admin password?')) return;
 
             try {
-                const { error } = await db.rpc('julis_change_passcode', {
+                const { data, error } = await db.rpc('julis_change_passcode', {
                     p_old: currentPasscode,
                     p_new: pw
                 });
-                if (error) {
-                    if (
-                        error.code === '28P01' ||
-                        String(error.message || '').toLowerCase().includes('wrong passcode')
-                    ) {
-                        alert('❌ Current password is wrong');
-                        return;
-                    }
-                } else {
+                if (!error && data !== true) {
+                    adminPasscode = '';
+                    alert('❌ Current password is wrong (or too many tries — wait 15 minutes)');
+                    return;
+                }
+                if (!error) {
                     settings.adminPassword = pw;
                     adminPasscode = pw;
                     saveData();
