@@ -2321,8 +2321,8 @@
 
             const details = document.getElementById('paymentDetails');
             const info = method === 'zelle'
-                ? `<strong>Send to:</strong> ${settings.zelleEmail || 'Not set — configure in admin'}`
-                : `<strong>Send to:</strong> ${settings.cashAppTag || 'Not set — configure in admin'}`;
+                ? `<strong>Send to:</strong> ${escapeHtml(settings.zelleEmail || 'Not set — configure in admin')}`
+                : `<strong>Send to:</strong> ${escapeHtml(settings.cashAppTag || 'Not set — configure in admin')}`;
 
             details.innerHTML = `
                 <div style="background:rgba(46,94,170,0.05);padding:1.5rem;border-radius:15px;margin-top:1rem;border-left:4px solid var(--primary-blue);">
