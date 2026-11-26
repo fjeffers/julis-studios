@@ -393,12 +393,147 @@
             border: 2px solid var(--primary-blue);
         }
 
+        .photo-preview-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            margin-top: 1rem;
+        }
+
+        .photo-preview-item {
+            position: relative;
+            width: 112px;
+            padding: 0.35rem;
+            border: 2px solid var(--sky-blue);
+            border-radius: 12px;
+            background: white;
+        }
+
+        .photo-preview-item img {
+            display: block;
+            width: 100%;
+            height: 86px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .photo-preview-item button {
+            width: 100%;
+            margin-top: 0.35rem;
+            padding: 0.35rem 0.2rem;
+            border: 0;
+            border-radius: 8px;
+            background: #f3e8ff;
+            color: var(--purple);
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .photo-preview-item .photo-remove {
+            position: absolute;
+            top: 0.15rem;
+            right: 0.15rem;
+            width: 1.65rem;
+            height: 1.65rem;
+            margin: 0;
+            padding: 0;
+            border-radius: 50%;
+            background: #be123c;
+            color: white;
+        }
+
+        .photo-main-label {
+            display: block;
+            margin-top: 0.35rem;
+            color: #7e22ce;
+            font-size: 0.8rem;
+            font-weight: 800;
+            text-align: center;
+        }
+
+        .choice-row {
+            display: grid;
+            grid-template-columns: minmax(120px, 0.8fr) minmax(200px, 1.6fr);
+            gap: 0.75rem;
+            padding: 0.8rem;
+            margin-bottom: 0.7rem;
+            border: 1px solid rgba(255, 255, 255, 0.55);
+            border-radius: 12px;
+        }
+
+        .product-collection-label {
+            display: inline-block;
+            padding: 0.15rem 0.55rem;
+            margin: 0.25rem 0;
+            border-radius: 999px;
+            background: #f3e8ff;
+            color: #6b21a8;
+            font-size: 0.78rem;
+            font-weight: 700;
+        }
+
         /* Product Grid */
         .products-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             gap: 2rem;
             margin-top: 2rem;
+        }
+
+        .collection-tabs {
+            display: flex;
+            gap: 0.65rem;
+            overflow-x: auto;
+            padding: 0.35rem 0.2rem 0.8rem;
+            margin-top: 1rem;
+            scrollbar-width: thin;
+        }
+
+        .collection-tab {
+            flex: 0 0 auto;
+            border: 2px solid var(--primary-blue);
+            border-radius: 999px;
+            padding: 0.65rem 1rem;
+            background: white;
+            color: var(--purple);
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .collection-tab.active {
+            color: white;
+            background: linear-gradient(135deg, var(--primary-blue), var(--purple));
+        }
+
+        .collection-tab:focus-visible {
+            outline: 3px solid #f472b6;
+            outline-offset: 2px;
+        }
+
+        .featured-video-section {
+            width: calc(100% - 2rem);
+            max-width: 900px;
+            margin: 1.5rem auto;
+        }
+
+        .responsive-video {
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            overflow: hidden;
+            border-radius: 18px;
+            background: #111827;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.14);
+        }
+
+        .responsive-video iframe {
+            display: block;
+            width: 100%;
+            height: 100%;
+            border: 0;
+        }
+
+        .video-preview {
+            margin-top: 0.85rem;
         }
 
         .product-card {
@@ -602,6 +737,89 @@
             height: 100%;
             object-fit: cover;
             border-radius: 15px;
+        }
+
+        .product-gallery-thumbs {
+            display: flex;
+            gap: 0.55rem;
+            overflow-x: auto;
+            margin-top: 0.75rem;
+            padding: 0.2rem;
+        }
+
+        .product-gallery-thumb {
+            flex: 0 0 68px;
+            width: 68px;
+            height: 68px;
+            padding: 0.2rem;
+            border: 2px solid transparent;
+            border-radius: 10px;
+            background: white;
+            cursor: pointer;
+        }
+
+        .product-gallery-thumb[aria-pressed="true"] {
+            border-color: var(--purple);
+        }
+
+        .product-gallery-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 6px;
+        }
+
+        .product-video {
+            margin-top: 1rem;
+        }
+
+        .product-choice-group {
+            margin: 1rem 0;
+        }
+
+        .product-choice-group label {
+            display: block;
+            margin-bottom: 0.35rem;
+            color: var(--purple);
+            font-weight: 700;
+        }
+
+        .product-choice-group select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid var(--sky-blue);
+            border-radius: 10px;
+            background: white;
+        }
+
+        .product-media-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.45rem;
+            margin: 0.5rem 0 0.8rem;
+        }
+
+        .product-media-badge {
+            display: inline-block;
+            padding: 0.25rem 0.55rem;
+            border-radius: 999px;
+            background: #f3e8ff;
+            color: #6b21a8;
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+
+        .cart-choice-summary {
+            margin: -0.2rem 0 0.35rem;
+            color: #5b5b6b;
+            font-size: 0.92rem;
+            line-height: 1.4;
+        }
+
+        .shipping-time-notice {
+            color: inherit;
+            font-size: 0.95rem;
+            margin: 0.4rem 0;
         }
 
         .product-detail-info h2 {
@@ -1072,6 +1290,9 @@
         }
 
         @media (max-width: 600px) {
+            .choice-row {
+                grid-template-columns: 1fr;
+            }
             .admin-panel {
                 padding: 1.2rem;
             }
@@ -1234,18 +1455,70 @@
                     </div>
 
                     <div class="form-group">
-                        <label>Product Image (JPG/PNG/WebP/GIF)</label>
+                        <label for="productCollection">Collection</label>
+                        <input type="text" id="productCollection" list="productCollections"
+                            maxlength="40" placeholder="e.g., Press-On Nails 💅🏾">
+                        <datalist id="productCollections"></datalist>
+                        <small>Type a new name to start a new collection</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Product Photos (up to 5, JPG/PNG/WebP/GIF)</label>
                         <div class="file-upload-wrapper">
                             <input type="file" id="productImageFile" class="file-upload-input"
-                                accept="image/jpeg,image/png,image/jpg,image/webp,image/gif" onchange="handleImageUpload(event)">
+                                accept="image/jpeg,image/png,image/jpg,image/webp,image/gif"
+                                multiple onchange="handleImageUpload(event)">
                             <div class="file-upload-label">
                                 <span>📸</span>
-                                <span id="fileLabel">Upload Image</span>
+                                <span id="fileLabel">Upload Photos</span>
                             </div>
                         </div>
-                        <img id="imagePreview" class="preview-image hidden" alt="Preview">
+                        <div id="imagePreview" class="photo-preview-list hidden"></div>
                         <input type="hidden" id="productImage">
                         <input type="hidden" id="editProductId">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="productVideo">Video link (optional)</label>
+                        <input type="text" id="productVideo"
+                            placeholder="Paste a YouTube, TikTok or Instagram video link">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Shopper choices (optional)</label>
+                        <div class="choice-row">
+                            <div>
+                                <label for="choiceName0">Choice name</label>
+                                <input type="text" id="choiceName0" maxlength="30" placeholder="e.g., Size">
+                            </div>
+                            <div>
+                                <label for="choiceOptions0">Options, separated by commas</label>
+                                <input type="text" id="choiceOptions0" maxlength="400" placeholder="Short, Medium, Long">
+                            </div>
+                        </div>
+                        <div class="choice-row">
+                            <div>
+                                <label for="choiceName1">Choice name</label>
+                                <input type="text" id="choiceName1" maxlength="30" placeholder="e.g., Shape">
+                            </div>
+                            <div>
+                                <label for="choiceOptions1">Options, separated by commas</label>
+                                <input type="text" id="choiceOptions1" maxlength="400" placeholder="Almond, Coffin, Square">
+                            </div>
+                        </div>
+                        <div class="choice-row">
+                            <div>
+                                <label for="choiceName2">Choice name</label>
+                                <input type="text" id="choiceName2" maxlength="30" placeholder="e.g., Color">
+                            </div>
+                            <div>
+                                <label for="choiceOptions2">Options, separated by commas</label>
+                                <input type="text" id="choiceOptions2" maxlength="400" placeholder="Pink, Purple">
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-secondary" onclick="addNailChoicePresets()">
+                            💅🏾 Add nail sizes &amp; shapes
+                        </button>
                     </div>
 
                     <div style="display: flex; gap: 1rem;">
@@ -1288,6 +1561,19 @@
                             <label for="aboutMe" style="color:white;">About me (optional)</label>
                             <textarea id="aboutMe" rows="3" placeholder="A little about you and what you love to make"></textarea>
                         </div>
+                    </div>
+
+                    <div class="settings-section">
+                        <h4>🎬 My Shop Video</h4>
+                        <p class="settings-help">Add a video to introduce your shop or show how you make your items.</p>
+                        <div class="form-group">
+                            <label for="featuredVideoUrl" style="color:white;">Shop video link</label>
+                            <input type="text" inputmode="url" id="featuredVideoUrl"
+                                placeholder="Paste a YouTube, TikTok or Instagram video link"
+                                oninput="updateFeaturedVideoPreview()">
+                            <small class="settings-help">Paste a full HTTPS link. You can replace it any time or clear it to remove the video.</small>
+                        </div>
+                        <div id="featuredVideoPreview" class="video-preview hidden"></div>
                     </div>
 
                     <div class="settings-section">
@@ -1360,6 +1646,11 @@
                                 <label for="handlingFee" style="color:white;">Handling Fee ($)</label>
                                 <input type="number" id="handlingFee" step="0.01" value="2.00" style="border: 2px solid white;">
                             </div>
+                            <div class="form-group">
+                                <label for="shippingTime" style="color:white;">How long shipping takes</label>
+                                <input type="text" id="shippingTime" maxlength="40"
+                                    placeholder="e.g., 7–14 days" style="border: 2px solid white;">
+                            </div>
                         </div>
                     </div>
 
@@ -1389,7 +1680,12 @@
         </div>
 
         <!-- Products Section -->
-        <h2 class="section-title">My Handmade Collection</h2>
+        <section id="featuredVideoSection" class="featured-video-section hidden" aria-label="Featured shop video">
+            <div id="featuredVideoEmbed"></div>
+        </section>
+        <h2 class="section-title" id="collectionHeading">My Handmade Collection</h2>
+        <div id="collectionTabs" class="collection-tabs hidden" role="tablist"
+            aria-label="Shop collections"></div>
         <div id="productsGrid" class="products-grid"></div>
     </div>
 
@@ -1508,7 +1804,10 @@
 
         let cart = (safeParse('julis_cart_v3') || []).map(item => ({
             id: item?.id,
-            quantity: item?.quantity
+            quantity: item?.quantity,
+            ...(item?.options && typeof item.options === 'object' && !Array.isArray(item.options)
+                ? { options: item.options }
+                : {})
         }));
         const DEFAULT_WELCOME_MESSAGE = "Hi! I'm Juli, and I love creating handmade treasures just for you! ✨ From cute scrunchies and sparkly rings to cozy quilts, each piece is made with love and care. Browse my collection and find something special that makes you smile! 💖";
         const SOCIAL_PLATFORMS = [
@@ -1522,18 +1821,20 @@
         const defaultSettings = {
             shipping: 5.00,
             handling: 2.00,
+            shippingTime: '7–14 days',
             adminPassword: 'juli2024',
             zelleEmail: 'your-email@example.com',
             cashAppTag: '$YourCashTag',
             shopName: "Juli's Studios",
             welcomeMessage: DEFAULT_WELCOME_MESSAGE,
             aboutMe: '',
+            featuredVideo: '',
             social: { facebook: '', instagram: '', tiktok: '', youtube: '', pinterest: '', etsy: '' }
         };
         function sharedSettingsFrom(data) {
             if (!data || typeof data !== 'object') return {};
             const shared = {};
-            ['shipping', 'handling', 'zelleEmail', 'cashAppTag', 'shopName', 'welcomeMessage', 'aboutMe'].forEach(key => {
+                ['shipping', 'handling', 'shippingTime', 'zelleEmail', 'cashAppTag', 'shopName', 'welcomeMessage', 'aboutMe', 'featuredVideo'].forEach(key => {
                 if (Object.prototype.hasOwnProperty.call(data, key)) shared[key] = data[key];
             });
             if (data.social && typeof data.social === 'object') {
@@ -1551,6 +1852,9 @@
                 ...defaultSettings,
                 ...localValues,
                 ...remoteValues,
+                shippingTime: String(
+                    remoteValues.shippingTime ?? localValues.shippingTime ?? defaultSettings.shippingTime
+                ).trim().slice(0, 40) || defaultSettings.shippingTime,
                 adminPassword: localValues.adminPassword ?? defaultSettings.adminPassword,
                 social: {
                     ...defaultSettings.social,
@@ -1566,6 +1870,7 @@
         const NOTIFICATION_EMAIL = 'Ballerinajuli11@gmail.com';
 
         let editingProductId = null;
+        let productPhotos = [];
         const ADMIN_EXPIRY_KEY = 'julis_admin_expires';
         const UNSYNCED_SETTINGS_KEY = 'julis_settings_unsynced';
         const PASSWORD_ONLINE_KEY = 'julis_password_online';
@@ -1582,6 +1887,9 @@
         const ADMIN_ACTIVITY_EVENTS = ['click', 'keydown', 'input', 'scroll', 'touchstart', 'pointerdown'];
         let selectedPayment  = null;
         let modalQuantity    = 1;
+        let activeCollectionSlug = '';
+        let activeProductGallery = [];
+        let activeProductGalleryAlt = '';
 
         // ─── Activity / Auto-logout ──────────────────────────────────────
         function checkAdminExpiry() {
@@ -1649,11 +1957,13 @@
             return {
                 shipping: s.shipping,
                 handling: s.handling,
+                shippingTime: s.shippingTime,
                 zelleEmail: s.zelleEmail,
                 cashAppTag: s.cashAppTag,
                 shopName: s.shopName,
                 welcomeMessage: s.welcomeMessage,
                 aboutMe: s.aboutMe,
+                featuredVideo: s.featuredVideo,
                 social: SOCIAL_PLATFORMS.reduce((social, { key }) => {
                     social[key] = s.social?.[key] || '';
                     return social;
@@ -1737,6 +2047,16 @@
                 aboutMe.classList.toggle('hidden', !settings.aboutMe);
             }
 
+            const featuredVideoSection = document.getElementById('featuredVideoSection');
+            const featuredVideoEmbed = document.getElementById('featuredVideoEmbed');
+            const featuredVideoUrl = videoEmbedUrl(settings.featuredVideo);
+            if (featuredVideoSection && featuredVideoEmbed) {
+                featuredVideoSection.classList.toggle('hidden', !featuredVideoUrl);
+                featuredVideoEmbed.innerHTML = featuredVideoUrl
+                    ? videoIframe(featuredVideoUrl, "Juli's Studios video")
+                    : '';
+            }
+
             const followSection = document.getElementById('followSection');
             const followHeading = document.getElementById('followHeading');
             const links = document.getElementById('socialLinks');
@@ -1817,6 +2137,15 @@
             });
 
             document.getElementById('cancelEditBtn').addEventListener('click', cancelEdit);
+            const collectionTabs = document.getElementById('collectionTabs');
+            collectionTabs?.addEventListener('click', event => {
+                const button = event.target.closest('button[role="tab"]');
+                if (!button) return;
+                const index = Number(button.dataset.collectionIndex);
+                selectCollectionTab(Number.isInteger(index) ? index : -1);
+            });
+            collectionTabs?.addEventListener('keydown', handleCollectionTabKeydown);
+            window.addEventListener('hashchange', handleCollectionHashChange);
 
             if (isAdminLoggedIn) {
                 startActivityTracking();
@@ -1841,11 +2170,14 @@
         function loadSettings() {
             document.getElementById('shippingCost').value = (Number(settings.shipping) || 0).toFixed(2);
             document.getElementById('handlingFee').value  = (Number(settings.handling) || 0).toFixed(2);
+            document.getElementById('shippingTime').value = settings.shippingTime || defaultSettings.shippingTime;
             document.getElementById('zelleEmail').value   = settings.zelleEmail  || '';
             document.getElementById('cashAppTag').value   = settings.cashAppTag  || '';
             document.getElementById('shopName').value = settings.shopName || defaultSettings.shopName;
             document.getElementById('welcomeMessageSetting').value = settings.welcomeMessage || defaultSettings.welcomeMessage;
             document.getElementById('aboutMe').value = settings.aboutMe || '';
+            document.getElementById('featuredVideoUrl').value = settings.featuredVideo || '';
+            updateFeaturedVideoPreview();
             SOCIAL_PLATFORMS.forEach(({ key }) => {
                 const input = document.getElementById('social' + key[0].toUpperCase() + key.slice(1));
                 input.value = String(settings.social?.[key] || '');
@@ -1861,6 +2193,11 @@
                 document.getElementById('newPassword').focus();
                 return;
             }
+            const featuredVideo = document.getElementById('featuredVideoUrl').value.trim();
+            if (featuredVideo && !videoEmbedUrl(featuredVideo)) {
+                alert(VIDEO_LINK_ERROR);
+                return;
+            }
             const social = {};
             let hasInvalidSocial = false;
             SOCIAL_PLATFORMS.forEach(({ key }) => {
@@ -1872,11 +2209,14 @@
 
             settings.shipping   = parseFloat(document.getElementById('shippingCost').value) || 0;
             settings.handling   = parseFloat(document.getElementById('handlingFee').value)  || 0;
+            settings.shippingTime = document.getElementById('shippingTime').value.trim().slice(0, 40)
+                || defaultSettings.shippingTime;
             settings.zelleEmail = document.getElementById('zelleEmail').value.trim();
             settings.cashAppTag = document.getElementById('cashAppTag').value.trim();
             settings.shopName = document.getElementById('shopName').value.trim() || defaultSettings.shopName;
             settings.welcomeMessage = document.getElementById('welcomeMessageSetting').value.trim() || defaultSettings.welcomeMessage;
             settings.aboutMe = document.getElementById('aboutMe').value.trim();
+            settings.featuredVideo = featuredVideo;
             settings.social = social;
             saveData();
             loadSettings();
@@ -1989,38 +2329,151 @@
             showSuccess('🔑 Password changed on this device');
         }
 
-        // ─── Image upload (with compression so 50+ products fit in localStorage) ──
-        function handleImageUpload(event) {
-            const file = event.target.files[0];
-            const allowed = ['image/jpeg','image/png','image/jpg','image/webp','image/gif'];
-            if (file && allowed.includes(file.type)) {
+        function compressProductImage(file) {
+            return new Promise((resolve, reject) => {
                 const reader = new FileReader();
-                reader.onload = function(e) {
+                reader.onerror = () => reject(new Error('Could not read that image.'));
+                reader.onload = event => {
                     const img = new Image();
-                    img.onload = function() {
-                        // Resize to max 600px on longest side, compress as JPEG 65%
-                        // Keeps each image ~30-80 KB so 50+ products fit in localStorage
+                    img.onerror = () => reject(new Error('Could not open that image.'));
+                    img.onload = () => {
                         const MAX = 600;
                         let w = img.width, h = img.height;
-                        if (w > h) { if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; } }
-                        else       { if (h > MAX) { w = Math.round(w * MAX / h); h = MAX; } }
+                        if (w > h) {
+                            if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
+                        } else if (h > MAX) {
+                            w = Math.round(w * MAX / h);
+                            h = MAX;
+                        }
                         const canvas = document.createElement('canvas');
                         canvas.width = w;
                         canvas.height = h;
                         canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-                        const compressed = canvas.toDataURL('image/jpeg', 0.65);
-                        document.getElementById('imagePreview').src = compressed;
-                        document.getElementById('imagePreview').classList.remove('hidden');
-                        document.getElementById('productImage').value = compressed;
-                        document.getElementById('fileLabel').textContent = file.name + ' ✅';
+                        resolve(canvas.toDataURL('image/jpeg', 0.65));
                     };
-                    img.src = e.target.result;
+                    img.src = event.target.result;
                 };
                 reader.readAsDataURL(file);
-            } else {
-                alert('Please upload a JPEG, PNG, WebP, or GIF image.');
-                event.target.value = '';
+            });
+        }
+
+        async function handleImageUpload(event) {
+            const files = Array.from(event.target.files || []);
+            const available = Math.max(0, 5 - productPhotos.length);
+            if (files.length > available) {
+                alert('You can add up to 5 photos. Only the first 5 will be kept.');
             }
+            const allowed = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp', 'image/gif'];
+            for (const file of files.slice(0, available)) {
+                if (!allowed.includes(file.type)) {
+                    alert('Please upload a JPEG, PNG, WebP, or GIF image.');
+                    continue;
+                }
+                try {
+                    productPhotos.push(await compressProductImage(file));
+                } catch {
+                    alert('Sorry, that photo could not be loaded. Please try another one.');
+                }
+            }
+            event.target.value = '';
+            renderProductPhotoPreviews();
+        }
+
+        function renderProductPhotoPreviews() {
+            const preview = document.getElementById('imagePreview');
+            const photos = productPhotos.map(safeProductImageUrl).filter(Boolean);
+            productPhotos = photos;
+            preview.innerHTML = photos.map((photo, index) => `
+                <div class="photo-preview-item">
+                    <img src="${escapeHtml(photo)}" alt="Product photo ${index + 1}">
+                    <button type="button" class="photo-remove" onclick="removeProductPhoto(${index})"
+                        aria-label="Remove photo ${index + 1}">✕</button>
+                    ${index === 0
+                        ? '<span class="photo-main-label">⭐ Main</span>'
+                        : `<button type="button" onclick="promoteProductPhoto(${index})">Make main</button>`}
+                </div>`).join('');
+            preview.classList.toggle('hidden', photos.length === 0);
+            document.getElementById('productImage').value = photos[0] || '';
+            document.getElementById('fileLabel').textContent = photos.length
+                ? `${photos.length} photo${photos.length === 1 ? '' : 's'} selected`
+                : 'Upload Photos';
+        }
+
+        function removeProductPhoto(index) {
+            if (!Number.isInteger(index) || index < 0 || index >= productPhotos.length) return;
+            productPhotos.splice(index, 1);
+            renderProductPhotoPreviews();
+        }
+
+        function promoteProductPhoto(index) {
+            if (!Number.isInteger(index) || index <= 0 || index >= productPhotos.length) return;
+            const [photo] = productPhotos.splice(index, 1);
+            productPhotos.unshift(photo);
+            renderProductPhotoPreviews();
+        }
+
+        function addNailChoicePresets() {
+            const presets = [
+                ['Size', 'Short, Medium, Long, XL'],
+                ['Shape', 'Almond, Coffin, Square, Stiletto, Oval']
+            ];
+            let nextPreset = 0;
+            for (let index = 0; index < 3 && nextPreset < presets.length; index++) {
+                const name = document.getElementById(`choiceName${index}`);
+                const options = document.getElementById(`choiceOptions${index}`);
+                if (!name.value.trim() && !options.value.trim()) {
+                    [name.value, options.value] = presets[nextPreset++];
+                }
+            }
+        }
+
+        function collectProductOptions() {
+            const result = [];
+            const usedNames = new Set();
+            for (let index = 0; index < 3; index++) {
+                const name = document.getElementById(`choiceName${index}`).value.trim();
+                const rawOptions = document.getElementById(`choiceOptions${index}`).value.trim();
+                if (!name && !rawOptions) continue;
+                if (!name || !rawOptions) {
+                    alert('Please enter both a choice name and its options.');
+                    return null;
+                }
+                if (name.length > 30) {
+                    alert('Choice names can be up to 30 characters.');
+                    return null;
+                }
+                const nameKey = name.toLowerCase();
+                if (usedNames.has(nameKey)) {
+                    alert('Each choice needs a different name.');
+                    return null;
+                }
+                usedNames.add(nameKey);
+                const rawChoices = rawOptions.split(',');
+                if (rawChoices.some(choice => !choice.trim())) {
+                    alert('Each choice option must be non-empty.');
+                    return null;
+                }
+                const choices = [];
+                const seenChoices = new Set();
+                for (const rawChoice of rawChoices) {
+                    const choice = rawChoice.trim();
+                    if (choice.length > 30) {
+                        alert('Each choice option can be up to 30 characters.');
+                        return null;
+                    }
+                    const key = choice.toLowerCase();
+                    if (!seenChoices.has(key)) {
+                        seenChoices.add(key);
+                        choices.push(choice);
+                    }
+                }
+                if (choices.length > 12) {
+                    alert('Each choice can have up to 12 options.');
+                    return null;
+                }
+                result.push({ name, choices });
+            }
+            return result;
         }
 
         // ─── Add / Edit Product ──────────────────────────────────────────
@@ -2028,6 +2481,8 @@
             const name        = document.getElementById('productName').value.trim();
             const price       = document.getElementById('productPrice').value;
             const description = document.getElementById('productDescription').value.trim();
+            const collection = document.getElementById('productCollection').value.trim();
+            const videoUrl = document.getElementById('productVideo').value.trim();
 
             if (!name || !description) {
                 alert('❌ Please fill in all required fields (Name, Price, Description).');
@@ -2037,6 +2492,16 @@
                 alert('❌ Product names can be up to 80 characters and descriptions up to 1,000.');
                 return;
             }
+            if (collection.length > 40) {
+                alert('❌ Collection names can be up to 40 characters.');
+                return;
+            }
+            if (videoUrl && !videoEmbedUrl(videoUrl)) {
+                alert(VIDEO_LINK_ERROR);
+                return;
+            }
+            const options = collectProductOptions();
+            if (options === null) return;
 
             const numericPrice = Number(price);
             const roundedPrice = Math.round(numericPrice * 100) / 100;
@@ -2057,7 +2522,11 @@
             const productData = {
                 name, description,
                 price: roundedPrice,
-                image: document.getElementById('productImage').value,
+                collection,
+                image: safeProductImageUrl(productPhotos[0]) || '',
+                images: productPhotos.slice(1).map(safeProductImageUrl).filter(Boolean),
+                video_url: videoUrl,
+                options,
                 stock_quantity: unlimited ? 0 : stockQuantity,
                 track_stock: !unlimited
             };
@@ -2071,7 +2540,9 @@
                 if (editingProductId) {
                     await updateProductInDB(editingProductId, productData);
                     const idx = products.findIndex(p => p.id === editingProductId);
-                    if (idx !== -1) products[idx] = { id: editingProductId, ...productData };
+                    if (idx !== -1) {
+                        products[idx] = { ...products[idx], ...productData, id: products[idx].id };
+                    }
                     showSuccess('✨ Product updated!');
                     cancelEdit();
                 } else {
@@ -2079,9 +2550,8 @@
                     products.push(saved);
                     showSuccess('✨ Product added!');
                     document.getElementById('productForm').reset();
-                    document.getElementById('productImage').value = '';
-                    document.getElementById('imagePreview').classList.add('hidden');
-                    document.getElementById('fileLabel').textContent = 'Upload Image';
+                    productPhotos = [];
+                    renderProductPhotoPreviews();
                 }
             } catch(err) {
                 alert('❌ Error saving product: ' + err.message);
@@ -2099,26 +2569,26 @@
             if (!product) return;
 
             editingProductId = id;
-            document.getElementById('productName').value        = product.name;
+            document.getElementById('productName').value        = String(product.name || '');
             document.getElementById('productPrice').value       = product.price;
-            document.getElementById('productDescription').value = product.description;
+            document.getElementById('productDescription').value = String(product.description || '');
             document.getElementById('productStock').value       = product.stock_quantity ?? 0;
             document.getElementById('productUnlimited').checked = product.track_stock === false;
             document.getElementById('editProductId').value      = id;
-
-            const imageUrl = safeProductImageUrl(product.image);
-            document.getElementById('productImage').value = imageUrl;
-            if (imageUrl) {
-                document.getElementById('imagePreview').src = imageUrl;
-                document.getElementById('imagePreview').classList.remove('hidden');
-                document.getElementById('fileLabel').textContent = 'Current image loaded';
-            } else {
-                document.getElementById('imagePreview').src = '';
-                document.getElementById('imagePreview').classList.add('hidden');
-                document.getElementById('fileLabel').textContent = 'Upload Image';
+            document.getElementById('productCollection').value = String(product.collection || '').trim();
+            document.getElementById('productVideo').value = String(product.video_url || '').trim();
+            productPhotos = productPhotoUrls(product);
+            renderProductPhotoPreviews();
+            for (let index = 0; index < 3; index++) {
+                document.getElementById(`choiceName${index}`).value = '';
+                document.getElementById(`choiceOptions${index}`).value = '';
             }
+            productOptionGroups(product).forEach((group, index) => {
+                document.getElementById(`choiceName${index}`).value = group.name;
+                document.getElementById(`choiceOptions${index}`).value = group.choices.join(', ');
+            });
 
-            document.getElementById('formTitle').textContent  = '✏️ Editing: ' + String(product.name || '');
+            document.getElementById('formTitle').textContent = '✏️ Editing: ' + String(product.name || '');
             document.getElementById('submitBtnText').textContent = '💾 Save Changes';
             document.getElementById('cancelEditBtn').classList.remove('hidden');
 
@@ -2130,9 +2600,8 @@
             document.getElementById('productForm').reset();
             document.getElementById('productImage').value  = '';
             document.getElementById('editProductId').value = '';
-            document.getElementById('imagePreview').src    = '';
-            document.getElementById('imagePreview').classList.add('hidden');
-            document.getElementById('fileLabel').textContent    = 'Upload Image';
+            productPhotos = [];
+            renderProductPhotoPreviews();
             document.getElementById('formTitle').textContent    = '➕ Add New Product';
             document.getElementById('submitBtnText').textContent = '✨ Add Product';
             document.getElementById('cancelEditBtn').classList.add('hidden');
@@ -2168,7 +2637,7 @@
             if (!productsLoaded) return [];
 
             const nextCart = [];
-            const lines = [];
+            const usedByProduct = new Map();
             let changed = false;
             cart.forEach(item => {
                 const product = products.find(p => String(p.id) === String(item.id));
@@ -2179,10 +2648,30 @@
                     return;
                 }
 
+                const groups = productOptionGroups(product);
+                let options;
+                if (groups.length) {
+                    if (!item.options || typeof item.options !== 'object' || Array.isArray(item.options)) {
+                        changed = true;
+                        return;
+                    }
+                    const keys = Object.keys(item.options);
+                    if (keys.length !== groups.length || groups.some(group =>
+                        typeof item.options[group.name] !== 'string' ||
+                        !group.choices.includes(item.options[group.name])
+                    )) {
+                        changed = true;
+                        return;
+                    }
+                    options = Object.fromEntries(groups.map(group => [group.name, item.options[group.name]]));
+                } else if (Object.prototype.hasOwnProperty.call(item, 'options')) {
+                    changed = true;
+                }
+
                 const available = stockOf(product);
-                const quantity = Number.isFinite(available)
-                    ? Math.min(requested, Math.floor(available))
-                    : requested;
+                const used = usedByProduct.get(String(product.id)) || 0;
+                const room = Number.isFinite(available) ? Math.max(0, Math.floor(available) - used) : Infinity;
+                const quantity = Math.min(requested, room);
                 if (quantity <= 0) {
                     changed = true;
                     return;
@@ -2190,11 +2679,25 @@
                 if (
                     item.id !== product.id ||
                     item.quantity !== quantity ||
-                    Object.keys(item).some(key => key !== 'id' && key !== 'quantity')
+                    Object.keys(item).some(key => !['id', 'quantity', 'options'].includes(key)) ||
+                    (options
+                        ? !item.options || Object.keys(item.options).length !== Object.keys(options).length ||
+                            Object.keys(options).some(key => item.options[key] !== options[key])
+                        : Object.prototype.hasOwnProperty.call(item, 'options'))
                 ) changed = true;
 
-                nextCart.push({ id: product.id, quantity });
-                lines.push({ product, quantity });
+                usedByProduct.set(String(product.id), used + quantity);
+                const nextLine = { id: product.id, quantity, ...(options ? { options } : {}) };
+                const existing = nextCart.find(line =>
+                    String(line.id) === String(nextLine.id) &&
+                    JSON.stringify(line.options || {}) === JSON.stringify(nextLine.options || {})
+                );
+                if (existing) {
+                    existing.quantity += quantity;
+                    changed = true;
+                } else {
+                    nextCart.push(nextLine);
+                }
             });
 
             if (nextCart.length !== cart.length) changed = true;
@@ -2203,7 +2706,25 @@
                 saveData();
                 showSuccess("🛒 Your cart was updated to match what's in stock.");
             }
-            return lines;
+            return nextCart.map((item, index) => ({
+                product: products.find(product => String(product.id) === String(item.id)),
+                quantity: item.quantity,
+                ...(item.options ? { options: item.options } : {}),
+                index
+            }));
+        }
+        function choiceSummaryHtml(options) {
+            if (!options || typeof options !== 'object' || Array.isArray(options)) return '';
+            const summary = Object.entries(options)
+                .map(([name, choice]) => `${escapeHtml(name)}: ${escapeHtml(choice)}`)
+                .join(', ');
+            return summary ? `<div class="cart-choice-summary">${summary}</div>` : '';
+        }
+        function choiceSummaryText(options) {
+            if (!options || typeof options !== 'object' || Array.isArray(options)) return '';
+            return Object.entries(options)
+                .map(([name, choice]) => `${String(name)}: ${String(choice)}`)
+                .join(', ');
         }
         function safeProductImageUrl(image) {
             if (typeof image !== 'string') return '';
@@ -2212,11 +2733,180 @@
                 ? image
                 : '';
         }
+        const VIDEO_LINK_ERROR = '❌ Please paste a full YouTube, TikTok or Instagram video link (open the video and copy its link).';
+        function videoEmbedUrl(url) {
+            if (typeof url !== 'string' || !url.trim()) return '';
+            let parsed;
+            try { parsed = new URL(url.trim()); }
+            catch { return ''; }
+            if (parsed.protocol !== 'https:' || parsed.username || parsed.password || parsed.port) return '';
+            const host = parsed.hostname.toLowerCase();
+            const path = parsed.pathname;
+            const youtubeHosts = ['youtube.com', 'www.youtube.com', 'm.youtube.com'];
+            const shortHosts = ['youtu.be', 'www.youtu.be', 'm.youtu.be'];
+            if (youtubeHosts.includes(host)) {
+                const watchId = path === '/watch' || path === '/watch/'
+                    ? parsed.searchParams.get('v')
+                    : '';
+                const shortMatch = path.match(/^\/shorts\/([A-Za-z0-9_-]{11})\/?$/);
+                const id = watchId || shortMatch?.[1];
+                return id && /^[A-Za-z0-9_-]{11}$/.test(id)
+                    ? `https://www.youtube-nocookie.com/embed/${id}`
+                    : '';
+            }
+            if (shortHosts.includes(host)) {
+                const match = path.match(/^\/([A-Za-z0-9_-]{11})\/?$/);
+                return match ? `https://www.youtube-nocookie.com/embed/${match[1]}` : '';
+            }
+            if (['tiktok.com', 'www.tiktok.com', 'm.tiktok.com'].includes(host)) {
+                const match = path.match(/^\/@[^/]+\/video\/(\d+)\/?$/);
+                return match ? `https://www.tiktok.com/embed/v2/${match[1]}` : '';
+            }
+            if (['instagram.com', 'www.instagram.com', 'm.instagram.com'].includes(host)) {
+                const match = path.match(/^\/(p|reel)\/([A-Za-z0-9_-]+)\/?$/);
+                return match ? `https://www.instagram.com/${match[1]}/${match[2]}/embed` : '';
+            }
+            return '';
+        }
+        function videoIframe(embedUrl, title) {
+            return `<div class="responsive-video">
+                <iframe src="${escapeHtml(embedUrl)}" loading="lazy"
+                    allow="encrypted-media; picture-in-picture; fullscreen" allowfullscreen
+                    referrerpolicy="strict-origin-when-cross-origin" title="${escapeHtml(title)}"></iframe>
+            </div>`;
+        }
+        function updateFeaturedVideoPreview() {
+            const input = document.getElementById('featuredVideoUrl');
+            const preview = document.getElementById('featuredVideoPreview');
+            if (!input || !preview) return;
+            const embedUrl = videoEmbedUrl(input.value);
+            preview.innerHTML = embedUrl ? videoIframe(embedUrl, "Juli's Studios video") : '';
+            preview.classList.toggle('hidden', !embedUrl);
+        }
+        function productPhotoUrls(product) {
+            return [product?.image, ...(Array.isArray(product?.images) ? product.images : [])]
+                .map(safeProductImageUrl)
+                .filter(Boolean);
+        }
+        function productOptionGroups(product) {
+            if (!Array.isArray(product?.options)) return [];
+            return product.options.slice(0, 3).map(group => {
+                if (!group || typeof group !== 'object' || Array.isArray(group)) return null;
+                const name = String(group.name ?? '').trim();
+                if (!name || name.length > 30 || !Array.isArray(group.choices)) return null;
+                const seen = new Set();
+                const choices = [];
+                for (const value of group.choices) {
+                    if (typeof value !== 'string') continue;
+                    const choice = value.trim();
+                    if (!choice || choice.length > 30) continue;
+                    const key = choice.toLowerCase();
+                    if (!seen.has(key)) {
+                        seen.add(key);
+                        choices.push(choice);
+                    }
+                    if (choices.length === 12) break;
+                }
+                return choices.length ? { name, choices } : null;
+            }).filter(Boolean);
+        }
         function lowStockLeft(p) {
             const left = stockOf(p);
             if (left === Infinity || left <= 0) return null;
             const threshold = Number(p.low_stock_threshold) || 3;
             return left <= threshold ? left : null;
+        }
+        function productCollections() {
+            const groups = new Map();
+            products.forEach((product, index) => {
+                const name = String(product.collection ?? '').trim();
+                if (!name) return;
+                const key = name.toLowerCase();
+                const id = Number(product.id);
+                const minId = Number.isFinite(id) ? id : Infinity;
+                if (!groups.has(key)) groups.set(key, { name, minId, firstSeen: index });
+                else groups.get(key).minId = Math.min(groups.get(key).minId, minId);
+            });
+            const slugs = new Set();
+            return Array.from(groups.values())
+                .sort((a, b) => a.minId - b.minId || a.firstSeen - b.firstSeen)
+                .map((group, index) => {
+                    let slug = group.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+                    if (!slug) slug = `c-${index + 1}`;
+                    const baseSlug = slug;
+                    let suffix = 2;
+                    while (slugs.has(slug)) slug = `${baseSlug}-${suffix++}`;
+                    slugs.add(slug);
+                    return { ...group, slug };
+                });
+        }
+        function renderCollectionDatalist() {
+            const datalist = document.getElementById('productCollections');
+            if (!datalist) return;
+            datalist.innerHTML = productCollections()
+                .map(collection => `<option value="${escapeHtml(collection.name)}"></option>`)
+                .join('');
+        }
+        function renderCollectionTabs(collections = productCollections()) {
+            const tabs = document.getElementById('collectionTabs');
+            if (!tabs) return;
+            tabs.classList.toggle('hidden', collections.length === 0);
+            if (!collections.length) {
+                activeCollectionSlug = '';
+                tabs.replaceChildren();
+                return;
+            }
+            if (!collections.some(collection => collection.slug === activeCollectionSlug)) {
+                activeCollectionSlug = '';
+            }
+            tabs.innerHTML = `
+                <button type="button" class="collection-tab${activeCollectionSlug ? '' : ' active'}"
+                    role="tab" aria-selected="${activeCollectionSlug ? 'false' : 'true'}"
+                    aria-controls="productsGrid" tabindex="${activeCollectionSlug ? '-1' : '0'}"
+                    data-collection-index="-1">All</button>
+                ${collections.map((collection, index) => `
+                    <button type="button" class="collection-tab${activeCollectionSlug === collection.slug ? ' active' : ''}"
+                        role="tab" aria-selected="${activeCollectionSlug === collection.slug ? 'true' : 'false'}"
+                        aria-controls="productsGrid" tabindex="${activeCollectionSlug === collection.slug ? '0' : '-1'}"
+                        data-collection-index="${index}">${escapeHtml(collection.name)}</button>
+                `).join('')}`;
+        }
+        function selectCollectionTab(index) {
+            const collections = productCollections();
+            const collection = index >= 0 ? collections[index] : null;
+            activeCollectionSlug = collection?.slug || '';
+            if (activeCollectionSlug) {
+                const nextHash = `#${activeCollectionSlug}`;
+                if (window.location.hash !== nextHash) {
+                    window.location.hash = activeCollectionSlug;
+                    return;
+                }
+            } else {
+                history.replaceState(null, '', window.location.pathname + window.location.search);
+            }
+            renderProducts();
+            const selectedTab = document.querySelector('#collectionTabs [aria-selected="true"]');
+            selectedTab?.focus({ preventScroll: true });
+        }
+        function handleCollectionHashChange() {
+            const focusedIndex = document.activeElement?.closest('#collectionTabs [role="tab"]')?.dataset.collectionIndex;
+            renderProducts();
+            if (focusedIndex !== undefined) {
+                document.querySelector(`#collectionTabs [data-collection-index="${focusedIndex}"]`)
+                    ?.focus({ preventScroll: true });
+            }
+        }
+        function handleCollectionTabKeydown(event) {
+            if (!['ArrowRight', 'ArrowLeft', 'Home', 'End'].includes(event.key)) return;
+            const tabs = Array.from(document.querySelectorAll('#collectionTabs [role="tab"]'));
+            const currentIndex = tabs.indexOf(document.activeElement);
+            if (currentIndex < 0 || tabs.length === 0) return;
+            event.preventDefault();
+            const nextIndex = event.key === 'Home' ? 0
+                : event.key === 'End' ? tabs.length - 1
+                : (currentIndex + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
+            tabs[nextIndex].focus();
+            tabs[nextIndex].click();
         }
         /** How many more of this item the cart can still take. */
         function remainingFor(id) {
@@ -2229,6 +2919,14 @@
 
         function renderProducts() {
             const grid = document.getElementById('productsGrid');
+            const collections = productCollections();
+            let hashSlug = window.location.hash.slice(1);
+            try { hashSlug = decodeURIComponent(hashSlug); } catch {}
+            const selectedCollection = collections.find(collection => collection.slug === hashSlug);
+            activeCollectionSlug = selectedCollection?.slug || '';
+            renderCollectionTabs(collections);
+            const heading = document.getElementById('collectionHeading');
+            if (heading) heading.textContent = selectedCollection?.name || 'My Handmade Collection';
             if (products.length === 0) {
                 grid.innerHTML = `<div style="text-align:center;padding:4rem;grid-column:1/-1;">
                     <div style="font-size:5rem;margin-bottom:1rem;">🛍️</div>
@@ -2238,10 +2936,24 @@
                 return;
             }
 
-            grid.innerHTML = products.map(p => {
+            const visibleProducts = selectedCollection
+                ? products.filter(product => String(product.collection ?? '').trim().toLowerCase() === selectedCollection.name.toLowerCase())
+                : products;
+            if (visibleProducts.length === 0) {
+                grid.innerHTML = `<div style="text-align:center;padding:3rem;grid-column:1/-1;">
+                    <h3 style="color:var(--purple);font-family:Comfortaa,sans-serif;">No products in this collection yet.</h3>
+                    <p style="font-size:1.05rem;color:#666;">Choose another collection or check back soon! 💖</p>
+                </div>`;
+                return;
+            }
+
+            grid.innerHTML = visibleProducts.map(p => {
                 const out = isSoldOut(p);
                 const low = lowStockLeft(p);
                 const imageUrl = safeProductImageUrl(p.image);
+                const photoCount = productPhotoUrls(p).length;
+                const hasVideo = Boolean(videoEmbedUrl(p.video_url));
+                const hasChoices = productOptionGroups(p).length > 0;
                 const description = String(p.description || '');
                 const price = Number(p.price).toFixed(2);
                 return `
@@ -2252,13 +2964,19 @@
                     </div>
                     <div class="product-info">
                         <h3 class="product-name">${escapeHtml(p.name)}</h3>
+                        ${photoCount > 1 || hasVideo ? `<div class="product-media-badges">
+                            ${photoCount > 1 ? `<span class="product-media-badge">📷 ${photoCount}</span>` : ''}
+                            ${hasVideo ? '<span class="product-media-badge">▶️ Video</span>' : ''}
+                        </div>` : ''}
                         <p class="product-description">${escapeHtml(description.substring(0,100))}${description.length>100?'...':''}</p>
                         ${low ? `<p style="margin:0 0 0.5rem;font-weight:700;color:#c2410c;font-size:0.95rem;">Only ${low} left!</p>` : ''}
                         <div class="product-footer">
                             <div class="product-price">$${price}</div>
                             ${out
                                 ? `<button class="btn-add-cart" disabled style="background:#d1d5db;color:#6b7280;cursor:not-allowed;">Sold Out</button>`
-                                : `<button class="btn-add-cart" onclick="event.stopPropagation();addToCart(${Number(p.id)})">Add to Cart</button>`}
+                                : `<button class="btn-add-cart" onclick="event.stopPropagation();${hasChoices
+                                    ? `showProductDetail(${Number(p.id)})`
+                                    : `addToCart(${Number(p.id)})`}">Add to Cart</button>`}
                         </div>
                     </div>
                 </div>`; }).join('');
@@ -2266,6 +2984,7 @@
 
         function renderProductList() {
             const list = document.getElementById('productList');
+            renderCollectionDatalist();
             if (products.length === 0) {
                 list.innerHTML = '<p style="color:#999;text-align:center;padding:2rem;font-style:italic;">No products yet! Add one above! ✨</p>';
                 renderShopDashboard();
@@ -2289,10 +3008,14 @@
                 const stockLabel = unlimited
                     ? '<span style="color:#0369a1;font-weight:600;">made to order</span>'
                     : `<span style="color:${out ? '#b91c1c' : (lowStockLeft(p) ? '#c2410c' : '#047857')};font-weight:700;">${stockOf(p)} in stock</span>`;
+                const collectionLabel = String(p.collection ?? '').trim()
+                    ? `<span class="product-collection-label">${escapeHtml(String(p.collection).trim())}</span>`
+                    : '';
                 return `
                 <div class="product-list-item">
                     <div class="product-list-info">
                         <strong style="font-size:1.1rem;color:var(--purple);">${escapeHtml(p.name)}</strong> — $${Number(p.price).toFixed(2)}
+                        ${collectionLabel}
                         <div style="font-size:0.9rem;margin-top:0.2rem;">${stockLabel}</div>
                     </div>
                     <div class="product-list-actions">
@@ -2305,23 +3028,45 @@
 
         // ─── Product Detail Modal ────────────────────────────────────────
         function showProductDetail(id) {
-            const p = products.find(p => p.id === id);
+            const p = products.find(p => String(p.id) === String(id));
             if (!p) return;
             modalQuantity = 1;
-            const imageUrl = safeProductImageUrl(p.image);
+            activeProductGallery = productPhotoUrls(p);
+            activeProductGalleryAlt = String(p.name || '');
+            const imageUrl = activeProductGallery[0] || '';
             const description = String(p.description || '');
             const price = Number(p.price).toFixed(2);
+            const groups = productOptionGroups(p);
+            const embedUrl = videoEmbedUrl(p.video_url);
             document.getElementById('productDetailContent').innerHTML = `
                 <div class="product-detail-grid">
-                    <div>
-                        <div class="product-detail-image">
-                            ${imageUrl ? `<img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(p.name)}">` : '🎀'}
+                    <div class="product-detail-media">
+                        <div class="product-detail-image" id="productDetailMainImage">
+                            ${imageUrl ? `<img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(activeProductGalleryAlt)}">` : '🎀'}
                         </div>
+                        ${activeProductGallery.length > 1 ? `<div class="product-gallery-thumbs" aria-label="Product photos">
+                            ${activeProductGallery.map((photo, index) => `
+                                <button type="button" class="product-gallery-thumb" id="galleryThumbnail${index}"
+                                    aria-label="Show photo ${index + 1}" aria-pressed="${index === 0 ? 'true' : 'false'}"
+                                    onclick="setProductGalleryImage(${index})">
+                                    <img src="${escapeHtml(photo)}" alt="Product photo ${index + 1}">
+                                </button>`).join('')}
+                        </div>` : ''}
+                        ${embedUrl ? `<div class="product-video">${videoIframe(embedUrl, `Video of ${activeProductGalleryAlt}`)}</div>` : ''}
                     </div>
                     <div class="product-detail-info">
                         <h2>${escapeHtml(p.name)}</h2>
                         <div class="product-detail-price">$${price}</div>
+                        <p class="shipping-time-notice">📦 Ships in ${escapeHtml(settings.shippingTime || defaultSettings.shippingTime)}</p>
                         <p class="product-detail-description">${escapeHtml(description)}</p>
+                        ${groups.map((group, index) => `
+                            <div class="product-choice-group">
+                                <label for="productChoice${index}">${escapeHtml(group.name)}</label>
+                                <select id="productChoice${index}">
+                                    <option value="">Pick a ${escapeHtml(group.name)}</option>
+                                    ${group.choices.map(choice => `<option value="${escapeHtml(choice)}">${escapeHtml(choice)}</option>`).join('')}
+                                </select>
+                            </div>`).join('')}
                         <div class="quantity-selector">
                             <button class="quantity-btn" onclick="changeQuantity(${Number(id)},-1)">−</button>
                             <span class="quantity-display" id="modalQuantity">1</span>
@@ -2335,6 +3080,37 @@
             document.getElementById('productModal').style.display = 'flex';
         }
 
+        function setProductGalleryImage(index) {
+            if (!Number.isInteger(index) || index < 0 || index >= activeProductGallery.length) return;
+            const imageUrl = safeProductImageUrl(activeProductGallery[index]);
+            const mainImage = document.getElementById('productDetailMainImage');
+            if (!imageUrl || !mainImage) return;
+            mainImage.innerHTML = `<img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(activeProductGalleryAlt)}">`;
+            activeProductGallery.forEach((_, photoIndex) => {
+                const button = document.getElementById(`galleryThumbnail${photoIndex}`);
+                if (button) button.setAttribute('aria-pressed', photoIndex === index ? 'true' : 'false');
+            });
+        }
+
+        function selectedProductOptions(id) {
+            const product = products.find(item => String(item.id) === String(id));
+            const groups = productOptionGroups(product);
+            if (!groups.length) return {};
+            const options = Object.create(null);
+            for (let index = 0; index < groups.length; index++) {
+                const group = groups[index];
+                const select = document.getElementById(`productChoice${index}`);
+                const choice = select?.value || '';
+                if (!group.choices.includes(choice)) {
+                    alert(`Please pick a ${group.name} first! 💅🏾`);
+                    select?.focus();
+                    return null;
+                }
+                options[group.name] = choice;
+            }
+            return options;
+        }
+
         function changeQuantity(productId, change) {
             const room = Math.max(1, remainingFor(productId));
             modalQuantity = Math.min(room, Math.max(1, modalQuantity + change));
@@ -2344,10 +3120,29 @@
         }
 
         // ─── Cart ─────────────────────────────────────────────────────────
-        function addToCart(id, quantity = 1) {
-            const product = products.find(p => p.id === id);
+        function addToCart(id, quantity = 1, options) {
+            const product = products.find(p => String(p.id) === String(id));
             if (!product) return;
             if (isSoldOut(product)) { alert('Sorry — that one just sold out! 💔'); renderProducts(); return; }
+            const groups = productOptionGroups(product);
+            let selectedOptions;
+            if (groups.length) {
+                selectedOptions = Object.create(null);
+                for (const group of groups) {
+                    const value = options && typeof options === 'object' && !Array.isArray(options)
+                        ? options[group.name]
+                        : '';
+                    if (typeof value !== 'string' || !group.choices.includes(value)) {
+                        alert(`Please pick a ${group.name} first! 💅🏾`);
+                        return;
+                    }
+                    selectedOptions[group.name] = value;
+                }
+                if (Object.keys(options).length !== groups.length) {
+                    alert(`Please pick a ${groups[0].name} first! 💅🏾`);
+                    return;
+                }
+            }
 
             // Cap at what is actually left, counting what is already in the
             // cart. Selling the same last scrunchie twice means refunding a
@@ -2357,27 +3152,40 @@
                 alert(`You already have all ${stockOf(product)} of those in your cart! 🛒`);
                 return;
             }
-            const adding = Math.min(quantity, room);
+            const requested = Math.max(0, Math.floor(Number(quantity) || 0));
+            const adding = Math.min(requested, room);
+            if (adding <= 0) return;
 
-            const existing = cart.find(item => String(item.id) === String(product.id));
+            const existing = cart.find(item =>
+                String(item.id) === String(product.id) &&
+                JSON.stringify(item.options || {}) === JSON.stringify(selectedOptions || {})
+            );
             if (existing) existing.quantity += adding;
-            else cart.push({ id: product.id, quantity: adding });
+            else cart.push({
+                id: product.id,
+                quantity: adding,
+                ...(selectedOptions ? { options: selectedOptions } : {})
+            });
 
             saveData();
             updateCartBadge();
             showSuccess(adding < quantity
                 ? `🛒 Added ${adding} — that's all Juli has left!`
                 : '🛒 Added to cart!');
+            return true;
         }
 
         function addToCartFromModal(id) {
-            addToCart(id, modalQuantity);
+            const options = selectedProductOptions(id);
+            if (options === null) return;
+            addToCart(id, modalQuantity, options);
             modalQuantity = 1;
             closeModal('productModal');
         }
 
-        function removeFromCart(id) {
-            cart = cart.filter(item => String(item.id) !== String(id));
+        function removeFromCart(index) {
+            if (!Number.isInteger(index) || index < 0 || index >= cart.length) return;
+            cart.splice(index, 1);
             saveData();
             updateCartBadge();
             renderCart();
@@ -2415,7 +3223,7 @@
             content.innerHTML = `
                 ${subtotal < 45 ? `<div style="background:linear-gradient(135deg,#fff8e1,#fff3cd);border:2px solid #f0c040;border-radius:12px;padding:1rem 1.5rem;margin-bottom:1rem;text-align:center;font-weight:600;color:#856404;">🚚 Add $${amountToFree} more for FREE shipping!</div>` : `<div style="background:linear-gradient(135deg,#d4edda,#c3e6cb);border:2px solid #28a745;border-radius:12px;padding:1rem 1.5rem;margin-bottom:1rem;text-align:center;font-weight:700;color:#155724;font-size:1.1rem;">🎉 You qualify for FREE shipping!</div>`}
                 <div>
-                    ${lines.map(({ product, quantity }) => {
+                    ${lines.map(({ product, quantity, options, index }) => {
                     const imageUrl = safeProductImageUrl(product.image);
                     const price = Number(product.price).toFixed(2);
                     return `
@@ -2425,9 +3233,10 @@
                         </div>
                         <div style="flex:1;">
                             <div style="font-weight:600;font-size:1.2rem;color:var(--navy);margin-bottom:0.5rem;">${escapeHtml(product.name)}</div>
+                            ${choiceSummaryHtml(options)}
                             <div style="color:var(--primary-blue);font-weight:700;font-size:1.1rem;">$${price} × ${quantity}</div>
                         </div>
-                        <button class="btn-delete" onclick="removeFromCart(${Number(product.id)})">Remove</button>
+                        <button class="btn-delete" onclick="removeFromCart(${index})">Remove</button>
                     </div>`;
                     }).join('')}
                 </div>
@@ -2435,6 +3244,7 @@
                 <div style="background:linear-gradient(135deg,var(--primary-blue),var(--purple));color:white;padding:2rem;border-radius:20px;margin-top:2rem;">
                     <div style="display:flex;justify-content:space-between;margin-bottom:1rem;font-size:1.1rem;"><span>Subtotal:</span><span>$${subtotal.toFixed(2)}</span></div>
                     <div style="display:flex;justify-content:space-between;margin-bottom:1rem;font-size:1.1rem;"><span>Shipping:</span><span>${shippingCost === 0 ? '<strong style="color:#90EE90;">FREE 🎉</strong>' : '$' + shippingCost.toFixed(2)}</span></div>
+                    <div class="shipping-time-notice">📦 Ships in ${escapeHtml(settings.shippingTime || defaultSettings.shippingTime)}</div>
                     <div style="display:flex;justify-content:space-between;margin-bottom:1rem;font-size:1.1rem;"><span>Handling:</span><span>$${handling.toFixed(2)}</span></div>
                     <div style="display:flex;justify-content:space-between;border-top:2px solid rgba(255,255,255,0.3);padding-top:1rem;margin-top:1rem;font-size:1.5rem;font-weight:700;"><span>Total:</span><span>$${total.toFixed(2)}</span></div>
                 </div>
@@ -2515,12 +3325,13 @@
 
                 const previousLines = cartLines();
                 if (previousLines.length === 0) { alert('Your cart is empty! 🛒'); return; }
-                const summary = lines => lines.map(({ product, quantity }) => ({
+                const summary = lines => lines.map(({ product, quantity, options }) => ({
                     id: String(product.id),
                     quantity,
                     name: String(product.name || ''),
                     price: Number(product.price),
-                    stock: stockOf(product)
+                    stock: stockOf(product),
+                    ...(options ? { options } : {})
                 }));
                 const previousSummary = JSON.stringify(summary(previousLines));
 
@@ -2555,20 +3366,25 @@
                     phone: phone.trim(),
                     address: address.trim(),
                     payment_method: paymentMethod,
-                    items: lines.map(({ product, quantity }) => ({
+                    items: lines.map(({ product, quantity, options }) => ({
                         name: String(product.name || ''),
                         quantity,
-                        price: Number(product.price)
+                        price: Number(product.price),
+                        ...(options && Object.keys(options).length ? { options } : {})
                     })),
                     subtotal,
                     shipping: shippingCost,
                     handling,
                     total
                 };
-                const soldItems = lines.map(({ product, quantity }) => ({
-                    id: product.id,
-                    quantity
-                }));
+                const soldItemsById = new Map();
+                lines.forEach(({ product, quantity }) => {
+                    const key = String(product.id);
+                    const existing = soldItemsById.get(key);
+                    if (existing) existing.quantity += quantity;
+                    else soldItemsById.set(key, { id: product.id, quantity });
+                });
+                const soldItems = Array.from(soldItemsById.values());
 
                 const emailOrder = err => {
                     console.error('Order save failed:', err);
@@ -2577,8 +3393,11 @@
                         `Name: ${order.customer_name}\n` +
                         `Phone: ${order.phone}\n` +
                         `Address:\n${order.address}\n\n` +
-                        `Items:\n${order.items.map(i => `${i.name} x ${i.quantity} — $${(i.price * i.quantity).toFixed(2)}`).join('\n')}\n\n` +
-                        `Subtotal: $${subtotal.toFixed(2)}\nShipping: $${shippingCost.toFixed(2)}\nHandling: $${handling.toFixed(2)}\nTotal: $${total.toFixed(2)}\n` +
+                        `Items:\n${order.items.map(i => {
+                            const choices = choiceSummaryText(i.options);
+                            return `${i.name}${choices ? ` (${choices})` : ''} × ${i.quantity} — $${(i.price * i.quantity).toFixed(2)}`;
+                        }).join('\n')}\n\n` +
+                        `Subtotal: $${subtotal.toFixed(2)}\nShipping: $${shippingCost.toFixed(2)}\n📦 Ships in ${settings.shippingTime || defaultSettings.shippingTime}\nHandling: $${handling.toFixed(2)}\nTotal: $${total.toFixed(2)}\n` +
                         `Payment method: ${paymentMethod.toUpperCase()}`;
                     alert(`🎉 Order received!\n\nWe couldn't reach the order system, so your email app will open with the order details — please press SEND so Juli gets your order! 💌`);
                     window.location.href = 'mailto:' + NOTIFICATION_EMAIL
@@ -2632,7 +3451,7 @@
                 saveData();
                 updateCartBadge();
                 closeModal('cartModal');
-                alert(`🎉 Order Confirmed!\n\nName: ${order.customer_name}\nPhone: ${order.phone}\nTotal: $${total.toFixed(2)}\nPayment: ${paymentMethod.toUpperCase()}\n\nThank you! Please complete payment and I'll get your items ready! 💙`);
+                alert(`🎉 Order Confirmed!\n\nName: ${order.customer_name}\nPhone: ${order.phone}\nTotal: $${total.toFixed(2)}\n📦 Ships in ${settings.shippingTime || defaultSettings.shippingTime}\nPayment: ${paymentMethod.toUpperCase()}\n\nThank you! Please complete payment and I'll get your items ready! 💙`);
                 loadOrdersFromDB().then(o => { orders = o; renderOrders(); });
             } finally {
                 if (purchaseButton && !orderPlaced) purchaseButton.disabled = false;
@@ -2740,7 +3559,10 @@
                         <strong style="font-size:1.1rem;color:var(--purple);">${escapeHtml(o.customer_name)}</strong> — $${Number(o.total).toFixed(2)} · ${o.payment_method === 'zelle' ? '💰 Zelle' : '💵 Cash App'}<br>
                         <span style="color:#666;font-size:0.9rem;">🕐 ${new Date(o.created_at).toLocaleString()} &nbsp;·&nbsp; 📱 ${escapeHtml(o.phone)}</span><br>
                         <span style="color:#666;font-size:0.9rem;">📦 ${escapeHtml(o.address)}</span><br>
-                        <span style="font-size:0.95rem;">${(o.items || []).map(i => escapeHtml(i.name) + ' × ' + i.quantity).join(', ')}</span>
+                        <span style="font-size:0.95rem;">${(o.items || []).map(i => {
+                            const choices = choiceSummaryText(i.options);
+                            return `${escapeHtml(i.name)}${choices ? ` (${escapeHtml(choices)})` : ''} × ${escapeHtml(i.quantity)}`;
+                        }).join(', ')}</span>
                     </div>
                     <div class="product-list-actions">
                         <button class="btn-delete" onclick="completeOrder(${o.id})">✅ Done</button>
@@ -2861,7 +3683,16 @@
                 .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
         }
 
-        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+        function closeModal(id) {
+            const modal = document.getElementById(id);
+            if (modal) modal.style.display = 'none';
+            if (id === 'productModal') {
+                document.getElementById('productDetailContent').replaceChildren();
+                activeProductGallery = [];
+                activeProductGalleryAlt = '';
+                modalQuantity = 1;
+            }
+        }
         function scrollToHome() { document.getElementById('home').scrollIntoView({ behavior: 'smooth' }); }
 
         function showSuccess(message) {
@@ -2872,7 +3703,7 @@
         }
 
         window.onclick = function(event) {
-            if (event.target.classList.contains('modal')) event.target.style.display = 'none';
+            if (event.target.classList.contains('modal')) closeModal(event.target.id);
         };
 
         init();
