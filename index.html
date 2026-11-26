@@ -1423,7 +1423,7 @@
 
         async function loadProductsFromDB() {
             const { data, error } = await db.from('julis_products').select('*').order('id', { ascending: true });
-            if (error) { console.error('Load error:', error); return []; }
+            if (error) { console.error('Load error:', error); return null; }
             return data || [];
         }
 
@@ -1749,8 +1749,8 @@
             if (grid) grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:4rem;color:var(--purple);font-size:1.2rem;">⏳ Loading products...</div>';
 
             const productsPromise = loadProductsFromDB().then(loaded => {
-                products = loaded;
-                productsLoaded = true;
+                products = loaded || [];
+                productsLoaded = loaded !== null;
                 const cartModal = document.getElementById('cartModal');
                 if (cartModal?.style.display === 'flex') {
                     renderCart();
@@ -1763,8 +1763,8 @@
                 loadSettingsFromDB(),
                 loadOrdersFromDB()
             ]);
-            products = loadedProducts;
-            productsLoaded = true;
+            products = loadedProducts || [];
+            productsLoaded = loadedProducts !== null;
             orders = loadedOrders;
             settings = mergeSettings(localSettings, remoteSettings);
             loadedShared = sharedSettingsPayload();
@@ -2480,7 +2480,12 @@
                 }));
                 const previousSummary = JSON.stringify(summary(previousLines));
 
-                products = await loadProductsFromDB();
+                const freshProducts = await loadProductsFromDB();
+                if (freshProducts === null) {
+                    alert("We couldn't reach the shop right now — please try again in a moment.");
+                    return;
+                }
+                products = freshProducts;
                 productsLoaded = true;
                 const lines = cartLines();
                 if (JSON.stringify(summary(lines)) !== previousSummary) {
@@ -2488,7 +2493,7 @@
                     renderProductList();
                     updateCartBadge();
                     renderCart();
-                    alert('Some items changed — please check your cart and try again,');
+                    alert('Some items changed — please check your cart and try again.');
                     return;
                 }
 
@@ -2552,8 +2557,8 @@
                 }
                 if (stockError) await decrementStockFor(soldItems);
 
-                products = await loadProductsFromDB();
-                productsLoaded = true;
+                const refreshedProducts = await loadProductsFromDB();
+                if (refreshedProducts !== null) products = refreshedProducts;
                 renderProducts();
                 renderProductList();
                 cart = [];
