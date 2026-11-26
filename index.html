@@ -1856,6 +1856,11 @@
         }
 
         async function saveSettings() {
+            if (mustResetPassword) {
+                alert('🔐 Please pick your own password first, then save your settings.');
+                document.getElementById('newPassword').focus();
+                return;
+            }
             const social = {};
             let hasInvalidSocial = false;
             SOCIAL_PLATFORMS.forEach(({ key }) => {
