@@ -1985,8 +1985,9 @@
             };
 
             const btn = document.getElementById('submitBtn');
+            const submitBtnText = document.getElementById('submitBtnText');
             btn.disabled = true;
-            btn.textContent = '⏳ Saving...';
+            submitBtnText.textContent = '⏳ Saving...';
 
             try {
                 if (editingProductId) {
@@ -2008,7 +2009,7 @@
                 alert('❌ Error saving product: ' + err.message);
             } finally {
                 btn.disabled = false;
-                document.getElementById('submitBtnText').textContent = editingProductId ? '💾 Save Changes' : '✨ Add Product';
+                submitBtnText.textContent = editingProductId ? '💾 Save Changes' : '✨ Add Product';
             }
 
             renderProducts();
