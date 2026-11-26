@@ -7,6 +7,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;400;500;600;700&family=Quicksand:wght@300;400;500;600;700&family=Pacifico&family=Dancing+Script:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- Supabase for shared product database (all devices see same products) -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"
+        integrity="sha384-8FWZA6BGMXhsfO+BLtrJK0We6gg5o1JyO8xQm6peWDEUs17ACA5ziE/NIAkl9z2k"
+        crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <style>
@@ -475,9 +478,160 @@
         /* Product Grid */
         .products-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 2rem;
+            grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+            gap: 1.25rem;
             margin-top: 2rem;
+        }
+
+        .collection-section-heading {
+            grid-column: 1 / -1;
+            margin: 0.5rem 0 0;
+            padding-bottom: 0.55rem;
+            border-bottom: 2px solid var(--peach);
+            color: var(--purple);
+            font-family: 'Comfortaa', sans-serif;
+            font-size: 1.35rem;
+        }
+
+        .product-review-summary,
+        .review-stars {
+            color: #b45309;
+            font-weight: 700;
+        }
+
+        .product-review-summary {
+            margin: 0.2rem 0 0.5rem;
+            font-size: 0.85rem;
+        }
+
+        .product-reviews {
+            margin-top: 1.5rem;
+            padding-top: 1.25rem;
+            border-top: 2px solid var(--peach);
+        }
+
+        .product-reviews h3,
+        .product-reviews h4 {
+            color: var(--purple);
+            font-family: 'Comfortaa', sans-serif;
+            margin-bottom: 0.75rem;
+        }
+
+        .public-review,
+        .admin-review-card {
+            border: 1px solid #eadff7;
+            border-radius: 12px;
+            padding: 0.85rem;
+            margin-bottom: 0.7rem;
+            background: #fff;
+        }
+
+        .public-review p,
+        .admin-review-card p {
+            margin: 0.3rem 0;
+            overflow-wrap: anywhere;
+        }
+
+        .public-review time,
+        .admin-review-card time {
+            color: #666;
+            font-size: 0.8rem;
+        }
+
+        .review-empty {
+            color: #666;
+            padding: 0.75rem 0;
+        }
+
+        .product-reviews form {
+            display: grid;
+            gap: 0.55rem;
+            margin-top: 1rem;
+        }
+
+        .product-reviews input[type="text"],
+        .product-reviews textarea {
+            width: 100%;
+            padding: 0.7rem;
+            border: 1px solid #cfc5dd;
+            border-radius: 8px;
+            font: inherit;
+        }
+
+        .review-rating-picker {
+            border: 0;
+            display: flex;
+            gap: 0.55rem;
+        }
+
+        .review-rating-picker label {
+            cursor: pointer;
+            color: #b45309;
+        }
+
+        .review-rating-picker input {
+            margin-right: 0.2rem;
+        }
+
+        .review-submit-status {
+            min-height: 1.5rem;
+            color: var(--navy);
+            font-weight: 700;
+        }
+
+        .admin-review-header,
+        .admin-review-actions {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+        }
+
+        .review-status,
+        .review-count-badge {
+            border-radius: 999px;
+            padding: 0.15rem 0.55rem;
+            font-size: 0.78rem;
+            font-weight: 700;
+        }
+
+        .review-status.pending,
+        .review-count-badge {
+            background: #fff0c2;
+            color: #854d0e;
+        }
+
+        .review-status.approved {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .shop-qr-url {
+            overflow-wrap: anywhere;
+            color: white;
+            font-weight: 700;
+        }
+
+        #shopQrCanvas {
+            display: block;
+            width: min(100%, 296px);
+            height: auto;
+            margin: 0.75rem auto;
+            background: white;
+            border: 8px solid white;
+            border-radius: 8px;
+        }
+
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
         }
 
         .collection-tabs {
@@ -538,12 +692,12 @@
 
         .product-card {
             background: white;
-            border-radius: 20px;
+            border-radius: 16px;
             overflow: hidden;
             box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
             transition: all 0.4s ease;
             cursor: pointer;
-            border: 3px solid transparent;
+            border: 2px solid transparent;
             position: relative;
         }
 
@@ -555,12 +709,12 @@
 
         .product-image {
             width: 100%;
-            height: 280px;
+            height: 180px;
             background: linear-gradient(135deg, var(--pale-blue) 0%, var(--lavender) 100%);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 5rem;
+            font-size: 3rem;
             position: relative;
             overflow: hidden;
         }
@@ -586,34 +740,39 @@
         }
 
         .product-info {
-            padding: 1.5rem;
+            padding: 1rem;
         }
 
         .product-name {
             font-family: 'Comfortaa', sans-serif;
-            font-size: 1.5rem;
+            font-size: 1.1rem;
             font-weight: 600;
-            margin-bottom: 0.75rem;
+            margin-bottom: 0.45rem;
             color: var(--purple);
         }
 
         .product-description {
             color: #666;
-            font-size: 0.95rem;
-            margin-bottom: 1.25rem;
-            line-height: 1.6;
+            font-size: 0.85rem;
+            margin-bottom: 0.75rem;
+            line-height: 1.45;
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 2;
+            overflow: hidden;
         }
 
         .product-footer {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding-top: 1rem;
+            gap: 0.5rem;
+            padding-top: 0.75rem;
             border-top: 2px solid var(--peach);
         }
 
         .product-price {
-            font-size: 1.8rem;
+            font-size: 1.35rem;
             font-weight: 700;
             color: var(--primary-blue);
             font-family: 'Comfortaa', sans-serif;
@@ -622,13 +781,14 @@
         .btn-add-cart {
             background: var(--primary-blue);
             color: white;
-            padding: 0.65rem 1.25rem;
+            min-height: 40px;
+            padding: 0.55rem 0.7rem;
             border-radius: 20px;
             border: none;
             cursor: pointer;
             font-weight: 600;
             transition: all 0.3s ease;
-            font-size: 0.9rem;
+            font-size: 0.82rem;
             font-family: 'Quicksand', sans-serif;
         }
 
@@ -1132,9 +1292,91 @@
 
         .shop-stat-grid {
             display: grid;
-            grid-template-columns: repeat(5, minmax(0, 1fr));
+            grid-template-columns: repeat(6, minmax(0, 1fr));
             gap: 1rem;
             margin-bottom: 2rem;
+        }
+
+        .inventory-row {
+            padding: 1rem;
+            margin-bottom: 0.85rem;
+            border: 1px solid #eadff7;
+            border-radius: 14px;
+            background: white;
+        }
+
+        .inventory-product {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .inventory-product img,
+        .inventory-image-placeholder {
+            width: 56px;
+            height: 56px;
+            object-fit: cover;
+            border-radius: 10px;
+            background: #f1eafa;
+            display: grid;
+            place-items: center;
+            font-size: 1.5rem;
+        }
+
+        .inventory-product small {
+            display: block;
+            color: #666;
+        }
+
+        .inventory-status {
+            display: inline-block;
+            margin-top: 0.25rem;
+            padding: 0.1rem 0.5rem;
+            border-radius: 999px;
+            font-size: 0.78rem;
+            font-weight: 700;
+        }
+
+        .inventory-status.sold-out {
+            color: #991b1b;
+            background: #fee2e2;
+        }
+
+        .inventory-status.low-stock {
+            color: #9a3412;
+            background: #ffedd5;
+        }
+
+        .inventory-metrics {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6rem 1.2rem;
+            margin-top: 0.8rem;
+        }
+
+        .inventory-metrics span {
+            display: flex;
+            gap: 0.25rem;
+        }
+
+        .inventory-choices {
+            margin-top: 0.6rem;
+            overflow-wrap: anywhere;
+        }
+
+        .inventory-restock {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+        }
+
+        .inventory-restock input {
+            width: 90px;
+            padding: 0.45rem;
+            border: 1px solid #cfc5dd;
+            border-radius: 8px;
         }
 
         .shop-stat-card {
@@ -1321,6 +1563,34 @@
                 justify-content: flex-start;
             }
         }
+
+        @media (max-width: 480px) {
+            .products-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 0.75rem;
+            }
+            .product-image {
+                height: 132px;
+            }
+            .product-info {
+                padding: 0.75rem;
+            }
+            .product-name {
+                font-size: 0.98rem;
+            }
+            .product-footer {
+                align-items: stretch;
+                flex-direction: column;
+            }
+            .product-price {
+                font-size: 1.2rem;
+            }
+            .btn-add-cart {
+                width: 100%;
+                padding-inline: 0.45rem;
+                font-size: 0.78rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1405,6 +1675,8 @@
                 <button type="button" class="admin-tab-button active" id="adminTabShop" role="tab" aria-selected="true" aria-controls="adminShopPanel" onclick="setAdminTab('shop')">🏠 My Shop</button>
                 <button type="button" class="admin-tab-button" id="adminTabProducts" role="tab" aria-selected="false" aria-controls="adminProductsPanel" onclick="setAdminTab('products')">🧶 My Products</button>
                 <button type="button" class="admin-tab-button" id="adminTabOrders" role="tab" aria-selected="false" aria-controls="adminOrdersPanel" onclick="setAdminTab('orders')">📦 Orders</button>
+                <button type="button" class="admin-tab-button" id="adminTabInventory" role="tab" aria-selected="false" aria-controls="adminInventoryPanel" onclick="setAdminTab('inventory')">📊 Inventory</button>
+                <button type="button" class="admin-tab-button" id="adminTabReviews" role="tab" aria-selected="false" aria-controls="adminReviewsPanel" onclick="setAdminTab('reviews')">⭐ Reviews <span id="adminReviewPendingCount" class="review-count-badge hidden">0</span></button>
                 <button type="button" class="admin-tab-button" id="adminTabSettings" role="tab" aria-selected="false" aria-controls="adminSettingsPanel" onclick="setAdminTab('settings')">⚙️ Settings</button>
             </div>
 
@@ -1415,6 +1687,7 @@
                     <div class="shop-stat-card"><span>🧵 Low stock</span><strong id="dashboardLowStock">0</strong></div>
                     <div class="shop-stat-card"><span>💨 Sold out</span><strong id="dashboardSoldOut">0</strong></div>
                     <div class="shop-stat-card"><span>🛍️ New orders</span><strong id="dashboardNewOrders">0</strong></div>
+                    <div class="shop-stat-card"><span>⭐ Pending reviews</span><strong id="dashboardPendingReviews">0</strong></div>
                 </div>
                 <div class="restock-card">
                     <h3>🧵 Items to make or restock</h3>
@@ -1537,6 +1810,14 @@
                 <div id="ordersList" style="margin-top: 1rem;"></div>
             </section>
 
+            <section class="admin-tab-panel hidden" id="adminInventoryPanel" role="tabpanel" aria-labelledby="adminTabInventory">
+                <div id="inventoryList" style="margin-top: 1rem;"></div>
+            </section>
+
+            <section class="admin-tab-panel hidden" id="adminReviewsPanel" role="tabpanel" aria-labelledby="adminTabReviews">
+                <div id="adminReviewsList" style="margin-top: 1rem;"></div>
+            </section>
+
             <section class="admin-tab-panel hidden" id="adminSettingsPanel" role="tabpanel" aria-labelledby="adminTabSettings">
                 <div class="settings-panel">
                     <h3 class="settings-title">⚙️ Settings for Juli's Shop</h3>
@@ -1635,6 +1916,17 @@
                     </div>
 
                     <div class="settings-section">
+                        <h4>📱 My Shop QR Code</h4>
+                        <canvas id="shopQrCanvas" aria-label="QR code for Juli's Studios"></canvas>
+                        <p id="shopQrUrl" class="shop-qr-url">https://julis-studios.vercel.app/</p>
+                        <p id="shopQrFallback" class="settings-help hidden" role="status"></p>
+                        <button type="button" class="btn btn-primary" id="downloadShopQrButton" onclick="downloadShopQrCode()">
+                            ⬇️ Download QR code
+                        </button>
+                        <p class="settings-help">Print it or show it at craft fairs — people scan it to open your shop.</p>
+                    </div>
+
+                    <div class="settings-section">
                         <h4>🚚 Shipping</h4>
                         <p class="settings-help">Shipping + handling is added to every order.</p>
                         <div class="settings-grid">
@@ -1721,6 +2013,7 @@
 
     <script>
         // ─── Supabase (shared product database — same on every device) ───
+        const SHOP_URL = 'https://julis-studios.vercel.app/';
         const SUPABASE_URL = 'https://izrjdhuosxtqteftzkhd.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml6cmpkaHVvc3h0cXRlZnR6a2hkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2MjQ3NDUsImV4cCI6MjA5MjIwMDc0NX0.89tLGBgY-Wwy8S-zN1LrZHhfp-AZGLgdOct-L8q7e8M';
         const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -1751,6 +2044,18 @@
             const { data, error } = await db.from('julis_orders').select('*').order('created_at', { ascending: false });
             if (error) { console.error('Orders load error:', error); return []; }
             return data || [];
+        }
+
+        async function loadApprovedReviewsFromDB() {
+            try {
+                const { data, error } = await db.from('julis_reviews')
+                    .select('id,product_id,name,rating,message,created_at')
+                    .eq('approved', true)
+                    .order('created_at', { ascending: false });
+                return !error && Array.isArray(data) ? data : [];
+            } catch {
+                return [];
+            }
         }
 
         async function insertOrderToDB(order) {
@@ -1800,6 +2105,10 @@
 
         let products = []; // loaded async from Supabase on init
         let orders   = []; // loaded async from Supabase on init
+        let approvedReviews = [];
+        let adminReviews = [];
+        let adminReviewsLoaded = false;
+        let adminReviewsLoading = false;
         let productsLoaded = false;
 
         let cart = (safeParse('julis_cart_v3') || []).map(item => ({
@@ -2083,6 +2392,76 @@
             followSection.classList.toggle('hidden', links.childElementCount === 0);
         }
 
+        function renderShopQrCode() {
+            const canvas = document.getElementById('shopQrCanvas');
+            const urlText = document.getElementById('shopQrUrl');
+            const fallback = document.getElementById('shopQrFallback');
+            const button = document.getElementById('downloadShopQrButton');
+            if (urlText) urlText.textContent = SHOP_URL;
+            if (!canvas || typeof window.qrcode !== 'function') {
+                canvas?.classList.add('hidden');
+                button?.classList.add('hidden');
+                if (fallback) {
+                    fallback.textContent = 'QR code is unavailable right now. Share the shop link above instead.';
+                    fallback.classList.remove('hidden');
+                }
+                return;
+            }
+            try {
+                const code = window.qrcode(0, 'M');
+                code.addData(SHOP_URL);
+                code.make();
+                const count = code.getModuleCount();
+                const moduleSize = 8;
+                const quietZone = 4;
+                const size = (count + quietZone * 2) * moduleSize;
+                canvas.width = size;
+                canvas.height = size;
+                const context = canvas.getContext('2d');
+                context.fillStyle = '#fff';
+                context.fillRect(0, 0, size, size);
+                context.fillStyle = '#000';
+                for (let row = 0; row < count; row++) {
+                    for (let column = 0; column < count; column++) {
+                        if (code.isDark(row, column)) {
+                            context.fillRect(
+                                (column + quietZone) * moduleSize,
+                                (row + quietZone) * moduleSize,
+                                moduleSize,
+                                moduleSize
+                            );
+                        }
+                    }
+                }
+                canvas.classList.remove('hidden');
+                button?.classList.remove('hidden');
+                fallback?.classList.add('hidden');
+            } catch {
+                canvas.classList.add('hidden');
+                button?.classList.add('hidden');
+                if (fallback) {
+                    fallback.textContent = 'QR code is unavailable right now. Share the shop link above instead.';
+                    fallback.classList.remove('hidden');
+                }
+            }
+        }
+
+        function downloadShopQrCode() {
+            const canvas = document.getElementById('shopQrCanvas');
+            if (!canvas || !canvas.width || !canvas.height) return;
+            canvas.toBlob(blob => {
+                if (!blob) return;
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = 'julis-studios-qr.png';
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+                setTimeout(() => URL.revokeObjectURL(url), 1000);
+            }, 'image/png');
+        }
+
         // ─── Init ────────────────────────────────────────────────────────
         async function init() {
             checkAdminExpiry();
@@ -2100,14 +2479,16 @@
                 }
                 return loaded;
             });
-            const [loadedProducts, remoteSettings, loadedOrders] = await Promise.all([
+            const [loadedProducts, remoteSettings, loadedOrders, loadedReviews] = await Promise.all([
                 productsPromise,
                 loadSettingsFromDB(),
-                loadOrdersFromDB()
+                loadOrdersFromDB(),
+                loadApprovedReviewsFromDB()
             ]);
             products = loadedProducts || [];
             productsLoaded = loadedProducts !== null;
             orders = loadedOrders;
+            approvedReviews = loadedReviews;
             settings = mergeSettings(localSettings, remoteSettings);
             // undefined = couldn't reach the server: treat what's on screen as the baseline
             // so a later save only sends fields Juli actually edits.
@@ -2126,6 +2507,7 @@
             renderOrders();
             renderShopDashboard();
             setAdminTab(localStorage.getItem('julis_admin_tab') || 'shop', false);
+            renderShopQrCode();
 
             document.getElementById('productForm').addEventListener('submit', function(e) {
                 e.preventDefault();
@@ -2947,16 +3329,41 @@
                 return;
             }
 
-            grid.innerHTML = visibleProducts.map(p => {
-                const out = isSoldOut(p);
-                const low = lowStockLeft(p);
-                const imageUrl = safeProductImageUrl(p.image);
-                const photoCount = productPhotoUrls(p).length;
-                const hasVideo = Boolean(videoEmbedUrl(p.video_url));
-                const hasChoices = productOptionGroups(p).length > 0;
-                const description = String(p.description || '');
-                const price = Number(p.price).toFixed(2);
-                return `
+            if (!selectedCollection && collections.length) {
+                const sections = collections.map(collection => {
+                    const collectionProducts = products.filter(
+                        product => String(product.collection ?? '').trim().toLowerCase()
+                            === collection.name.toLowerCase()
+                    );
+                    return collectionProducts.length
+                        ? `<h3 class="collection-section-heading">${escapeHtml(collection.name)}</h3>${collectionProducts.map(renderProductCard).join('')}`
+                        : '';
+                });
+                const uncollected = products.filter(
+                    product => !String(product.collection ?? '').trim()
+                );
+                if (uncollected.length) {
+                    sections.push(
+                        `<h3 class="collection-section-heading">More handmade goodies</h3>${uncollected.map(renderProductCard).join('')}`
+                    );
+                }
+                grid.innerHTML = sections.join('');
+                return;
+            }
+
+            grid.innerHTML = visibleProducts.map(renderProductCard).join('');
+        }
+
+        function renderProductCard(p) {
+            const out = isSoldOut(p);
+            const low = lowStockLeft(p);
+            const imageUrl = safeProductImageUrl(p.image);
+            const photoCount = productPhotoUrls(p).length;
+            const hasVideo = Boolean(videoEmbedUrl(p.video_url));
+            const hasChoices = productOptionGroups(p).length > 0;
+            const description = String(p.description || '');
+            const price = Number(p.price).toFixed(2);
+            return `
                 <div class="product-card" onclick="showProductDetail(${Number(p.id)})" style="${out ? 'opacity:0.72;' : ''}">
                     <div class="product-badge"${out ? ' style="background:#6b7280;"' : ''}>${out ? 'SOLD OUT' : 'HANDMADE'}</div>
                     <div class="product-image">
@@ -2964,6 +3371,7 @@
                     </div>
                     <div class="product-info">
                         <h3 class="product-name">${escapeHtml(p.name)}</h3>
+                        ${reviewSummaryMarkup(p)}
                         ${photoCount > 1 || hasVideo ? `<div class="product-media-badges">
                             ${photoCount > 1 ? `<span class="product-media-badge">📷 ${photoCount}</span>` : ''}
                             ${hasVideo ? '<span class="product-media-badge">▶️ Video</span>' : ''}
@@ -2979,7 +3387,75 @@
                                     : `addToCart(${Number(p.id)})`}">Add to Cart</button>`}
                         </div>
                     </div>
-                </div>`; }).join('');
+                </div>`;
+        }
+
+        function reviewStars(rating) {
+            const value = Math.min(5, Math.max(0, Math.round(Number(rating) || 0)));
+            return '★'.repeat(value) + '☆'.repeat(5 - value);
+        }
+
+        function reviewsForProduct(productId) {
+            return approvedReviews.filter(review => String(review.product_id) === String(productId));
+        }
+
+        function reviewSummaryMarkup(product) {
+            const reviews = reviewsForProduct(product.id);
+            if (!reviews.length) return '';
+            const average = reviews.reduce((sum, review) => sum + Number(review.rating || 0), 0) / reviews.length;
+            return `<div class="product-review-summary" aria-label="Average rating ${average.toFixed(1)} out of 5 from ${reviews.length} reviews">
+                <span>${reviewStars(average)}</span> <span>(${reviews.length})</span>
+            </div>`;
+        }
+
+        function approvedReviewsMarkup(productId) {
+            const reviews = reviewsForProduct(productId);
+            if (!reviews.length) return '<p class="review-empty">No reviews yet. Be the first!</p>';
+            return reviews.map(review => {
+                const rating = Math.min(5, Math.max(1, Number(review.rating) || 1));
+                const date = new Date(review.created_at);
+                const dateText = Number.isNaN(date.getTime()) ? '' : date.toLocaleDateString();
+                return `<article class="public-review">
+                    <div><strong>${escapeHtml(review.name)}</strong> <span class="review-stars" aria-label="${rating} out of 5 stars">${reviewStars(rating)}</span></div>
+                    <p>${escapeHtml(review.message)}</p>
+                    <time>${escapeHtml(dateText)}</time>
+                </article>`;
+            }).join('');
+        }
+
+        async function submitProductReview(event, productId) {
+            event?.preventDefault();
+            const form = document.getElementById('productReviewForm');
+            const status = document.getElementById('reviewSubmitStatus');
+            const button = document.getElementById('submitProductReview');
+            const name = String(form?.elements.reviewName?.value || '').trim();
+            const message = String(form?.elements.reviewMessage?.value || '').trim();
+            const rating = Number(new FormData(form).get('reviewRating'));
+            if (!name || name.length > 40 || !message || message.length > 500 || rating < 1 || rating > 5) {
+                status.textContent = 'Please enter your name, choose 1–5 stars, and write a comment.';
+                return false;
+            }
+            button.disabled = true;
+            status.textContent = '';
+            try {
+                const { data, error } = await db.rpc('julis_submit_review', {
+                    p_product_id: Number(productId),
+                    p_name: name,
+                    p_rating: rating,
+                    p_message: message
+                });
+                if (error) throw error;
+                if (data == null) throw new Error('Review was not saved.');
+                status.textContent = 'Thanks! Juli will review it before it appears 💖';
+                form.reset();
+            } catch (error) {
+                status.textContent = error?.code === 'P0001' && /too many reviews/i.test(String(error.message || ''))
+                    ? 'You have reached the review limit for now. Please try again later.'
+                    : 'We could not submit your review right now. Please try again.';
+            } finally {
+                button.disabled = false;
+            }
+            return false;
         }
 
         function renderProductList() {
@@ -3076,7 +3552,33 @@
                             Add to Cart — $<span id="modalTotal">${price}</span>
                         </button>
                     </div>
-                </div>`;
+                </div>
+                <section class="product-reviews" aria-labelledby="productReviewsHeading">
+                    <h3 id="productReviewsHeading">Reviews</h3>
+                    <div class="approved-reviews">${approvedReviewsMarkup(p.id)}</div>
+                    <form id="productReviewForm">
+                        <h4>Leave a review</h4>
+                        <fieldset class="review-rating-picker">
+                            <legend>Your rating *</legend>
+                            ${[1, 2, 3, 4, 5].map(rating => `<label>
+                                <input type="radio" name="reviewRating" value="${rating}" required>
+                                <span aria-hidden="true">${'★'.repeat(rating)}</span>
+                                <span class="sr-only">${rating} ${rating === 1 ? 'star' : 'stars'}</span>
+                            </label>`).join('')}
+                        </fieldset>
+                        <label for="reviewName">Name *</label>
+                        <input id="reviewName" name="reviewName" type="text" maxlength="40" required>
+                        <label for="reviewMessage">Comment *</label>
+                        <textarea id="reviewMessage" name="reviewMessage" maxlength="500" rows="4" required></textarea>
+                        <button type="submit" class="btn btn-primary" id="submitProductReview">Submit Review</button>
+                        <p id="reviewSubmitStatus" class="review-submit-status" role="status" aria-live="polite"></p>
+                    </form>
+                </section>`;
+            const reviewForm = document.getElementById('productReviewForm');
+            reviewForm?.addEventListener('submit', event => {
+                event.preventDefault();
+                submitProductReview(event, Number(id));
+            });
             document.getElementById('productModal').style.display = 'flex';
         }
 
@@ -3365,6 +3867,7 @@
                     address: address.trim(),
                     payment_method: paymentMethod,
                     items: lines.map(({ product, quantity, options }) => ({
+                        id: product.id,
                         name: String(product.name || ''),
                         quantity,
                         price: Number(product.price),
@@ -3462,6 +3965,8 @@
             { name: 'shop', button: 'adminTabShop', panel: 'adminShopPanel' },
             { name: 'products', button: 'adminTabProducts', panel: 'adminProductsPanel' },
             { name: 'orders', button: 'adminTabOrders', panel: 'adminOrdersPanel' },
+            { name: 'inventory', button: 'adminTabInventory', panel: 'adminInventoryPanel' },
+            { name: 'reviews', button: 'adminTabReviews', panel: 'adminReviewsPanel' },
             { name: 'settings', button: 'adminTabSettings', panel: 'adminSettingsPanel' }
         ];
 
@@ -3478,6 +3983,111 @@
                 const { data, error } = await db.rpc('julis_password_needs_reset');
                 if (!error && data === true) requirePasswordReset();
             } catch {}
+        }
+
+        function updatePendingReviewCount() {
+            const pending = adminReviews.filter(review => review.approved !== true).length;
+            const tabCount = document.getElementById('adminReviewPendingCount');
+            if (tabCount) {
+                tabCount.textContent = pending;
+                tabCount.classList.toggle('hidden', !adminReviewsLoaded);
+            }
+            const dashboardCount = document.getElementById('dashboardPendingReviews');
+            if (dashboardCount) dashboardCount.textContent = pending;
+        }
+
+        function isWrongAdminPasscode(error) {
+            return error?.code === '28P01' ||
+                String(error?.message || '').toLowerCase().includes('wrong passcode');
+        }
+
+        function renderAdminReviews() {
+            const list = document.getElementById('adminReviewsList');
+            if (!list) return;
+            if (!adminReviews.length) {
+                list.innerHTML = '<p class="review-empty">No reviews yet.</p>';
+                return;
+            }
+            list.innerHTML = adminReviews.map(review => {
+                const product = products.find(item => String(item.id) === String(review.product_id));
+                const name = String(review.name || '');
+                const rating = Math.min(5, Math.max(1, Number(review.rating) || 1));
+                const status = review.approved === true ? 'Approved' : 'Pending';
+                const id = Number(review.id);
+                const date = new Date(review.created_at);
+                const dateText = Number.isNaN(date.getTime()) ? '' : date.toLocaleString();
+                return `<article class="admin-review-card">
+                    <div class="admin-review-header"><strong>${escapeHtml(name)}</strong>
+                        <span class="review-status ${review.approved === true ? 'approved' : 'pending'}">${status}</span>
+                    </div>
+                    <p>${escapeHtml(product?.name || 'Product no longer available')}</p>
+                    <div class="review-stars" aria-label="${rating} out of 5 stars">${reviewStars(rating)}</div>
+                    <p>${escapeHtml(review.message)}</p>
+                    <time>${escapeHtml(dateText)}</time>
+                    <div class="admin-review-actions">
+                        ${review.approved === true ? '' : `<button type="button" class="btn-edit" onclick="moderateReview(${id}, 'approve')">Approve</button>`}
+                        <button type="button" class="btn-delete" onclick="moderateReview(${id}, 'delete')">Delete</button>
+                    </div>
+                </article>`;
+            }).join('');
+        }
+
+        async function loadAdminReviews(force = false) {
+            if (!adminPasscode || adminReviewsLoading || (adminReviewsLoaded && !force)) return;
+            adminReviewsLoading = true;
+            const list = document.getElementById('adminReviewsList');
+            if (list) list.innerHTML = '<p class="review-empty">Loading reviews…</p>';
+            try {
+                const { data, error } = await db.rpc('julis_admin_reviews', { p_passcode: adminPasscode });
+                if ((!error && data === null) || isWrongAdminPasscode(error)) {
+                    adminPasscode = '';
+                    adminReviewsLoaded = false;
+                    showSuccess('❌ Wrong password (or too many tries — wait 15 minutes).');
+                    return;
+                }
+                if (error) {
+                    adminReviewsLoaded = false;
+                    showSuccess("❌ Couldn't load reviews right now. Please try again.");
+                    return;
+                }
+                adminReviews = Array.isArray(data) ? data : [];
+                adminReviewsLoaded = true;
+                updatePendingReviewCount();
+                renderAdminReviews();
+                renderShopDashboard();
+            } catch {
+                adminReviewsLoaded = false;
+                showSuccess("❌ Couldn't load reviews right now. Please try again.");
+            } finally {
+                adminReviewsLoading = false;
+            }
+        }
+
+        async function moderateReview(id, action) {
+            const review = adminReviews.find(item => Number(item.id) === Number(id));
+            if (!review || !['approve', 'delete'].includes(action)) return;
+            if (action === 'delete' && !confirm(`Delete the review by ${String(review.name || 'this customer')}?`)) return;
+            try {
+                const { data, error } = await db.rpc('julis_moderate_review', {
+                    p_passcode: adminPasscode,
+                    p_id: Number(id),
+                    p_action: action
+                });
+                if (isWrongAdminPasscode(error) || data === false) {
+                    adminPasscode = '';
+                    showSuccess('❌ Wrong password (or too many tries — wait 15 minutes).');
+                    return;
+                }
+                if (error || data !== true) {
+                    showSuccess("❌ Couldn't update that review right now. Please try again.");
+                    return;
+                }
+                await loadAdminReviews(true);
+                approvedReviews = await loadApprovedReviewsFromDB();
+                renderProducts();
+            } catch {
+                showSuccess("❌ Couldn't update that review right now. Please try again.");
+            }
         }
 
         function setAdminTab(name, remember = true) {
@@ -3497,6 +4107,8 @@
                 panel.classList.toggle('hidden', !active);
             });
             if (remember) localStorage.setItem('julis_admin_tab', name);
+            if (name === 'reviews' && !adminReviewsLoaded) loadAdminReviews();
+            if (name === 'inventory') renderInventory();
         }
 
         function navigateAdminTabs(event) {
@@ -3523,6 +4135,7 @@
             document.getElementById('dashboardLowStock').textContent = lowStock.length;
             document.getElementById('dashboardSoldOut').textContent = soldOut.length;
             document.getElementById('dashboardNewOrders').textContent = newOrders.length;
+            updatePendingReviewCount();
 
             const items = [...soldOut, ...lowStock];
             const empty = document.getElementById('shopRestockEmpty');
@@ -3535,6 +4148,96 @@
                     <button class="btn-edit" onclick="editShopProduct(${Number(product.id)})">✏️ Edit</button>
                 </div>`;
             }).join('');
+        }
+
+        function inventorySales(product) {
+            const result = { sold: 0, sales: 0, choices: new Map() };
+            orders.forEach(order => (order.items || []).forEach(item => {
+                const matches = item.id !== undefined && item.id !== null
+                    ? String(item.id) === String(product.id)
+                    : String(item.name || '').trim().toLowerCase() === String(product.name || '').trim().toLowerCase();
+                if (!matches) return;
+                const quantity = Math.max(0, Number(item.quantity) || 0);
+                result.sold += quantity;
+                result.sales += (Number(item.price) || 0) * quantity;
+                if (item.options && typeof item.options === 'object' && !Array.isArray(item.options)) {
+                    Object.entries(item.options).forEach(([name, choice]) => {
+                        const key = `${name}\u0000${choice}`;
+                        result.choices.set(key, (result.choices.get(key) || 0) + quantity);
+                    });
+                }
+            }));
+            return result;
+        }
+
+        function renderInventory() {
+            const list = document.getElementById('inventoryList');
+            if (!list) return;
+            if (!products.length) {
+                list.innerHTML = '<p class="review-empty">No products yet.</p>';
+                return;
+            }
+            const sorted = [...products].sort((a, b) => {
+                const rank = product => product.track_stock === false ? 2
+                    : isSoldOut(product) ? 0 : lowStockLeft(product) !== null ? 1 : 2;
+                return rank(a) - rank(b) || String(a.name).localeCompare(String(b.name));
+            });
+            list.innerHTML = sorted.map(product => {
+                const stats = inventorySales(product);
+                const tracked = product.track_stock !== false;
+                const left = tracked ? stockOf(product) : null;
+                const total = tracked ? left + stats.sold : null;
+                const badge = !tracked ? '' : isSoldOut(product)
+                    ? '<span class="inventory-status sold-out">Sold out</span>'
+                    : lowStockLeft(product) !== null
+                        ? '<span class="inventory-status low-stock">Low stock</span>' : '';
+                const choiceText = Array.from(stats.choices, ([key, quantity]) => {
+                    const [name, choice] = key.split('\u0000');
+                    return `${escapeHtml(name)} ${escapeHtml(choice)} ×${quantity}`;
+                }).join(', ');
+                const image = safeProductImageUrl(product.image);
+                return `<article class="inventory-row">
+                    <div class="inventory-product">
+                        ${image ? `<img src="${escapeHtml(image)}" alt="${escapeHtml(product.name)}">` : '<span class="inventory-image-placeholder">🎀</span>'}
+                        <div><strong>${escapeHtml(product.name)}</strong>
+                            ${String(product.collection || '').trim() ? `<small>Collection: ${escapeHtml(String(product.collection).trim())}</small>` : ''}
+                            ${badge}</div>
+                    </div>
+                    <div class="inventory-metrics">
+                        <span><strong>Total</strong> ${tracked ? total : 'Unlimited'}</span>
+                        <span><strong>Sold</strong> ${stats.sold}</span>
+                        <span><strong>Left</strong> ${tracked ? left : 'Unlimited'}</span>
+                        <span><strong>Sales</strong> $${stats.sales.toFixed(2)}</span>
+                    </div>
+                    ${choiceText ? `<p class="inventory-choices"><strong>Choices sold:</strong> ${choiceText}</p>` : ''}
+                    ${tracked ? `<div class="inventory-restock">
+                        <label for="restockQuantity${Number(product.id)}">Restock quantity</label>
+                        <input type="number" id="restockQuantity${Number(product.id)}" min="1" max="999" step="1" value="1">
+                        <button type="button" class="btn-edit" onclick="restockProduct(${Number(product.id)})">Restock</button>
+                    </div>` : ''}
+                </article>`;
+            }).join('');
+        }
+
+        async function restockProduct(id) {
+            const input = document.getElementById(`restockQuantity${Number(id)}`);
+            const quantity = Number(input?.value);
+            if (!Number.isInteger(quantity) || quantity < 1 || quantity > 999) {
+                alert('Please enter a whole restock quantity from 1 to 999.');
+                return;
+            }
+            const product = products.find(item => String(item.id) === String(id));
+            if (!product || product.track_stock === false) return;
+            const patch = { stock_quantity: stockOf(product) + quantity };
+            try {
+                await updateProductInDB(id, patch);
+                Object.assign(product, patch);
+                renderInventory();
+                renderProductList();
+                renderShopDashboard();
+            } catch {
+                alert("❌ Couldn't restock that product right now. Please try again.");
+            }
         }
 
         function editShopProduct(id) {
@@ -3639,6 +4342,7 @@
                     startActivityTracking();
                     setTimeout(() => panel.scrollIntoView({ behavior: 'smooth', block: 'start' }), 200);
                     if (isOnlineLogin) await checkPasswordNeedsReset();
+                    await loadAdminReviews();
                 } else {
                     alert('❌ Incorrect password!');
                     document.getElementById('adminPasswordInput').value = '';
@@ -3666,6 +4370,9 @@
         function adminLogout() {
             isAdminLoggedIn = false;
             adminPasscode = '';
+            adminReviewsLoaded = false;
+            adminReviews = [];
+            updatePendingReviewCount();
             mustResetPassword = false;
             adminExpiresAt = 0;
             localStorage.removeItem(ADMIN_EXPIRY_KEY);
