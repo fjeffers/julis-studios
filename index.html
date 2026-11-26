@@ -1490,8 +1490,12 @@
 
         let products = []; // loaded async from Supabase on init
         let orders   = []; // loaded async from Supabase on init
+        let productsLoaded = false;
 
-        let cart = safeParse('julis_cart_v3') || [];
+        let cart = (safeParse('julis_cart_v3') || []).map(item => ({
+            id: item?.id,
+            quantity: item?.quantity
+        }));
         const DEFAULT_WELCOME_MESSAGE = "Hi! I'm Juli, and I love creating handmade treasures just for you! ✨ From cute scrunchies and sparkly rings to cozy quilts, each piece is made with love and care. Browse my collection and find something special that makes you smile! 💖";
         const SOCIAL_PLATFORMS = [
             { key: 'facebook', label: 'Facebook', emoji: '📘', domains: ['facebook.com', 'fb.com'], toUrl: h => `https://www.facebook.com/${h}` },
@@ -1738,12 +1742,23 @@
             const grid = document.getElementById('productsGrid');
             if (grid) grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:4rem;color:var(--purple);font-size:1.2rem;">⏳ Loading products...</div>';
 
+            const productsPromise = loadProductsFromDB().then(loaded => {
+                products = loaded;
+                productsLoaded = true;
+                const cartModal = document.getElementById('cartModal');
+                if (cartModal?.style.display === 'flex') {
+                    renderCart();
+                    updateCartBadge();
+                }
+                return loaded;
+            });
             const [loadedProducts, remoteSettings, loadedOrders] = await Promise.all([
-                loadProductsFromDB(),
+                productsPromise,
                 loadSettingsFromDB(),
                 loadOrdersFromDB()
             ]);
             products = loadedProducts;
+            productsLoaded = true;
             orders = loadedOrders;
             settings = mergeSettings(localSettings, remoteSettings);
             loadedShared = sharedSettingsPayload();
@@ -2099,6 +2114,47 @@
             return Math.max(0, Number(p.stock_quantity) || 0);
         }
         function isSoldOut(p) { return stockOf(p) <= 0; }
+        function cartLines() {
+            if (!productsLoaded) return [];
+
+            const nextCart = [];
+            const lines = [];
+            let changed = false;
+            cart.forEach(item => {
+                const product = products.find(p => String(p.id) === String(item.id));
+                const rawQuantity = Number(item.quantity);
+                const requested = Number.isFinite(rawQuantity) ? Math.floor(rawQuantity) : 0;
+                if (!product || requested <= 0 || isSoldOut(product)) {
+                    changed = true;
+                    return;
+                }
+
+                const available = stockOf(product);
+                const quantity = Number.isFinite(available)
+                    ? Math.min(requested, Math.floor(available))
+                    : requested;
+                if (quantity <= 0) {
+                    changed = true;
+                    return;
+                }
+                if (
+                    item.id !== product.id ||
+                    item.quantity !== quantity ||
+                    Object.keys(item).some(key => key !== 'id' && key !== 'quantity')
+                ) changed = true;
+
+                nextCart.push({ id: product.id, quantity });
+                lines.push({ product, quantity });
+            });
+
+            if (nextCart.length !== cart.length) changed = true;
+            if (changed) {
+                cart = nextCart;
+                saveData();
+                showSuccess("🛒 Your cart was updated to match what's in stock.");
+            }
+            return lines;
+        }
         function safeProductImageUrl(image) {
             if (typeof image !== 'string') return '';
             return /^data:image\/(jpeg|png|webp|gif);base64,[A-Za-z0-9+/=]+$/.test(image) ||
@@ -2114,8 +2170,10 @@
         }
         /** How many more of this item the cart can still take. */
         function remainingFor(id) {
-            const p = products.find(x => x.id === id);
-            const inCart = (cart.find(i => i.id === id) || {}).quantity || 0;
+            const p = products.find(x => String(x.id) === String(id));
+            const inCart = cartLines()
+                .filter(line => String(line.product.id) === String(id))
+                .reduce((sum, line) => sum + line.quantity, 0);
             return stockOf(p) - inCart;
         }
 
@@ -2251,9 +2309,9 @@
             }
             const adding = Math.min(quantity, room);
 
-            const existing = cart.find(item => item.id === id);
+            const existing = cart.find(item => String(item.id) === String(product.id));
             if (existing) existing.quantity += adding;
-            else cart.push({ ...product, quantity: adding });
+            else cart.push({ id: product.id, quantity: adding });
 
             saveData();
             updateCartBadge();
@@ -2269,14 +2327,15 @@
         }
 
         function removeFromCart(id) {
-            cart = cart.filter(item => item.id !== id);
+            cart = cart.filter(item => String(item.id) !== String(id));
             saveData();
             updateCartBadge();
             renderCart();
         }
 
         function updateCartBadge() {
-            document.getElementById('cartBadge').textContent = cart.reduce((s,i) => s + i.quantity, 0);
+            document.getElementById('cartBadge').textContent = cartLines()
+                .reduce((sum, line) => sum + line.quantity, 0);
         }
 
         function toggleCart() {
@@ -2286,7 +2345,8 @@
 
         function renderCart() {
             const content = document.getElementById('cartContent');
-            if (cart.length === 0) {
+            const lines = cartLines();
+            if (lines.length === 0) {
                 content.innerHTML = `<div style="text-align:center;padding:4rem;">
                     <div style="font-size:5rem;margin-bottom:1rem;">🛒</div>
                     <h3 style="color:var(--purple);font-family:Comfortaa,sans-serif;font-size:2rem;">Your cart is empty!</h3>
@@ -2295,27 +2355,29 @@
                 return;
             }
 
-            const subtotal      = cart.reduce((s,i) => s + (i.price * i.quantity), 0);
-            const shippingCost  = subtotal >= 45 ? 0 : settings.shipping;
-            const total         = subtotal + shippingCost + settings.handling;
+            const subtotal      = lines.reduce((sum, line) => sum + Number(line.product.price) * line.quantity, 0);
+            const shipping      = Number(settings.shipping) || 0;
+            const handling      = Number(settings.handling) || 0;
+            const shippingCost  = subtotal >= 45 ? 0 : shipping;
+            const total         = subtotal + shippingCost + handling;
             const amountToFree  = (45 - subtotal).toFixed(2);
 
             content.innerHTML = `
                 ${subtotal < 45 ? `<div style="background:linear-gradient(135deg,#fff8e1,#fff3cd);border:2px solid #f0c040;border-radius:12px;padding:1rem 1.5rem;margin-bottom:1rem;text-align:center;font-weight:600;color:#856404;">🚚 Add $${amountToFree} more for FREE shipping!</div>` : `<div style="background:linear-gradient(135deg,#d4edda,#c3e6cb);border:2px solid #28a745;border-radius:12px;padding:1rem 1.5rem;margin-bottom:1rem;text-align:center;font-weight:700;color:#155724;font-size:1.1rem;">🎉 You qualify for FREE shipping!</div>`}
                 <div>
-                    ${cart.map(item => {
-                    const imageUrl = safeProductImageUrl(item.image);
-                    const price = Number(item.price).toFixed(2);
+                    ${lines.map(({ product, quantity }) => {
+                    const imageUrl = safeProductImageUrl(product.image);
+                    const price = Number(product.price).toFixed(2);
                     return `
                     <div style="display:flex;gap:1.5rem;padding:1.5rem;background:rgba(46,94,170,0.05);border-radius:15px;margin-bottom:1rem;align-items:center;border:2px solid var(--sky-blue);">
                         <div style="width:100px;height:100px;border-radius:10px;background:linear-gradient(135deg,var(--pale-blue),var(--lavender));display:flex;align-items:center;justify-content:center;font-size:2rem;overflow:hidden;flex-shrink:0;">
-                            ${imageUrl ? `<img src="${escapeHtml(imageUrl)}" style="width:100%;height:100%;object-fit:cover;border-radius:10px;" alt="${escapeHtml(item.name)}">` : '🎀'}
+                            ${imageUrl ? `<img src="${escapeHtml(imageUrl)}" style="width:100%;height:100%;object-fit:cover;border-radius:10px;" alt="${escapeHtml(product.name)}">` : '🎀'}
                         </div>
                         <div style="flex:1;">
-                            <div style="font-weight:600;font-size:1.2rem;color:var(--navy);margin-bottom:0.5rem;">${escapeHtml(item.name)}</div>
-                            <div style="color:var(--primary-blue);font-weight:700;font-size:1.1rem;">$${price} × ${item.quantity}</div>
+                            <div style="font-weight:600;font-size:1.2rem;color:var(--navy);margin-bottom:0.5rem;">${escapeHtml(product.name)}</div>
+                            <div style="color:var(--primary-blue);font-weight:700;font-size:1.1rem;">$${price} × ${quantity}</div>
                         </div>
-                        <button class="btn-delete" onclick="removeFromCart(${item.id})">Remove</button>
+                        <button class="btn-delete" onclick="removeFromCart(${Number(product.id)})">Remove</button>
                     </div>`;
                     }).join('')}
                 </div>
@@ -2323,7 +2385,7 @@
                 <div style="background:linear-gradient(135deg,var(--primary-blue),var(--purple));color:white;padding:2rem;border-radius:20px;margin-top:2rem;">
                     <div style="display:flex;justify-content:space-between;margin-bottom:1rem;font-size:1.1rem;"><span>Subtotal:</span><span>$${subtotal.toFixed(2)}</span></div>
                     <div style="display:flex;justify-content:space-between;margin-bottom:1rem;font-size:1.1rem;"><span>Shipping:</span><span>${shippingCost === 0 ? '<strong style="color:#90EE90;">FREE 🎉</strong>' : '$' + shippingCost.toFixed(2)}</span></div>
-                    <div style="display:flex;justify-content:space-between;margin-bottom:1rem;font-size:1.1rem;"><span>Handling:</span><span>$${settings.handling.toFixed(2)}</span></div>
+                    <div style="display:flex;justify-content:space-between;margin-bottom:1rem;font-size:1.1rem;"><span>Handling:</span><span>$${handling.toFixed(2)}</span></div>
                     <div style="display:flex;justify-content:space-between;border-top:2px solid rgba(255,255,255,0.3);padding-top:1rem;margin-top:1rem;font-size:1.5rem;font-weight:700;"><span>Total:</span><span>$${total.toFixed(2)}</span></div>
                 </div>
 
@@ -2389,30 +2451,40 @@
             const name    = (document.getElementById('customerName')    || {}).value || '';
             const phone   = (document.getElementById('customerPhone')   || {}).value || '';
             const address = (document.getElementById('shippingAddress') || {}).value || '';
+            const lines = cartLines();
 
             if (!selectedPayment) { alert('Please select a payment method! 💳'); return; }
             if (!name.trim())     { alert('Please enter your full name! 👤');    return; }
             if (!phone.trim())    { alert('Please enter your phone number! 📱'); return; }
             if (!address.trim())  { alert('Please enter your shipping address! 📦'); return; }
-            if (cart.length === 0) { alert('Your cart is empty! 🛒'); return; }
+            if (lines.length === 0) { alert('Your cart is empty! 🛒'); return; }
 
-            const subtotal     = cart.reduce((s,i) => s + (i.price * i.quantity), 0);
-            const shippingCost = subtotal >= 45 ? 0 : settings.shipping;
-            const total        = subtotal + shippingCost + settings.handling;
+            const subtotal     = lines.reduce((sum, line) => sum + Number(line.product.price) * line.quantity, 0);
+            const shipping     = Number(settings.shipping) || 0;
+            const handling     = Number(settings.handling) || 0;
+            const shippingCost = subtotal >= 45 ? 0 : shipping;
+            const total        = subtotal + shippingCost + handling;
 
             const order = {
                 customer_name: name.trim(),
                 phone: phone.trim(),
                 address: address.trim(),
                 payment_method: selectedPayment,
-                items: cart.map(i => ({ name: i.name, quantity: i.quantity, price: i.price })),
+                items: lines.map(({ product, quantity }) => ({
+                    name: String(product.name || ''),
+                    quantity,
+                    price: Number(product.price)
+                })),
                 subtotal: subtotal,
                 shipping: shippingCost,
-                handling: settings.handling,
+                handling,
                 total: total
             };
 
-            const soldItems = cart.map(i => ({ id: i.id, quantity: i.quantity }));
+            const soldItems = lines.map(({ product, quantity }) => ({
+                id: product.id,
+                quantity
+            }));
 
             try {
                 await insertOrderToDB(order);
