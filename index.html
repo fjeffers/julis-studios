@@ -1633,17 +1633,18 @@
             }
         }
 
-        function sharedSettingsPayload() {
+        function sharedSettingsPayload(source) {
+            const s = source || settings;
             return {
-                shipping: settings.shipping,
-                handling: settings.handling,
-                zelleEmail: settings.zelleEmail,
-                cashAppTag: settings.cashAppTag,
-                shopName: settings.shopName,
-                welcomeMessage: settings.welcomeMessage,
-                aboutMe: settings.aboutMe,
+                shipping: s.shipping,
+                handling: s.handling,
+                zelleEmail: s.zelleEmail,
+                cashAppTag: s.cashAppTag,
+                shopName: s.shopName,
+                welcomeMessage: s.welcomeMessage,
+                aboutMe: s.aboutMe,
                 social: SOCIAL_PLATFORMS.reduce((social, { key }) => {
-                    social[key] = settings.social?.[key] || '';
+                    social[key] = s.social?.[key] || '';
                     return social;
                 }, {})
             };
@@ -1668,7 +1669,7 @@
             if (note) {
                 note.classList.toggle(
                     'hidden',
-                    localStorage.getItem(UNSYNCED_SETTINGS_KEY) !== '1'
+                    !localStorage.getItem(UNSYNCED_SETTINGS_KEY)
                 );
             }
         }
@@ -1777,14 +1778,9 @@
             productsLoaded = loadedProducts !== null;
             orders = loadedOrders;
             settings = mergeSettings(localSettings, remoteSettings);
-            loadedShared = sharedSettingsPayload();
-            if (localStorage.getItem(UNSYNCED_SETTINGS_KEY) === '1') {
-                settings = mergeSettings(
-                    sharedSettingsFrom(remoteSettings),
-                    sharedSettingsFrom(localSettings)
-                );
-                settings.adminPassword = localSettings.adminPassword ?? defaultSettings.adminPassword;
-            }
+            loadedShared = sharedSettingsPayload(mergeSettings({}, remoteSettings));
+            const pendingPatch = sharedSettingsFrom(safeParse(UNSYNCED_SETTINGS_KEY));
+            if (Object.keys(pendingPatch).length) settings = { ...settings, ...pendingPatch };
             saveData();
             const cartModal = document.getElementById('cartModal');
             if (cartModal?.style.display === 'flex') renderCart();
@@ -1880,7 +1876,7 @@
             if (!passcode) {
                 passcode = prompt('Enter your admin password to save online:');
                 if (passcode === null) {
-                    localStorage.setItem(UNSYNCED_SETTINGS_KEY, '1');
+                    localStorage.setItem(UNSYNCED_SETTINGS_KEY, JSON.stringify(patch));
                     updateSettingsUnsyncedNote();
                     showSuccess('⚙️ Saved on this device only.');
                     return;
@@ -1898,7 +1894,7 @@
                 updateSettingsUnsyncedNote();
                 showSuccess('⚙️ Saved! Everyone can see it now.');
             } catch (error) {
-                localStorage.setItem(UNSYNCED_SETTINGS_KEY, '1');
+                localStorage.setItem(UNSYNCED_SETTINGS_KEY, JSON.stringify(patch));
                 updateSettingsUnsyncedNote();
                 if (
                     error.code === '28P01' ||
