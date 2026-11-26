@@ -1364,11 +1364,19 @@
                     </div>
 
                     <div class="settings-section">
+                        <div id="passwordResetBanner" class="hidden" role="alert"
+                            style="margin-bottom: 0.9rem; padding: 0.8rem 0.9rem; border: 2px solid #fb7185; border-radius: 12px; background: #ffe4e6; color: #881337; font-weight: 700; line-height: 1.45;">
+                            🔐 Welcome Juli! Please pick your own password (8+ characters) before using your shop tools.
+                        </div>
                         <h4>🔐 Password</h4>
                         <p class="settings-help">Once online sync is set up, your password works on every device.</p>
                         <div class="form-group">
                             <label for="newPassword" style="color:white;">New Password</label>
                             <input type="password" id="newPassword" placeholder="Enter new password" style="border: 2px solid white;">
+                        </div>
+                        <div class="form-group">
+                            <label for="confirmPassword" style="color:white;">Confirm New Password</label>
+                            <input type="password" id="confirmPassword" placeholder="Confirm new password" style="border: 2px solid white;">
                         </div>
                         <button class="btn btn-secondary" onclick="changePassword()"
                             style="width: 100%; background: white; color: var(--purple); border: none; margin-top: 0.5rem;">
@@ -1566,6 +1574,7 @@
                 /could not find the function/i.test(String(error?.message || ''));
         }
         let adminPasscode = '';
+        let mustResetPassword = false;
         let isAdminLoggedIn  = Number(localStorage.getItem(ADMIN_EXPIRY_KEY)) > Date.now();
         let adminExpiresAt = Number(localStorage.getItem(ADMIN_EXPIRY_KEY) || 0);
         let lastActivityWrite = 0;
@@ -1809,7 +1818,12 @@
 
             document.getElementById('cancelEditBtn').addEventListener('click', cancelEdit);
 
-            if (isAdminLoggedIn) startActivityTracking();
+            if (isAdminLoggedIn) {
+                startActivityTracking();
+                if (localStorage.getItem(PASSWORD_ONLINE_KEY) === '1') {
+                    await checkPasswordNeedsReset();
+                }
+            }
         }
 
         // ─── Persist ─────────────────────────────────────────────────────
@@ -1842,6 +1856,11 @@
         }
 
         async function saveSettings() {
+            if (mustResetPassword) {
+                alert('🔐 Please pick your own password first, then save your settings.');
+                document.getElementById('newPassword').focus();
+                return;
+            }
             const social = {};
             let hasInvalidSocial = false;
             SOCIAL_PLATFORMS.forEach(({ key }) => {
@@ -1918,6 +1937,8 @@
         async function changePassword() {
             const pw = document.getElementById('newPassword').value;
             if (!pw || pw.length < 8) { alert('❌ Password must be at least 8 characters!'); return; }
+            const confirmation = document.getElementById('confirmPassword').value;
+            if (pw !== confirmation) { alert("❌ Passwords don't match"); return; }
             let currentPasscode = adminPasscode;
             if (!currentPasscode) {
                 currentPasscode = prompt('Enter your current admin password:');
@@ -1939,8 +1960,11 @@
                     localStorage.setItem(PASSWORD_ONLINE_KEY, '1');
                     settings.adminPassword = defaultSettings.adminPassword;
                     adminPasscode = pw;
+                    mustResetPassword = false;
                     saveData();
                     document.getElementById('newPassword').value = '';
+                    document.getElementById('confirmPassword').value = '';
+                    document.getElementById('passwordResetBanner').classList.add('hidden');
                     showSuccess('🔑 Password changed on every device!');
                     return;
                 }
@@ -1961,6 +1985,7 @@
             adminPasscode = pw;
             saveData();
             document.getElementById('newPassword').value = '';
+            document.getElementById('confirmPassword').value = '';
             showSuccess('🔑 Password changed on this device');
         }
 
@@ -2621,8 +2646,28 @@
             { name: 'settings', button: 'adminTabSettings', panel: 'adminSettingsPanel' }
         ];
 
+        function requirePasswordReset() {
+            mustResetPassword = true;
+            document.getElementById('adminPanel').classList.remove('hidden');
+            setAdminTab('settings');
+            document.getElementById('passwordResetBanner').classList.remove('hidden');
+            document.getElementById('newPassword').focus();
+        }
+
+        async function checkPasswordNeedsReset() {
+            try {
+                const { data, error } = await db.rpc('julis_password_needs_reset');
+                if (!error && data === true) requirePasswordReset();
+            } catch {}
+        }
+
         function setAdminTab(name, remember = true) {
             if (!ADMIN_TABS.some(tab => tab.name === name)) name = 'shop';
+            if (mustResetPassword && name !== 'settings') {
+                name = 'settings';
+                document.getElementById('adminTabSettings').focus();
+                showSuccess('Please choose your own password before using your shop tools.');
+            }
             ADMIN_TABS.forEach(tab => {
                 const button = document.getElementById(tab.button);
                 const panel = document.getElementById(tab.panel);
@@ -2737,13 +2782,17 @@
             if (button) button.disabled = true;
             try {
                 let isValid = false;
+                let isOnlineLogin = false;
                 try {
                     const { data, error } = await db.rpc('julis_check_passcode', {
                         p_passcode: pw
                     });
                     if (!error) {
                         isValid = data === true;
-                        if (isValid) localStorage.setItem(PASSWORD_ONLINE_KEY, '1');
+                        if (isValid) {
+                            localStorage.setItem(PASSWORD_ONLINE_KEY, '1');
+                            isOnlineLogin = true;
+                        }
                     } else if (isMissingRpc(error) && localStorage.getItem(PASSWORD_ONLINE_KEY) !== '1') {
                         isValid = pw === settings.adminPassword;
                     } else {
@@ -2767,6 +2816,7 @@
                     showSuccess('✅ Welcome! You will be signed out after 1 hour without activity.');
                     startActivityTracking();
                     setTimeout(() => panel.scrollIntoView({ behavior: 'smooth', block: 'start' }), 200);
+                    if (isOnlineLogin) await checkPasswordNeedsReset();
                 } else {
                     alert('❌ Incorrect password!');
                     document.getElementById('adminPasswordInput').value = '';
@@ -2794,10 +2844,12 @@
         function adminLogout() {
             isAdminLoggedIn = false;
             adminPasscode = '';
+            mustResetPassword = false;
             adminExpiresAt = 0;
             localStorage.removeItem(ADMIN_EXPIRY_KEY);
             lastActivityWrite = 0;
             document.getElementById('adminPanel').classList.add('hidden');
+            document.getElementById('passwordResetBanner').classList.add('hidden');
             stopActivityTracking();
             showSuccess('👋 Logged out!');
         }

@@ -23,6 +23,8 @@ create table if not exists public.julis_admin_secret (
   id            integer primary key default 1 check (id = 1),
   passcode_hash text not null
 );
+-- true while the temporary default password is still in place.
+alter table public.julis_admin_secret add column if not exists must_change boolean not null default true;
 alter table public.julis_admin_secret enable row level security;
 revoke all on public.julis_admin_secret from anon, authenticated;
 
@@ -101,9 +103,22 @@ begin
   if p_new is null or length(p_new) < 8 then
     raise exception 'new password must be at least 8 characters';
   end if;
-  update public.julis_admin_secret set passcode_hash = crypt(p_new, gen_salt('bf')) where id = 1;
+  if p_new = p_old then
+    raise exception 'new password must be different';
+  end if;
+  update public.julis_admin_secret
+     set passcode_hash = crypt(p_new, gen_salt('bf')), must_change = false
+   where id = 1;
   return true;
 end;
+$$;
+
+-- True while Juli is still on the temporary password; the site then makes her pick her own.
+create or replace function public.julis_password_needs_reset()
+returns boolean
+language sql stable security definer set search_path = public
+as $$
+  select coalesce((select must_change from public.julis_admin_secret where id = 1), false);
 $$;
 
 revoke all on function public.julis_check_passcode(text)        from public;
@@ -112,8 +127,11 @@ revoke all on function public.julis_change_passcode(text, text) from public;
 grant execute on function public.julis_check_passcode(text)        to anon, authenticated;
 grant execute on function public.julis_save_settings(text, jsonb)  to anon, authenticated;
 grant execute on function public.julis_change_passcode(text, text) to anon, authenticated;
+revoke all on function public.julis_password_needs_reset()       from public;
+grant execute on function public.julis_password_needs_reset()       to anon, authenticated;
 
--- Juli's admin password (replace CHANGE_ME before running):
-insert into public.julis_admin_secret (id, passcode_hash)
-values (1, crypt('CHANGE_ME', gen_salt('bf')))
-on conflict (id) do update set passcode_hash = excluded.passcode_hash;
+-- Temporary default password: replace CHANGE_ME before running (never commit the real value —
+-- this repo is public). Juli must change it in Settings the first time she signs in.
+insert into public.julis_admin_secret (id, passcode_hash, must_change)
+values (1, crypt('CHANGE_ME', gen_salt('bf')), true)
+on conflict (id) do update set passcode_hash = excluded.passcode_hash, must_change = true;
