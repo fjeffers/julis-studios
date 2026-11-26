@@ -4000,12 +4000,14 @@
                 (sum, line) => sum + Number(line.product.price) * line.quantity,
                 0
             );
-            return subtotal + shippingAmountForCart() + (Number(settings.handling) || 0);
+            const shipping = shippingAmountForCart();
+            return subtotal + shipping + (Number(settings.handling) || 0);
         }
 
         function updateCartPricing() {
             const lines = cartLines();
             if (!lines.length) return;
+            const shipping = shippingAmountForCart();
             const total = cartTotalForCurrentState(lines);
             const shippingAmount = document.getElementById('cartShippingAmount');
             const totalAmount = document.getElementById('cartTotalAmount');
