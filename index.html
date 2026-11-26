@@ -874,12 +874,230 @@
             .logo-display img {
                 height: 52px !important;
             }
-            .home-btn span, .header-actions .btn span {
+            .home-btn span, .header-actions .btn .header-button-label {
                 display: none;
             }
             .header-actions .btn,
             .home-btn {
                 padding: 0.5rem 0.7rem;
+            }
+        }
+
+        .admin-tabs {
+            display: flex;
+            gap: 0.65rem;
+            margin: 1.5rem 0 2rem;
+            padding: 0.25rem;
+            overflow-x: auto;
+        }
+
+        .admin-tab-button {
+            flex: 1 0 auto;
+            border: 2px solid var(--peach);
+            border-radius: 999px;
+            padding: 0.75rem 1rem;
+            background: white;
+            color: var(--purple);
+            font: 700 0.95rem 'Quicksand', sans-serif;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .admin-tab-button:hover,
+        .admin-tab-button.active {
+            border-color: var(--primary-blue);
+            background: linear-gradient(135deg, var(--primary-blue), var(--purple));
+            color: white;
+            box-shadow: 0 4px 12px rgba(46, 94, 170, 0.2);
+        }
+
+        .shop-stat-grid {
+            display: grid;
+            grid-template-columns: repeat(5, minmax(0, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .shop-stat-card {
+            min-width: 0;
+            padding: 1.25rem 0.8rem;
+            border: 2px solid var(--peach);
+            border-radius: 16px;
+            background: linear-gradient(135deg, #fff, var(--pale-blue));
+            text-align: center;
+        }
+
+        .shop-stat-card span {
+            display: block;
+            color: var(--purple);
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .shop-stat-card strong {
+            display: block;
+            margin-top: 0.35rem;
+            color: var(--primary-blue);
+            font: 700 1.8rem 'Comfortaa', sans-serif;
+        }
+
+        .restock-card {
+            padding: 1.4rem;
+            border: 2px solid var(--peach);
+            border-radius: 16px;
+            background: #fffaf5;
+        }
+
+        .restock-card h3 {
+            margin-bottom: 0.4rem;
+            color: var(--purple);
+            font-family: 'Comfortaa', sans-serif;
+        }
+
+        .restock-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.8rem 0;
+            border-bottom: 1px solid rgba(46, 94, 170, 0.15);
+        }
+
+        .restock-item:last-child {
+            border-bottom: 0;
+        }
+
+        .settings-section {
+            margin-top: 1.25rem;
+            padding: 1.25rem;
+            border: 1px solid rgba(255, 255, 255, 0.35);
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .settings-section h4 {
+            margin-bottom: 0.4rem;
+            color: white;
+            font-size: 1.1rem;
+        }
+
+        .settings-help {
+            margin-bottom: 1rem;
+            color: rgba(255, 255, 255, 0.9);
+            line-height: 1.5;
+        }
+
+        .social-field {
+            margin-bottom: 0.8rem;
+        }
+
+        .social-field small {
+            display: block;
+            margin-top: 0.3rem;
+            color: #ffe4e6;
+        }
+
+        .social-test-link {
+            display: inline-block;
+            margin-top: 0.35rem;
+            color: white;
+            font-weight: 700;
+        }
+
+        .social-follow {
+            margin: 2.5rem auto;
+            padding: 2rem 1rem;
+            border-radius: 24px;
+            background: linear-gradient(135deg, #e9f5ff, #f5eaff);
+            text-align: center;
+        }
+
+        .social-follow h2 {
+            margin-bottom: 1.2rem;
+            color: var(--purple);
+            font: 700 1.6rem 'Comfortaa', sans-serif;
+        }
+
+        .social-links {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+
+        .social-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.55rem;
+            min-height: 48px;
+            padding: 0.45rem 0.9rem 0.45rem 0.5rem;
+            border: 2px solid rgba(46, 94, 170, 0.2);
+            border-radius: 999px;
+            background: white;
+            color: var(--purple);
+            font-weight: 700;
+            text-decoration: none;
+            box-shadow: 0 3px 10px rgba(46, 94, 170, 0.12);
+        }
+
+        .social-link:hover {
+            border-color: var(--primary-blue);
+            transform: translateY(-2px);
+        }
+
+        .social-icon {
+            display: grid;
+            width: 36px;
+            height: 36px;
+            place-items: center;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-blue), var(--purple));
+            color: white;
+            font-size: 1.1rem;
+        }
+
+        .site-footer {
+            padding: 1.4rem 1rem;
+            background: var(--navy);
+            color: white;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        @media (max-width: 900px) {
+            .shop-stat-grid {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 600px) {
+            .admin-panel {
+                padding: 1.2rem;
+            }
+            .admin-tabs {
+                gap: 0.4rem;
+                margin: 1rem -0.2rem 1.5rem;
+            }
+            .admin-tab-button {
+                padding: 0.65rem 0.8rem;
+                font-size: 0.82rem;
+            }
+            .shop-stat-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+            .restock-item {
+                align-items: flex-start;
+            }
+            .social-follow h2 {
+                font-size: 1.3rem;
+            }
+            .social-links {
+                gap: 0.5rem;
+            }
+            .social-link {
+                flex: 1 1 135px;
+                justify-content: flex-start;
             }
         }
     </style>
@@ -894,12 +1112,9 @@
         <div style="margin: 2rem 0;">
             <div class="form-group">
                 <label style="color: var(--purple); text-align: left;">Enter Password:</label>
-                <input type="password" id="adminPasswordInput" placeholder="Default: juli2024"
+                <input type="password" id="adminPasswordInput" placeholder="Enter your password"
                     style="border: 2px solid var(--primary-blue); border-radius: 12px; padding: 1rem; font-size: 1.1rem; width: 100%;"
                     onkeypress="if(event.key==='Enter') attemptLogin()">
-            </div>
-            <div style="color: #666; font-size: 0.9rem; margin-top: 0.5rem; text-align: center;">
-                💡 Default password: <strong style="color: var(--primary-blue);">juli2024</strong>
             </div>
         </div>
         <div style="display: flex; gap: 1rem;">
@@ -925,12 +1140,12 @@
             </div>
 
             <div class="header-actions">
-                <button class="btn btn-secondary cart-btn" onclick="toggleCart()">
-                    🛒 Cart
+                <button class="btn btn-secondary cart-btn" aria-label="Cart" onclick="toggleCart()">
+                    🛒 <span class="header-button-label">Cart</span>
                     <span class="cart-badge" id="cartBadge">0</span>
                 </button>
-                <button class="btn btn-primary" onclick="toggleAdmin()">
-                    ⚙️ Manage
+                <button class="btn btn-primary" aria-label="Manage your shop" onclick="toggleAdmin()">
+                    ⚙️ <span class="header-button-label">Manage</span>
                 </button>
             </div>
         </div>
@@ -939,13 +1154,14 @@
     <!-- Welcome Section -->
     <div class="welcome-section" id="home">
         <div class="welcome-content">
-            <h1 class="welcome-title">Welcome to Juli's Studios!</h1>
+            <h1 class="welcome-title" id="shopNameDisplay">Welcome to Juli's Studios!</h1>
             <div class="welcome-divider"></div>
-            <p class="welcome-text">
+            <p class="welcome-text" id="welcomeMessageDisplay">
                 Hi! I'm Juli, and I love creating handmade treasures just for you! ✨
                 From cute scrunchies and sparkly rings to cozy quilts, each piece is made with love and care.
                 Browse my collection and find something special that makes you smile! 💖
             </p>
+            <p class="welcome-text hidden" id="aboutMeDisplay"></p>
             <p class="welcome-text">
                 Thank you for supporting my small business journey! 🌸
             </p>
@@ -964,113 +1180,212 @@
             </div>
             <div id="successMessage"></div>
 
-            <!-- Settings Panel -->
-            <div class="settings-panel">
-                <h3 class="settings-title">⚙️ Shop Settings</h3>
-
-                <h4 style="color: white; margin-bottom: 1rem; font-size: 1.1rem;">💰 Shipping & Handling</h4>
-                <div class="settings-grid">
-                    <div class="form-group">
-                        <label style="color: white;">Shipping Cost ($)</label>
-                        <input type="number" id="shippingCost" step="0.01" value="5.00" style="border: 2px solid white;">
-                    </div>
-                    <div class="form-group">
-                        <label style="color: white;">Handling Fee ($)</label>
-                        <input type="number" id="handlingFee" step="0.01" value="2.00" style="border: 2px solid white;">
-                    </div>
-                </div>
-
-                <div style="margin-top: 2rem; padding-top: 2rem; border-top: 2px solid rgba(255, 255, 255, 0.3);">
-                    <h4 style="color: white; margin-bottom: 1rem; font-size: 1.1rem;">💳 Payment Information</h4>
-                    <div class="settings-grid">
-                        <div class="form-group">
-                            <label style="color: white;">Zelle Email Address</label>
-                            <input type="email" id="zelleEmail" placeholder="your-email@example.com" style="border: 2px solid white;">
-                        </div>
-                        <div class="form-group">
-                            <label style="color: white;">Cash App Tag</label>
-                            <input type="text" id="cashAppTag" placeholder="$YourCashTag" style="border: 2px solid white;">
-                        </div>
-                    </div>
-                </div>
-
-                <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 2px solid rgba(255, 255, 255, 0.3);">
-                    <h4 style="color: white; margin-bottom: 1rem; font-size: 1.1rem;">🔐 Change Admin Password</h4>
-                    <div class="form-group">
-                        <label style="color: white;">New Password</label>
-                        <input type="password" id="newPassword" placeholder="Enter new password" style="border: 2px solid white;">
-                    </div>
-                    <button class="btn btn-secondary" onclick="changePassword()"
-                        style="width: 100%; background: white; color: var(--purple); border: none; margin-top: 0.5rem;">
-                        🔑 Update Password
-                    </button>
-                </div>
-                <button class="btn btn-primary" onclick="saveSettings()" style="width: 100%; margin-top: 1rem;">💾 Save All Settings</button>
+            <div class="admin-tabs" role="tablist" aria-label="Manage your shop" onkeydown="navigateAdminTabs(event)">
+                <button type="button" class="admin-tab-button active" id="adminTabShop" role="tab" aria-selected="true" aria-controls="adminShopPanel" onclick="setAdminTab('shop')">🏠 My Shop</button>
+                <button type="button" class="admin-tab-button" id="adminTabProducts" role="tab" aria-selected="false" aria-controls="adminProductsPanel" onclick="setAdminTab('products')">🧶 My Products</button>
+                <button type="button" class="admin-tab-button" id="adminTabOrders" role="tab" aria-selected="false" aria-controls="adminOrdersPanel" onclick="setAdminTab('orders')">📦 Orders</button>
+                <button type="button" class="admin-tab-button" id="adminTabSettings" role="tab" aria-selected="false" aria-controls="adminSettingsPanel" onclick="setAdminTab('settings')">⚙️ Settings</button>
             </div>
 
-            <!-- Add/Edit Product Form -->
-            <form id="productForm" onsubmit="return false;">
-                <h3 style="color: var(--purple); margin-bottom: 1.5rem; font-family: 'Comfortaa', sans-serif;">
-                    <span id="formTitle">➕ Add New Product</span>
-                </h3>
-
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label>Product Name *</label>
-                        <input type="text" id="productName" placeholder="e.g., Pink Velvet Scrunchie" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Price ($) *</label>
-                        <input type="number" id="productPrice" step="0.01" placeholder="e.g., 5.99" required>
-                    </div>
-                    <div class="form-group">
-                        <label>How many do you have? *</label>
-                        <input type="number" id="productStock" min="0" step="1" placeholder="e.g., 8" required>
-                        <label style="display:flex;align-items:center;gap:0.5rem;margin-top:0.6rem;font-weight:500;">
-                            <input type="checkbox" id="productUnlimited" style="width:auto;margin:0;">
-                            Made to order (never sells out)
-                        </label>
-                    </div>
+            <section class="admin-tab-panel" id="adminShopPanel" role="tabpanel" aria-labelledby="adminTabShop">
+                <div class="shop-stat-grid">
+                    <div class="shop-stat-card"><span>✨ Total products</span><strong id="dashboardTotalProducts">0</strong></div>
+                    <div class="shop-stat-card"><span>🧺 Items in stock</span><strong id="dashboardStockQuantity">0</strong></div>
+                    <div class="shop-stat-card"><span>🧵 Low stock</span><strong id="dashboardLowStock">0</strong></div>
+                    <div class="shop-stat-card"><span>💨 Sold out</span><strong id="dashboardSoldOut">0</strong></div>
+                    <div class="shop-stat-card"><span>🛍️ New orders</span><strong id="dashboardNewOrders">0</strong></div>
                 </div>
-
-                <div class="form-group">
-                    <label>Description *</label>
-                    <textarea id="productDescription" placeholder="Describe your awesome product!" required></textarea>
+                <div class="restock-card">
+                    <h3>🧵 Items to make or restock</h3>
+                    <p style="color:#666;margin-bottom:0.75rem;">A quick list of handmade items that need a little love.</p>
+                    <p id="shopRestockEmpty" style="color:#666;">Everything is looking good right now! ✨</p>
+                    <div id="shopRestockList"></div>
                 </div>
+            </section>
 
-                <div class="form-group">
-                    <label>Product Image (JPG/PNG/WebP/GIF)</label>
-                    <div class="file-upload-wrapper">
-                        <input type="file" id="productImageFile" class="file-upload-input"
-                            accept="image/jpeg,image/png,image/jpg,image/webp,image/gif" onchange="handleImageUpload(event)">
-                        <div class="file-upload-label">
-                            <span>📸</span>
-                            <span id="fileLabel">Upload Image</span>
+            <section class="admin-tab-panel hidden" id="adminProductsPanel" role="tabpanel" aria-labelledby="adminTabProducts">
+                <form id="productForm" onsubmit="return false;">
+                    <h3 style="color: var(--purple); margin-bottom: 1.5rem; font-family: 'Comfortaa', sans-serif;">
+                        <span id="formTitle">➕ Add New Product</span>
+                    </h3>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Product Name *</label>
+                            <input type="text" id="productName" placeholder="e.g., Pink Velvet Scrunchie" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Price ($) *</label>
+                            <input type="number" id="productPrice" step="0.01" placeholder="e.g., 5.99" required>
+                        </div>
+                        <div class="form-group">
+                            <label>How many do you have? *</label>
+                            <input type="number" id="productStock" min="0" step="1" placeholder="e.g., 8" required>
+                            <label style="display:flex;align-items:center;gap:0.5rem;margin-top:0.6rem;font-weight:500;">
+                                <input type="checkbox" id="productUnlimited" style="width:auto;margin:0;">
+                                Made to order (never sells out)
+                            </label>
                         </div>
                     </div>
-                    <img id="imagePreview" class="preview-image hidden" alt="Preview">
-                    <input type="hidden" id="productImage">
-                    <input type="hidden" id="editProductId">
-                </div>
 
-                <div style="display: flex; gap: 1rem;">
-                    <button type="button" class="btn btn-primary" style="flex: 1;" id="submitBtn">
-                        <span id="submitBtnText">✨ Add Product</span>
-                    </button>
-                    <button type="button" class="btn btn-secondary hidden" id="cancelEditBtn" style="flex: 1; background: #888; border-color: #888;">
-                        ❌ Cancel Edit
-                    </button>
-                </div>
-            </form>
+                    <div class="form-group">
+                        <label>Description *</label>
+                        <textarea id="productDescription" placeholder="Describe your awesome product!" required></textarea>
+                    </div>
 
-            <div class="product-list" id="productList"></div>
-            <div id="ordersList" style="margin-top: 2rem;"></div>
+                    <div class="form-group">
+                        <label>Product Image (JPG/PNG/WebP/GIF)</label>
+                        <div class="file-upload-wrapper">
+                            <input type="file" id="productImageFile" class="file-upload-input"
+                                accept="image/jpeg,image/png,image/jpg,image/webp,image/gif" onchange="handleImageUpload(event)">
+                            <div class="file-upload-label">
+                                <span>📸</span>
+                                <span id="fileLabel">Upload Image</span>
+                            </div>
+                        </div>
+                        <img id="imagePreview" class="preview-image hidden" alt="Preview">
+                        <input type="hidden" id="productImage">
+                        <input type="hidden" id="editProductId">
+                    </div>
+
+                    <div style="display: flex; gap: 1rem;">
+                        <button type="button" class="btn btn-primary" style="flex: 1;" id="submitBtn">
+                            <span id="submitBtnText">✨ Add Product</span>
+                        </button>
+                        <button type="button" class="btn btn-secondary hidden" id="cancelEditBtn" style="flex: 1; background: #888; border-color: #888;">
+                            ❌ Cancel Edit
+                        </button>
+                    </div>
+                </form>
+                <div class="product-list" id="productList"></div>
+            </section>
+
+            <section class="admin-tab-panel hidden" id="adminOrdersPanel" role="tabpanel" aria-labelledby="adminTabOrders">
+                <div id="ordersList" style="margin-top: 1rem;"></div>
+            </section>
+
+            <section class="admin-tab-panel hidden" id="adminSettingsPanel" role="tabpanel" aria-labelledby="adminTabSettings">
+                <div class="settings-panel">
+                    <h3 class="settings-title">⚙️ Settings for Juli's Shop</h3>
+                    <p class="settings-help">Update your shop details here. Your changes will show up for everyone when online sync is ready.</p>
+
+                    <div class="settings-section">
+                        <h4>✨ My Shop Info</h4>
+                        <p class="settings-help">Tell visitors what makes your handmade shop special.</p>
+                        <div class="form-group">
+                            <label for="shopName" style="color:white;">Shop name</label>
+                            <input type="text" id="shopName" value="Juli's Studios" maxlength="80">
+                        </div>
+                        <div class="form-group">
+                            <label for="welcomeMessageSetting" style="color:white;">Welcome message</label>
+                            <textarea id="welcomeMessageSetting" rows="4"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="aboutMe" style="color:white;">About me (optional)</label>
+                            <textarea id="aboutMe" rows="3" placeholder="A little about you and what you love to make"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="settings-section">
+                        <h4>💖 My Social Media</h4>
+                        <p class="settings-help">Add a full https link or your handle. These links will appear in your shop.</p>
+                        <div class="settings-grid">
+                            <div class="form-group social-field">
+                                <label for="socialFacebook" style="color:white;">Facebook</label>
+                                <input type="text" id="socialFacebook" placeholder="@yourname or https://facebook.com/yourname" oninput="updateSocialPreview('facebook')">
+                                <small id="socialFacebookError" role="status"></small>
+                                <a class="social-test-link hidden" id="socialFacebookTest" href="#" target="_blank" rel="noopener noreferrer">Test link</a>
+                            </div>
+                            <div class="form-group social-field">
+                                <label for="socialInstagram" style="color:white;">Instagram</label>
+                                <input type="text" id="socialInstagram" placeholder="@yourname or https://instagram.com/yourname" oninput="updateSocialPreview('instagram')">
+                                <small id="socialInstagramError" role="status"></small>
+                                <a class="social-test-link hidden" id="socialInstagramTest" href="#" target="_blank" rel="noopener noreferrer">Test link</a>
+                            </div>
+                            <div class="form-group social-field">
+                                <label for="socialTiktok" style="color:white;">TikTok</label>
+                                <input type="text" id="socialTiktok" placeholder="@yourname or https://tiktok.com/@yourname" oninput="updateSocialPreview('tiktok')">
+                                <small id="socialTiktokError" role="status"></small>
+                                <a class="social-test-link hidden" id="socialTiktokTest" href="#" target="_blank" rel="noopener noreferrer">Test link</a>
+                            </div>
+                            <div class="form-group social-field">
+                                <label for="socialYoutube" style="color:white;">YouTube</label>
+                                <input type="text" id="socialYoutube" placeholder="@yourname or https://youtube.com/@yourname" oninput="updateSocialPreview('youtube')">
+                                <small id="socialYoutubeError" role="status"></small>
+                                <a class="social-test-link hidden" id="socialYoutubeTest" href="#" target="_blank" rel="noopener noreferrer">Test link</a>
+                            </div>
+                            <div class="form-group social-field">
+                                <label for="socialPinterest" style="color:white;">Pinterest</label>
+                                <input type="text" id="socialPinterest" placeholder="@yourname or https://pinterest.com/yourname" oninput="updateSocialPreview('pinterest')">
+                                <small id="socialPinterestError" role="status"></small>
+                                <a class="social-test-link hidden" id="socialPinterestTest" href="#" target="_blank" rel="noopener noreferrer">Test link</a>
+                            </div>
+                            <div class="form-group social-field">
+                                <label for="socialEtsy" style="color:white;">Etsy</label>
+                                <input type="text" id="socialEtsy" placeholder="@yourshop or https://etsy.com/shop/yourshop" oninput="updateSocialPreview('etsy')">
+                                <small id="socialEtsyError" role="status"></small>
+                                <a class="social-test-link hidden" id="socialEtsyTest" href="#" target="_blank" rel="noopener noreferrer">Test link</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="settings-section">
+                        <h4>💳 Getting Paid</h4>
+                        <p class="settings-help">These details help customers know where to send their payment.</p>
+                        <div class="settings-grid">
+                            <div class="form-group">
+                                <label for="zelleEmail" style="color:white;">Zelle Email Address</label>
+                                <input type="email" id="zelleEmail" placeholder="your-email@example.com" style="border: 2px solid white;">
+                            </div>
+                            <div class="form-group">
+                                <label for="cashAppTag" style="color:white;">Cash App Tag</label>
+                                <input type="text" id="cashAppTag" placeholder="$YourCashTag" style="border: 2px solid white;">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="settings-section">
+                        <h4>🚚 Shipping</h4>
+                        <p class="settings-help">Orders over $45 get free shipping automatically.</p>
+                        <div class="settings-grid">
+                            <div class="form-group">
+                                <label for="shippingCost" style="color:white;">Shipping Cost ($)</label>
+                                <input type="number" id="shippingCost" step="0.01" value="5.00" style="border: 2px solid white;">
+                            </div>
+                            <div class="form-group">
+                                <label for="handlingFee" style="color:white;">Handling Fee ($)</label>
+                                <input type="number" id="handlingFee" step="0.01" value="2.00" style="border: 2px solid white;">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="settings-section">
+                        <h4>🔐 Password</h4>
+                        <p class="settings-help">Your admin password applies on this device only.</p>
+                        <div class="form-group">
+                            <label for="newPassword" style="color:white;">New Password</label>
+                            <input type="password" id="newPassword" placeholder="Enter new password" style="border: 2px solid white;">
+                        </div>
+                        <button class="btn btn-secondary" onclick="changePassword()"
+                            style="width: 100%; background: white; color: var(--purple); border: none; margin-top: 0.5rem;">
+                            🔑 Update Password
+                        </button>
+                    </div>
+                    <button class="btn btn-primary" onclick="saveSettings()" style="width: 100%; margin-top: 1rem;">💾 Save Settings</button>
+                </div>
+            </section>
         </div>
 
         <!-- Products Section -->
         <h2 class="section-title">My Handmade Collection</h2>
         <div id="productsGrid" class="products-grid"></div>
     </div>
+
+    <section class="social-follow hidden" id="followSection" aria-labelledby="followHeading">
+        <h2 id="followHeading">💖 Follow Juli's Studios</h2>
+        <div class="social-links" id="socialLinks"></div>
+    </section>
+    <footer class="site-footer">Handmade with love by Juli 💖</footer>
 
     <!-- Product Detail Modal -->
     <div class="modal" id="productModal">
@@ -1173,59 +1488,247 @@
         let orders   = []; // loaded async from Supabase on init
 
         let cart = safeParse('julis_cart_v3') || [];
+        const DEFAULT_WELCOME_MESSAGE = "Hi! I'm Juli, and I love creating handmade treasures just for you! ✨ From cute scrunchies and sparkly rings to cozy quilts, each piece is made with love and care. Browse my collection and find something special that makes you smile! 💖";
+        const SOCIAL_PLATFORMS = [
+            { key: 'facebook', label: 'Facebook', emoji: '📘', domains: ['facebook.com', 'fb.com'], toUrl: h => `https://www.facebook.com/${h}` },
+            { key: 'instagram', label: 'Instagram', emoji: '📸', domains: ['instagram.com'], toUrl: h => `https://www.instagram.com/${h}` },
+            { key: 'tiktok', label: 'TikTok', emoji: '🎵', domains: ['tiktok.com'], toUrl: h => `https://www.tiktok.com/@${h.replace(/^@/, '')}` },
+            { key: 'youtube', label: 'YouTube', emoji: '▶️', domains: ['youtube.com', 'youtu.be'], toUrl: h => `https://www.youtube.com/@${h.replace(/^@/, '')}` },
+            { key: 'pinterest', label: 'Pinterest', emoji: '📌', domains: ['pinterest.com'], toUrl: h => `https://www.pinterest.com/${h}` },
+            { key: 'etsy', label: 'Etsy', emoji: '🛍️', domains: ['etsy.com'], toUrl: h => `https://www.etsy.com/shop/${h}` }
+        ];
         const defaultSettings = {
             shipping: 5.00,
             handling: 2.00,
             adminPassword: 'juli2024',
             zelleEmail: 'your-email@example.com',
-            cashAppTag: '$YourCashTag'
+            cashAppTag: '$YourCashTag',
+            shopName: "Juli's Studios",
+            welcomeMessage: DEFAULT_WELCOME_MESSAGE,
+            aboutMe: '',
+            social: { facebook: '', instagram: '', tiktok: '', youtube: '', pinterest: '', etsy: '' }
         };
-        let settings = { ...defaultSettings, ...(safeParse('julis_settings') || {}) };
+        function sharedSettingsFrom(data) {
+            if (!data || typeof data !== 'object') return {};
+            const shared = {};
+            ['shipping', 'handling', 'zelleEmail', 'cashAppTag', 'shopName', 'welcomeMessage', 'aboutMe'].forEach(key => {
+                if (Object.prototype.hasOwnProperty.call(data, key)) shared[key] = data[key];
+            });
+            if (data.social && typeof data.social === 'object') {
+                shared.social = {};
+                SOCIAL_PLATFORMS.forEach(({ key }) => {
+                    if (Object.prototype.hasOwnProperty.call(data.social, key)) shared.social[key] = data.social[key];
+                });
+            }
+            return shared;
+        }
+        function mergeSettings(local, remote) {
+            const localValues = local && typeof local === 'object' ? local : {};
+            const remoteValues = sharedSettingsFrom(remote);
+            return {
+                ...defaultSettings,
+                ...localValues,
+                ...remoteValues,
+                adminPassword: localValues.adminPassword ?? defaultSettings.adminPassword,
+                social: {
+                    ...defaultSettings.social,
+                    ...(localValues.social && typeof localValues.social === 'object' ? localValues.social : {}),
+                    ...(remoteValues.social || {})
+                }
+            };
+        }
+        const localSettings = safeParse('julis_settings') || {};
+        let settings = mergeSettings(localSettings, null);
 
         const NOTIFICATION_EMAIL = 'Ballerinajuli11@gmail.com';
 
         let editingProductId = null;
-        let isAdminLoggedIn  = sessionStorage.getItem('adminLoggedIn') === 'true';
-        let logoutTimer      = null;
-        const LOGOUT_TIMEOUT = 1800000; // 30 minutes
+        const ADMIN_EXPIRY_KEY = 'julis_admin_expires';
+        let isAdminLoggedIn  = Number(localStorage.getItem(ADMIN_EXPIRY_KEY)) > Date.now();
+        let adminExpiresAt = Number(localStorage.getItem(ADMIN_EXPIRY_KEY) || 0);
+        let lastActivityWrite = 0;
+        const LOGOUT_TIMEOUT = 60 * 60 * 1000;
+        const ADMIN_ACTIVITY_EVENTS = ['click', 'keydown', 'input', 'scroll', 'touchstart', 'pointerdown'];
         let selectedPayment  = null;
         let modalQuantity    = 1;
 
         // ─── Activity / Auto-logout ──────────────────────────────────────
-        function resetLogoutTimer() {
-            if (logoutTimer) clearTimeout(logoutTimer);
-            if (isAdminLoggedIn) {
-                logoutTimer = setTimeout(() => {
-                    adminLogout();
-                    alert('⏰ Auto-logged out after 30 minutes of inactivity.');
-                }, LOGOUT_TIMEOUT);
+        function checkAdminExpiry() {
+            const now = Date.now();
+            const storedExpiresAt = Number(localStorage.getItem(ADMIN_EXPIRY_KEY) || 0);
+            adminExpiresAt = Math.max(adminExpiresAt, storedExpiresAt);
+            if ((isAdminLoggedIn || storedExpiresAt > 0) && adminExpiresAt <= now) {
+                adminLogout();
+                alert('⏰ Signed out after 1 hour without activity.');
+            } else if (isAdminLoggedIn && adminExpiresAt > storedExpiresAt && now - lastActivityWrite >= 15000) {
+                localStorage.setItem(ADMIN_EXPIRY_KEY, String(adminExpiresAt));
+                lastActivityWrite = now;
             }
         }
 
-        function trackAdminActivity() { if (isAdminLoggedIn) resetLogoutTimer(); }
+        function trackAdminActivity() {
+            checkAdminExpiry();
+            if (!isAdminLoggedIn) return;
+            const now = Date.now();
+            adminExpiresAt = now + LOGOUT_TIMEOUT;
+            if (now - lastActivityWrite >= 15000) {
+                localStorage.setItem(ADMIN_EXPIRY_KEY, String(adminExpiresAt));
+                lastActivityWrite = now;
+            }
+        }
 
         function startActivityTracking() {
-            ['mousemove','keypress','click','scroll'].forEach(e => document.addEventListener(e, trackAdminActivity));
-            resetLogoutTimer();
+            ADMIN_ACTIVITY_EVENTS.forEach(eventName => document.addEventListener(eventName, trackAdminActivity, { passive: true }));
         }
 
         function stopActivityTracking() {
-            if (logoutTimer) clearTimeout(logoutTimer);
-            ['mousemove','keypress','click','scroll'].forEach(e => document.removeEventListener(e, trackAdminActivity));
+            ADMIN_ACTIVITY_EVENTS.forEach(eventName => document.removeEventListener(eventName, trackAdminActivity));
+        }
+
+        setInterval(checkAdminExpiry, 30000);
+        document.addEventListener('visibilitychange', checkAdminExpiry);
+        window.addEventListener('focus', checkAdminExpiry);
+
+        async function loadSettingsFromDB() {
+            try {
+                const { data, error } = await db.from('julis_settings').select('data').eq('id', 1).maybeSingle();
+                if (error) {
+                    console.warn('Shared shop settings unavailable; using this device’s saved settings.', error);
+                    return null;
+                }
+                return data?.data || null;
+            } catch (error) {
+                console.warn('Shared shop settings unavailable; using this device’s saved settings.', error);
+                return null;
+            }
+        }
+
+        function sharedSettingsPayload() {
+            return {
+                shipping: settings.shipping,
+                handling: settings.handling,
+                zelleEmail: settings.zelleEmail,
+                cashAppTag: settings.cashAppTag,
+                shopName: settings.shopName,
+                welcomeMessage: settings.welcomeMessage,
+                aboutMe: settings.aboutMe,
+                social: SOCIAL_PLATFORMS.reduce((social, { key }) => {
+                    social[key] = settings.social?.[key] || '';
+                    return social;
+                }, {})
+            };
+        }
+
+        async function saveSettingsToDB() {
+            const { error } = await db.from('julis_settings').upsert({
+                id: 1,
+                data: sharedSettingsPayload(),
+                updated_at: new Date().toISOString()
+            });
+            if (error) throw error;
+        }
+
+        function normalizeSocialValue(platformKey, value) {
+            const platform = SOCIAL_PLATFORMS.find(item => item.key === platformKey);
+            const raw = String(value ?? '').trim();
+            if (!platform || !raw) return { url: '', error: '' };
+
+            if (/^https?:/i.test(raw) || raw.includes('://')) {
+                try {
+                    const parsed = new URL(raw);
+                    const host = parsed.hostname.toLowerCase();
+                    const allowedHost = platform.domains.some(domain => host === domain || host.endsWith('.' + domain));
+                    if (parsed.protocol !== 'https:' || !allowedHost) {
+                        return { url: '', error: `Use an https ${platform.label} link or a valid handle.` };
+                    }
+                    return { url: parsed.href, error: '' };
+                } catch {
+                    return { url: '', error: `Use an https ${platform.label} link or a valid handle.` };
+                }
+            }
+
+            const handle = raw.startsWith('@') ? raw.slice(1) : raw;
+            if (!handle || !/^[A-Za-z0-9._-]+$/.test(handle)) {
+                return { url: '', error: `Use letters, numbers, periods, underscores, or dashes for this handle.` };
+            }
+            return { url: platform.toUrl(handle), error: '' };
+        }
+
+        function updateSocialPreview(platformKey) {
+            const input = document.getElementById('social' + platformKey[0].toUpperCase() + platformKey.slice(1));
+            const error = document.getElementById('social' + platformKey[0].toUpperCase() + platformKey.slice(1) + 'Error');
+            const testLink = document.getElementById('social' + platformKey[0].toUpperCase() + platformKey.slice(1) + 'Test');
+            if (!input || !error || !testLink) return;
+            const normalized = normalizeSocialValue(platformKey, input.value);
+            error.textContent = normalized.error;
+            testLink.classList.toggle('hidden', !normalized.url);
+            if (normalized.url) testLink.href = normalized.url;
+            return normalized;
+        }
+
+        function renderPublicSettings() {
+            const shopName = String(settings.shopName || defaultSettings.shopName);
+            const shopNameDisplay = document.getElementById('shopNameDisplay');
+            if (shopNameDisplay) shopNameDisplay.textContent = `Welcome to ${shopName}!`;
+
+            const welcomeMessage = document.getElementById('welcomeMessageDisplay');
+            if (welcomeMessage) welcomeMessage.textContent = String(settings.welcomeMessage || defaultSettings.welcomeMessage);
+
+            const aboutMe = document.getElementById('aboutMeDisplay');
+            if (aboutMe) {
+                aboutMe.textContent = String(settings.aboutMe || '');
+                aboutMe.classList.toggle('hidden', !settings.aboutMe);
+            }
+
+            const followSection = document.getElementById('followSection');
+            const followHeading = document.getElementById('followHeading');
+            const links = document.getElementById('socialLinks');
+            if (!followSection || !followHeading || !links) return;
+            followHeading.textContent = `💖 Follow ${shopName}`;
+            links.replaceChildren();
+            SOCIAL_PLATFORMS.forEach(platform => {
+                const normalized = normalizeSocialValue(platform.key, settings.social?.[platform.key]);
+                if (!normalized.url) return;
+                const anchor = document.createElement('a');
+                anchor.className = 'social-link';
+                anchor.href = normalized.url;
+                anchor.target = '_blank';
+                anchor.rel = 'noopener noreferrer';
+                anchor.setAttribute('aria-label', `Follow ${shopName} on ${platform.label}`);
+                const icon = document.createElement('span');
+                icon.className = 'social-icon';
+                icon.textContent = platform.emoji;
+                const label = document.createElement('span');
+                label.textContent = platform.label;
+                anchor.append(icon, label);
+                links.append(anchor);
+            });
+            followSection.classList.toggle('hidden', links.childElementCount === 0);
         }
 
         // ─── Init ────────────────────────────────────────────────────────
         async function init() {
+            checkAdminExpiry();
             // Show loading state while fetching products from Supabase
             const grid = document.getElementById('productsGrid');
             if (grid) grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:4rem;color:var(--purple);font-size:1.2rem;">⏳ Loading products...</div>';
 
-            products = await loadProductsFromDB();
+            const [loadedProducts, remoteSettings, loadedOrders] = await Promise.all([
+                loadProductsFromDB(),
+                loadSettingsFromDB(),
+                loadOrdersFromDB()
+            ]);
+            products = loadedProducts;
+            orders = loadedOrders;
+            settings = mergeSettings(localSettings, remoteSettings);
+            saveData();
             renderProducts();
             updateCartBadge();
             renderProductList();
             loadSettings();
-            loadOrdersFromDB().then(o => { orders = o; renderOrders(); });
+            renderOrders();
+            renderShopDashboard();
+            setAdminTab(localStorage.getItem('julis_admin_tab') || 'shop', false);
 
             document.getElementById('productForm').addEventListener('submit', function(e) {
                 e.preventDefault();
@@ -1242,8 +1745,7 @@
         }
 
         // ─── Persist ─────────────────────────────────────────────────────
-        // Products are in Supabase (shared across all devices).
-        // Cart and settings stay in localStorage (per-device is fine).
+        // Products and shared settings sync through Supabase; cart and the admin password stay local.
         function saveData() {
             try {
                 localStorage.setItem('julis_cart_v3',  JSON.stringify(cart));
@@ -1255,19 +1757,48 @@
 
         // ─── Settings ────────────────────────────────────────────────────
         function loadSettings() {
-            document.getElementById('shippingCost').value = settings.shipping.toFixed(2);
-            document.getElementById('handlingFee').value  = settings.handling.toFixed(2);
+            document.getElementById('shippingCost').value = (Number(settings.shipping) || 0).toFixed(2);
+            document.getElementById('handlingFee').value  = (Number(settings.handling) || 0).toFixed(2);
             document.getElementById('zelleEmail').value   = settings.zelleEmail  || '';
             document.getElementById('cashAppTag').value   = settings.cashAppTag  || '';
+            document.getElementById('shopName').value = settings.shopName || defaultSettings.shopName;
+            document.getElementById('welcomeMessageSetting').value = settings.welcomeMessage || defaultSettings.welcomeMessage;
+            document.getElementById('aboutMe').value = settings.aboutMe || '';
+            SOCIAL_PLATFORMS.forEach(({ key }) => {
+                const input = document.getElementById('social' + key[0].toUpperCase() + key.slice(1));
+                input.value = String(settings.social?.[key] || '');
+                updateSocialPreview(key);
+            });
+            renderPublicSettings();
         }
 
-        function saveSettings() {
+        async function saveSettings() {
+            const social = {};
+            let hasInvalidSocial = false;
+            SOCIAL_PLATFORMS.forEach(({ key }) => {
+                const normalized = updateSocialPreview(key);
+                if (normalized.error) hasInvalidSocial = true;
+                social[key] = normalized.url;
+            });
+            if (hasInvalidSocial) return;
+
             settings.shipping   = parseFloat(document.getElementById('shippingCost').value) || 0;
             settings.handling   = parseFloat(document.getElementById('handlingFee').value)  || 0;
             settings.zelleEmail = document.getElementById('zelleEmail').value.trim();
             settings.cashAppTag = document.getElementById('cashAppTag').value.trim();
+            settings.shopName = document.getElementById('shopName').value.trim() || defaultSettings.shopName;
+            settings.welcomeMessage = document.getElementById('welcomeMessageSetting').value.trim() || defaultSettings.welcomeMessage;
+            settings.aboutMe = document.getElementById('aboutMe').value.trim();
+            settings.social = social;
             saveData();
-            showSuccess('⚙️ All settings saved!');
+            loadSettings();
+            try {
+                await saveSettingsToDB();
+                showSuccess('⚙️ Saved! Everyone can see it now.');
+            } catch (error) {
+                console.warn('Shared shop settings could not be saved online.', error);
+                showSuccess('⚙️ Saved on this device (online sync not set up yet)');
+            }
         }
 
         function changePassword() {
@@ -1486,6 +2017,7 @@
             const list = document.getElementById('productList');
             if (products.length === 0) {
                 list.innerHTML = '<p style="color:#999;text-align:center;padding:2rem;font-style:italic;">No products yet! Add one above! ✨</p>';
+                renderShopDashboard();
                 return;
             }
             // Lead with what needs making, so restocking is the first thing
@@ -1517,6 +2049,7 @@
                         <button class="btn-delete" onclick="deleteProduct(${p.id})">🗑️ Delete</button>
                     </div>
                 </div>`; }).join('');
+            renderShopDashboard();
         }
 
         // ─── Product Detail Modal ────────────────────────────────────────
@@ -1761,16 +2294,82 @@
             loadOrdersFromDB().then(o => { orders = o; renderOrders(); });
         }
 
+        const ADMIN_TABS = [
+            { name: 'shop', button: 'adminTabShop', panel: 'adminShopPanel' },
+            { name: 'products', button: 'adminTabProducts', panel: 'adminProductsPanel' },
+            { name: 'orders', button: 'adminTabOrders', panel: 'adminOrdersPanel' },
+            { name: 'settings', button: 'adminTabSettings', panel: 'adminSettingsPanel' }
+        ];
+
+        function setAdminTab(name, remember = true) {
+            if (!ADMIN_TABS.some(tab => tab.name === name)) name = 'shop';
+            ADMIN_TABS.forEach(tab => {
+                const button = document.getElementById(tab.button);
+                const panel = document.getElementById(tab.panel);
+                const active = tab.name === name;
+                button.classList.toggle('active', active);
+                button.setAttribute('aria-selected', String(active));
+                button.tabIndex = active ? 0 : -1;
+                panel.classList.toggle('hidden', !active);
+            });
+            if (remember) localStorage.setItem('julis_admin_tab', name);
+        }
+
+        function navigateAdminTabs(event) {
+            if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+            const currentIndex = ADMIN_TABS.findIndex(tab => document.activeElement?.id === tab.button);
+            if (currentIndex < 0) return;
+            event.preventDefault();
+            const nextIndex = event.key === 'Home' ? 0
+                : event.key === 'End' ? ADMIN_TABS.length - 1
+                    : (currentIndex + (event.key === 'ArrowRight' ? 1 : -1) + ADMIN_TABS.length) % ADMIN_TABS.length;
+            const next = ADMIN_TABS[nextIndex];
+            document.getElementById(next.button).focus();
+            setAdminTab(next.name);
+        }
+
+        function renderShopDashboard() {
+            const tracked = products.filter(product => product.track_stock !== false);
+            const inStock = tracked.reduce((sum, product) => sum + stockOf(product), 0);
+            const lowStock = tracked.filter(product => stockOf(product) > 0 && stockOf(product) <= 2);
+            const soldOut = tracked.filter(product => stockOf(product) <= 0);
+            const newOrders = orders.filter(order => String(order.status || '').trim().toLowerCase() !== 'complete');
+            document.getElementById('dashboardTotalProducts').textContent = products.length;
+            document.getElementById('dashboardStockQuantity').textContent = inStock;
+            document.getElementById('dashboardLowStock').textContent = lowStock.length;
+            document.getElementById('dashboardSoldOut').textContent = soldOut.length;
+            document.getElementById('dashboardNewOrders').textContent = newOrders.length;
+
+            const items = [...soldOut, ...lowStock];
+            const empty = document.getElementById('shopRestockEmpty');
+            const list = document.getElementById('shopRestockList');
+            empty.classList.toggle('hidden', items.length > 0);
+            list.innerHTML = items.map(product => {
+                const status = stockOf(product) <= 0 ? 'Sold out' : `${stockOf(product)} left`;
+                return `<div class="restock-item">
+                    <div><strong>${escapeHtml(product.name)}</strong><div style="color:#666;font-size:0.9rem;">${status}</div></div>
+                    <button class="btn-edit" onclick="editShopProduct(${Number(product.id)})">✏️ Edit</button>
+                </div>`;
+            }).join('');
+        }
+
+        function editShopProduct(id) {
+            setAdminTab('products');
+            editProduct(id);
+        }
+
         // ─── Orders (admin) ──────────────────────────────────────────────
         function renderOrders() {
             const list = document.getElementById('ordersList');
             if (!list) return;
-            const heading = '<h3 style="margin:2rem 0 1.5rem;color:var(--purple);font-family:Comfortaa,sans-serif;font-size:1.6rem;">🧾 Orders' + (orders.length ? ' (' + orders.length + ')' : '') + '</h3>';
-            if (orders.length === 0) {
+            const openOrders = orders.filter(order => String(order.status || '').trim().toLowerCase() !== 'complete');
+            const heading = '<h3 style="margin:2rem 0 1.5rem;color:var(--purple);font-family:Comfortaa,sans-serif;font-size:1.6rem;">🧾 Orders' + (openOrders.length ? ' (' + openOrders.length + ')' : '') + '</h3>';
+            if (openOrders.length === 0) {
                 list.innerHTML = heading + '<p style="color:#999;text-align:center;padding:1rem;font-style:italic;">No orders yet — they\'ll show up here when customers check out! 🛍️</p>';
+                renderShopDashboard();
                 return;
             }
-            list.innerHTML = heading + orders.map(o => `
+            list.innerHTML = heading + openOrders.map(o => `
                 <div class="product-list-item" style="align-items:flex-start;">
                     <div class="product-list-info" style="line-height:1.8;">
                         <strong style="font-size:1.1rem;color:var(--purple);">${escapeHtml(o.customer_name)}</strong> — $${Number(o.total).toFixed(2)} · ${o.payment_method === 'zelle' ? '💰 Zelle' : '💵 Cash App'}<br>
@@ -1782,6 +2381,7 @@
                         <button class="btn-delete" onclick="completeOrder(${o.id})">✅ Done</button>
                     </div>
                 </div>`).join('');
+            renderShopDashboard();
         }
 
         async function completeOrder(id) {
@@ -1814,15 +2414,17 @@
             const pw = document.getElementById('adminPasswordInput').value;
             if (pw === settings.adminPassword) {
                 isAdminLoggedIn = true;
-                sessionStorage.setItem('adminLoggedIn', 'true');
+                adminExpiresAt = Date.now() + LOGOUT_TIMEOUT;
+                localStorage.setItem(ADMIN_EXPIRY_KEY, String(adminExpiresAt));
+                lastActivityWrite = 0;
                 closeLoginModal();
                 const panel = document.getElementById('adminPanel');
                 panel.classList.remove('hidden');
-                showSuccess('✅ Welcome! Auto-logout after 30 minutes of inactivity.');
+                showSuccess('✅ Welcome! You will be signed out after 1 hour without activity.');
                 startActivityTracking();
                 setTimeout(() => panel.scrollIntoView({ behavior: 'smooth', block: 'start' }), 200);
             } else {
-                alert('❌ Incorrect password!\n\nDefault: juli2024');
+                alert('❌ Incorrect password!');
                 document.getElementById('adminPasswordInput').value = '';
                 document.getElementById('adminPasswordInput').focus();
             }
@@ -1844,7 +2446,9 @@
 
         function adminLogout() {
             isAdminLoggedIn = false;
-            sessionStorage.removeItem('adminLoggedIn');
+            adminExpiresAt = 0;
+            localStorage.removeItem(ADMIN_EXPIRY_KEY);
+            lastActivityWrite = 0;
             document.getElementById('adminPanel').classList.add('hidden');
             stopActivityTracking();
             showSuccess('👋 Logged out!');
