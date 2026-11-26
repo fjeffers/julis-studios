@@ -1347,7 +1347,7 @@
 
     <header>
         <div class="header-top">
-            💖 HANDMADE WITH LOVE · FREE SHIPPING OVER $45 · NEW ITEMS WEEKLY 💖
+            💖 HANDMADE WITH LOVE · NEW ITEMS WEEKLY 💖
         </div>
         <div class="header-content">
             <button class="btn btn-secondary home-btn" onclick="scrollToHome()">
@@ -1636,15 +1636,15 @@
 
                     <div class="settings-section">
                         <h4>🚚 Shipping</h4>
-                        <p class="settings-help">Orders over $45 get free shipping automatically.</p>
+                        <p class="settings-help">Shipping + handling is added to every order.</p>
                         <div class="settings-grid">
                             <div class="form-group">
                                 <label for="shippingCost" style="color:white;">Shipping Cost ($)</label>
-                                <input type="number" id="shippingCost" step="0.01" value="5.00" style="border: 2px solid white;">
+                                <input type="number" id="shippingCost" step="0.01" value="10.00" style="border: 2px solid white;">
                             </div>
                             <div class="form-group">
                                 <label for="handlingFee" style="color:white;">Handling Fee ($)</label>
-                                <input type="number" id="handlingFee" step="0.01" value="2.00" style="border: 2px solid white;">
+                                <input type="number" id="handlingFee" step="0.01" value="0.00" style="border: 2px solid white;">
                             </div>
                             <div class="form-group">
                                 <label for="shippingTime" style="color:white;">How long shipping takes</label>
@@ -1819,8 +1819,8 @@
             { key: 'etsy', label: 'Etsy', emoji: '🛍️', domains: ['etsy.com'], toUrl: h => `https://www.etsy.com/shop/${h}` }
         ];
         const defaultSettings = {
-            shipping: 5.00,
-            handling: 2.00,
+            shipping: 10.00,
+            handling: 0,
             shippingTime: '7–14 days',
             adminPassword: 'juli2024',
             zelleEmail: 'your-email@example.com',
@@ -3216,12 +3216,10 @@
             const subtotal      = lines.reduce((sum, line) => sum + Number(line.product.price) * line.quantity, 0);
             const shipping      = Number(settings.shipping) || 0;
             const handling      = Number(settings.handling) || 0;
-            const shippingCost  = subtotal >= 45 ? 0 : shipping;
+            const shippingCost  = shipping;
             const total         = subtotal + shippingCost + handling;
-            const amountToFree  = (45 - subtotal).toFixed(2);
 
             content.innerHTML = `
-                ${subtotal < 45 ? `<div style="background:linear-gradient(135deg,#fff8e1,#fff3cd);border:2px solid #f0c040;border-radius:12px;padding:1rem 1.5rem;margin-bottom:1rem;text-align:center;font-weight:600;color:#856404;">🚚 Add $${amountToFree} more for FREE shipping!</div>` : `<div style="background:linear-gradient(135deg,#d4edda,#c3e6cb);border:2px solid #28a745;border-radius:12px;padding:1rem 1.5rem;margin-bottom:1rem;text-align:center;font-weight:700;color:#155724;font-size:1.1rem;">🎉 You qualify for FREE shipping!</div>`}
                 <div>
                     ${lines.map(({ product, quantity, options, index }) => {
                     const imageUrl = safeProductImageUrl(product.image);
@@ -3243,9 +3241,9 @@
 
                 <div style="background:linear-gradient(135deg,var(--primary-blue),var(--purple));color:white;padding:2rem;border-radius:20px;margin-top:2rem;">
                     <div style="display:flex;justify-content:space-between;margin-bottom:1rem;font-size:1.1rem;"><span>Subtotal:</span><span>$${subtotal.toFixed(2)}</span></div>
-                    <div style="display:flex;justify-content:space-between;margin-bottom:1rem;font-size:1.1rem;"><span>Shipping:</span><span>${shippingCost === 0 ? '<strong style="color:#90EE90;">FREE 🎉</strong>' : '$' + shippingCost.toFixed(2)}</span></div>
+                    <div style="display:flex;justify-content:space-between;margin-bottom:1rem;font-size:1.1rem;"><span>Shipping:</span><span>$${shippingCost.toFixed(2)}</span></div>
                     <div class="shipping-time-notice">📦 Ships in ${escapeHtml(settings.shippingTime || defaultSettings.shippingTime)}</div>
-                    <div style="display:flex;justify-content:space-between;margin-bottom:1rem;font-size:1.1rem;"><span>Handling:</span><span>$${handling.toFixed(2)}</span></div>
+                    ${handling > 0 ? `<div style="display:flex;justify-content:space-between;margin-bottom:1rem;font-size:1.1rem;"><span>Handling:</span><span>$${handling.toFixed(2)}</span></div>` : ''}
                     <div style="display:flex;justify-content:space-between;border-top:2px solid rgba(255,255,255,0.3);padding-top:1rem;margin-top:1rem;font-size:1.5rem;font-weight:700;"><span>Total:</span><span>$${total.toFixed(2)}</span></div>
                 </div>
 
@@ -3358,7 +3356,7 @@
                 );
                 const shipping = Number(settings.shipping) || 0;
                 const handling = Number(settings.handling) || 0;
-                const shippingCost = subtotal >= 45 ? 0 : shipping;
+                const shippingCost = shipping;
                 const total = subtotal + shippingCost + handling;
                 const paymentMethod = selectedPayment;
                 const order = {
@@ -3397,7 +3395,9 @@
                             const choices = choiceSummaryText(i.options);
                             return `${i.name}${choices ? ` (${choices})` : ''} × ${i.quantity} — $${(i.price * i.quantity).toFixed(2)}`;
                         }).join('\n')}\n\n` +
-                        `Subtotal: $${subtotal.toFixed(2)}\nShipping: $${shippingCost.toFixed(2)}\n📦 Ships in ${settings.shippingTime || defaultSettings.shippingTime}\nHandling: $${handling.toFixed(2)}\nTotal: $${total.toFixed(2)}\n` +
+                        `Subtotal: $${subtotal.toFixed(2)}\nShipping: $${shippingCost.toFixed(2)}\n📦 Ships in ${settings.shippingTime || defaultSettings.shippingTime}\n` +
+                        (handling > 0 ? `Handling: $${handling.toFixed(2)}\n` : '') +
+                        `Total: $${total.toFixed(2)}\n` +
                         `Payment method: ${paymentMethod.toUpperCase()}`;
                     alert(`🎉 Order received!\n\nWe couldn't reach the order system, so your email app will open with the order details — please press SEND so Juli gets your order! 💌`);
                     window.location.href = 'mailto:' + NOTIFICATION_EMAIL
@@ -3451,7 +3451,7 @@
                 saveData();
                 updateCartBadge();
                 closeModal('cartModal');
-                alert(`🎉 Order Confirmed!\n\nName: ${order.customer_name}\nPhone: ${order.phone}\nTotal: $${total.toFixed(2)}\n📦 Ships in ${settings.shippingTime || defaultSettings.shippingTime}\nPayment: ${paymentMethod.toUpperCase()}\n\nThank you! Please complete payment and I'll get your items ready! 💙`);
+                alert(`🎉 Order Confirmed!\n\nName: ${order.customer_name}\nPhone: ${order.phone}\n${handling > 0 ? `Handling: $${handling.toFixed(2)}\n` : ''}Total: $${total.toFixed(2)}\n📦 Ships in ${settings.shippingTime || defaultSettings.shippingTime}\nPayment: ${paymentMethod.toUpperCase()}\n\nThank you! Please complete payment and I'll get your items ready! 💙`);
                 loadOrdersFromDB().then(o => { orders = o; renderOrders(); });
             } finally {
                 if (purchaseButton && !orderPlaced) purchaseButton.disabled = false;
