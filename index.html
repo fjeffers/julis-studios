@@ -1365,7 +1365,7 @@
 
                     <div class="settings-section">
                         <h4>🔐 Password</h4>
-                        <p class="settings-help">Your admin password applies on this device only.</p>
+                        <p class="settings-help">Once online sync is set up, your password works on every device.</p>
                         <div class="form-group">
                             <label for="newPassword" style="color:white;">New Password</label>
                             <input type="password" id="newPassword" placeholder="Enter new password" style="border: 2px solid white;">
@@ -1872,15 +1872,46 @@
             }
         }
 
-        function changePassword() {
+        async function changePassword() {
             const pw = document.getElementById('newPassword').value;
             if (!pw || pw.length < 4) { alert('❌ Password must be at least 4 characters!'); return; }
-            if (confirm('🔐 Change your admin password?')) {
-                settings.adminPassword = pw;
-                saveData();
-                document.getElementById('newPassword').value = '';
-                showSuccess('🔑 Password changed!');
+            let currentPasscode = adminPasscode;
+            if (!currentPasscode) {
+                currentPasscode = prompt('Enter your current admin password:');
+                if (currentPasscode === null) return;
             }
+            if (!confirm('🔐 Change your admin password?')) return;
+
+            try {
+                const { error } = await db.rpc('julis_change_passcode', {
+                    p_old: currentPasscode,
+                    p_new: pw
+                });
+                if (error) {
+                    if (
+                        error.code === '28P01' ||
+                        String(error.message || '').toLowerCase().includes('wrong passcode')
+                    ) {
+                        alert('❌ Current password is wrong');
+                        return;
+                    }
+                } else {
+                    settings.adminPassword = pw;
+                    adminPasscode = pw;
+                    saveData();
+                    document.getElementById('newPassword').value = '';
+                    showSuccess('🔑 Password changed on every device!');
+                    return;
+                }
+            } catch (error) {
+                console.warn('Shared password could not be changed online.', error);
+            }
+
+            settings.adminPassword = pw;
+            adminPasscode = pw;
+            saveData();
+            document.getElementById('newPassword').value = '';
+            showSuccess('🔑 Password changed on this device');
         }
 
         // ─── Image upload (with compression so 50+ products fit in localStorage) ──
