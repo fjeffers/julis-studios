@@ -1465,14 +1465,20 @@
          */
         async function decrementStockFor(cartItems) {
             for (const item of cartItems) {
-                const p = products.find(x => x.id === item.id);
-                if (!p || p.track_stock === false) continue;
-                const left = Math.max(0, (Number(p.stock_quantity) || 0) - item.quantity);
                 try {
-                    await updateProductInDB(p.id, { stock_quantity: left });
-                    p.stock_quantity = left;
+                    const { data, error } = await db.from('julis_products')
+                        .select('id,stock_quantity,track_stock')
+                        .eq('id', item.id)
+                        .maybeSingle();
+                    if (error) throw error;
+                    if (!data || data.track_stock === false) continue;
+                    const left = Math.max(
+                        0,
+                        (Number(data.stock_quantity) || 0) - Number(item.quantity)
+                    );
+                    await updateProductInDB(data.id, { stock_quantity: left });
                 } catch (err) {
-                    console.error('Stock update failed for ' + p.name, err);
+                    console.error('Stock update failed for ' + item.id, err);
                 }
             }
         }
@@ -2418,7 +2424,7 @@
                             <textarea id="shippingAddress" placeholder="Street Address&#10;City, State ZIP Code"></textarea>
                         </div>
                     </div>
-                    <button class="btn btn-primary btn-large" onclick="checkout()">💙 Complete Purchase</button>
+                    <button class="btn btn-primary btn-large" id="completePurchaseButton" onclick="checkout()">💙 Complete Purchase</button>
                 </div>`;
         }
 
@@ -2448,72 +2454,118 @@
         }
 
         async function checkout() {
-            const name    = (document.getElementById('customerName')    || {}).value || '';
-            const phone   = (document.getElementById('customerPhone')   || {}).value || '';
-            const address = (document.getElementById('shippingAddress') || {}).value || '';
-            const lines = cartLines();
-
-            if (!selectedPayment) { alert('Please select a payment method! 💳'); return; }
-            if (!name.trim())     { alert('Please enter your full name! 👤');    return; }
-            if (!phone.trim())    { alert('Please enter your phone number! 📱'); return; }
-            if (!address.trim())  { alert('Please enter your shipping address! 📦'); return; }
-            if (lines.length === 0) { alert('Your cart is empty! 🛒'); return; }
-
-            const subtotal     = lines.reduce((sum, line) => sum + Number(line.product.price) * line.quantity, 0);
-            const shipping     = Number(settings.shipping) || 0;
-            const handling     = Number(settings.handling) || 0;
-            const shippingCost = subtotal >= 45 ? 0 : shipping;
-            const total        = subtotal + shippingCost + handling;
-
-            const order = {
-                customer_name: name.trim(),
-                phone: phone.trim(),
-                address: address.trim(),
-                payment_method: selectedPayment,
-                items: lines.map(({ product, quantity }) => ({
-                    name: String(product.name || ''),
-                    quantity,
-                    price: Number(product.price)
-                })),
-                subtotal: subtotal,
-                shipping: shippingCost,
-                handling,
-                total: total
-            };
-
-            const soldItems = lines.map(({ product, quantity }) => ({
-                id: product.id,
-                quantity
-            }));
+            const purchaseButton = document.getElementById('completePurchaseButton');
+            if (purchaseButton?.disabled) return;
+            if (purchaseButton) purchaseButton.disabled = true;
+            let orderPlaced = false;
 
             try {
-                await insertOrderToDB(order);
-                await decrementStockFor(soldItems);
-                renderProducts();
-                alert(`🎉 Order Confirmed!\n\nName: ${order.customer_name}\nPhone: ${order.phone}\nTotal: $${total.toFixed(2)}\nPayment: ${selectedPayment.toUpperCase()}\n\nThank you! Please complete payment and I'll get your items ready! 💙`);
-            } catch (err) {
-                // Couldn't save the order online — fall back to an email draft so it isn't lost
-                console.error('Order save failed:', err);
-                const emailBody =
-                    `New order for Juli's Studios!\n\n` +
-                    `Name: ${order.customer_name}\n` +
-                    `Phone: ${order.phone}\n` +
-                    `Address:\n${order.address}\n\n` +
-                    `Items:\n${order.items.map(i => `${i.name} x ${i.quantity} — $${(i.price * i.quantity).toFixed(2)}`).join('\n')}\n\n` +
-                    `Subtotal: $${subtotal.toFixed(2)}\nShipping: $${shippingCost.toFixed(2)}\nHandling: $${settings.handling.toFixed(2)}\nTotal: $${total.toFixed(2)}\n` +
-                    `Payment method: ${selectedPayment.toUpperCase()}`;
-                alert(`🎉 Order received!\n\nWe couldn't reach the order system, so your email app will open with the order details — please press SEND so Juli gets your order! 💌`);
-                window.location.href = 'mailto:' + NOTIFICATION_EMAIL
-                    + '?subject=' + encodeURIComponent('New Order from ' + order.customer_name + ' — $' + total.toFixed(2))
-                    + '&body=' + encodeURIComponent(emailBody);
-            }
+                const name = (document.getElementById('customerName') || {}).value || '';
+                const phone = (document.getElementById('customerPhone') || {}).value || '';
+                const address = (document.getElementById('shippingAddress') || {}).value || '';
 
-            cart = [];
-            selectedPayment = null;
-            saveData();
-            updateCartBadge();
-            closeModal('cartModal');
-            loadOrdersFromDB().then(o => { orders = o; renderOrders(); });
+                if (!selectedPayment) { alert('Please select a payment method! 💳'); return; }
+                if (!name.trim()) { alert('Please enter your full name! 👤'); return; }
+                if (!phone.trim()) { alert('Please enter your phone number! 📱'); return; }
+                if (!address.trim()) { alert('Please enter your shipping address! 📦'); return; }
+
+                const previousLines = cartLines();
+                if (previousLines.length === 0) { alert('Your cart is empty! 🛒'); return; }
+                const summary = lines => lines.map(({ product, quantity }) => ({
+                    id: String(product.id),
+                    quantity,
+                    name: String(product.name || ''),
+                    price: Number(product.price),
+                    stock: stockOf(product)
+                }));
+                const previousSummary = JSON.stringify(summary(previousLines));
+
+                products = await loadProductsFromDB();
+                productsLoaded = true;
+                const lines = cartLines();
+                if (JSON.stringify(summary(lines)) !== previousSummary) {
+                    renderProducts();
+                    renderProductList();
+                    updateCartBadge();
+                    renderCart();
+                    alert('Some items changed — please check your cart and try again,');
+                    return;
+                }
+
+                const subtotal = lines.reduce(
+                    (sum, line) => sum + Number(line.product.price) * line.quantity,
+                    0
+                );
+                const shipping = Number(settings.shipping) || 0;
+                const handling = Number(settings.handling) || 0;
+                const shippingCost = subtotal >= 45 ? 0 : shipping;
+                const total = subtotal + shippingCost + handling;
+                const paymentMethod = selectedPayment;
+                const order = {
+                    customer_name: name.trim(),
+                    phone: phone.trim(),
+                    address: address.trim(),
+                    payment_method: paymentMethod,
+                    items: lines.map(({ product, quantity }) => ({
+                        name: String(product.name || ''),
+                        quantity,
+                        price: Number(product.price)
+                    })),
+                    subtotal,
+                    shipping: shippingCost,
+                    handling,
+                    total
+                };
+                const soldItems = lines.map(({ product, quantity }) => ({
+                    id: product.id,
+                    quantity
+                }));
+
+                try {
+                    await insertOrderToDB(order);
+                    orderPlaced = true;
+                } catch (err) {
+                    console.error('Order save failed:', err);
+                    const emailBody =
+                        `New order for Juli's Studios!\n\n` +
+                        `Name: ${order.customer_name}\n` +
+                        `Phone: ${order.phone}\n` +
+                        `Address:\n${order.address}\n\n` +
+                        `Items:\n${order.items.map(i => `${i.name} x ${i.quantity} — $${(i.price * i.quantity).toFixed(2)}`).join('\n')}\n\n` +
+                        `Subtotal: $${subtotal.toFixed(2)}\nShipping: $${shippingCost.toFixed(2)}\nHandling: $${handling.toFixed(2)}\nTotal: $${total.toFixed(2)}\n` +
+                        `Payment method: ${paymentMethod.toUpperCase()}`;
+                    alert(`🎉 Order received!\n\nWe couldn't reach the order system, so your email app will open with the order details — please press SEND so Juli gets your order! 💌`);
+                    window.location.href = 'mailto:' + NOTIFICATION_EMAIL
+                        + '?subject=' + encodeURIComponent('New Order from ' + order.customer_name + ' — $' + total.toFixed(2))
+                        + '&body=' + encodeURIComponent(emailBody);
+                    return;
+                }
+
+                let stockError = null;
+                try {
+                    const { error } = await db.rpc('julis_decrement_stock', {
+                        p_items: soldItems
+                    });
+                    stockError = error;
+                } catch (error) {
+                    stockError = error;
+                }
+                if (stockError) await decrementStockFor(soldItems);
+
+                products = await loadProductsFromDB();
+                productsLoaded = true;
+                renderProducts();
+                renderProductList();
+                cart = [];
+                selectedPayment = null;
+                saveData();
+                updateCartBadge();
+                closeModal('cartModal');
+                alert(`🎉 Order Confirmed!\n\nName: ${order.customer_name}\nPhone: ${order.phone}\nTotal: $${total.toFixed(2)}\nPayment: ${paymentMethod.toUpperCase()}\n\nThank you! Please complete payment and I'll get your items ready! 💙`);
+                loadOrdersFromDB().then(o => { orders = o; renderOrders(); });
+            } finally {
+                if (purchaseButton && !orderPlaced) purchaseButton.disabled = false;
+            }
         }
 
         const ADMIN_TABS = [
