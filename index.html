@@ -2080,7 +2080,10 @@
                     <button type="button" class="btn btn-primary" onclick="saveSettings()">💾 Save My Schedule</button>
                 </section>
                 <p id="adminAppointmentsStatus" class="appointment-status" role="status" aria-live="polite"></p>
-                <button type="button" id="loadAdminAppointmentsButton" class="btn btn-primary hidden" onclick="loadAdminAppointments(true)" style="padding:0.4rem 0.8rem;font-size:0.85rem;margin-top:0.4rem;">Load appointments</button>
+                <div id="adminAppointmentsPasswordRow" class="hidden" style="display:flex;flex-wrap:wrap;align-items:center;gap:0.5rem;margin-top:0.4rem;">
+                    <input type="password" id="adminAppointmentsPassword" autocomplete="current-password" aria-label="Appointments password" onkeydown="if(event.key==='Enter'){event.preventDefault();loadAdminAppointments(true)}" style="padding:0.5rem 0.7rem;max-width:260px;">
+                    <button type="button" id="loadAdminAppointmentsButton" class="btn btn-primary" onclick="loadAdminAppointments(true)" style="padding:0.4rem 0.8rem;font-size:0.85rem;">Load appointments</button>
+                </div>
             </section>
 
             <section class="admin-tab-panel hidden" id="adminSettingsPanel" role="tabpanel" aria-labelledby="adminTabSettings">
@@ -5146,7 +5149,8 @@
             document.getElementById('upcomingAppointmentsList').innerHTML = '';
             document.getElementById('pastAppointmentsList').innerHTML = '';
             document.getElementById('adminAppointmentsStatus').textContent = '';
-            document.getElementById('loadAdminAppointmentsButton')?.classList.add('hidden');
+            document.getElementById('adminAppointmentsPasswordRow').classList.add('hidden');
+            document.getElementById('adminAppointmentsPassword').value = '';
             mustResetPassword = false;
             adminExpiresAt = 0;
             localStorage.removeItem(ADMIN_EXPIRY_KEY);
@@ -5588,29 +5592,36 @@
         }
 
         async function loadAdminAppointments(force = false) {
-            if (adminAppointmentsLoading || (adminAppointmentsLoaded && !force)) return;
+            if (!isAdminLoggedIn || adminAppointmentsLoading || (adminAppointmentsLoaded && !force)) return;
             const status = document.getElementById('adminAppointmentsStatus');
-            const retryButton = document.getElementById('loadAdminAppointmentsButton');
-            const passcode = adminPasscode || prompt('Enter your admin password to see appointments:');
+            const passwordRow = document.getElementById('adminAppointmentsPasswordRow');
+            const passwordInput = document.getElementById('adminAppointmentsPassword');
+            const loadButton = document.getElementById('loadAdminAppointmentsButton');
+            const passcode = adminPasscode || passwordInput.value;
             if (!passcode) {
                 status.textContent = 'Enter your password to see appointments.';
-                retryButton.classList.remove('hidden');
+                passwordRow.classList.remove('hidden');
                 return;
             }
             adminAppointmentsLoading = true;
-            retryButton.classList.add('hidden');
+            loadButton.disabled = true;
+            passwordInput.disabled = true;
             status.textContent = 'Loading appointments…';
             try {
                 const { data, error } = await db.rpc('julis_admin_appointments', { p_passcode: passcode });
                 if ((!error && data === null) || isWrongAdminPasscode(error)) {
                     adminPasscode = '';
                     adminAppointmentsLoaded = false;
+                    passwordInput.value = '';
+                    passwordRow.classList.remove('hidden');
                     showSuccess('❌ Wrong password (or too many tries — wait 15 minutes).');
                     status.textContent = '';
                     return;
                 }
                 if (error) throw error;
                 adminPasscode = passcode;
+                passwordInput.value = '';
+                passwordRow.classList.add('hidden');
                 adminAppointments = Array.isArray(data) ? data : [];
                 adminAppointmentsLoaded = true;
                 renderAdminAppointments();
@@ -5618,9 +5629,11 @@
             } catch {
                 adminAppointmentsLoaded = false;
                 status.textContent = "Couldn't load appointments right now. Please try again.";
-                if (!adminPasscode) retryButton.classList.remove('hidden');
+                if (!adminPasscode) passwordRow.classList.remove('hidden');
             } finally {
                 adminAppointmentsLoading = false;
+                loadButton.disabled = false;
+                passwordInput.disabled = false;
             }
         }
 
