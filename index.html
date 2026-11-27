@@ -5142,6 +5142,10 @@
             adminAppointmentsLoaded = false;
             adminAppointments = [];
             updatePendingReviewCount();
+            document.getElementById('upcomingAppointmentsList').innerHTML = '';
+            document.getElementById('pastAppointmentsList').innerHTML = '';
+            document.getElementById('adminAppointmentsStatus').textContent = '';
+            document.getElementById('loadAdminAppointmentsButton')?.classList.add('hidden');
             mustResetPassword = false;
             adminExpiresAt = 0;
             localStorage.removeItem(ADMIN_EXPIRY_KEY);
