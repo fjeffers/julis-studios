@@ -118,6 +118,14 @@ begin
   insert into public.julis_booking_attempts (client) values (k);
   delete from public.julis_booking_attempts where at < now() - interval '1 day';
 
+  perform pg_advisory_xact_lock(hashtext('julis_booking_calendar'));
+  if exists (select 1 from public.julis_appointments
+              where status = 'booked'
+                and start_at > p_start - make_interval(mins => slot)
+                and start_at < p_start + make_interval(mins => slot)) then
+    raise exception 'Sorry, someone just booked that time. Please pick another.' using errcode = 'P0001';
+  end if;
+
   begin
     insert into public.julis_appointments (start_at, name, phone, email, email_token)
     values (p_start, n, ph, em, tok)
