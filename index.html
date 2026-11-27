@@ -2080,6 +2080,7 @@
                     <button type="button" class="btn btn-primary" onclick="saveSettings()">💾 Save My Schedule</button>
                 </section>
                 <p id="adminAppointmentsStatus" class="appointment-status" role="status" aria-live="polite"></p>
+                <button type="button" id="loadAdminAppointmentsButton" class="btn btn-primary hidden" onclick="loadAdminAppointments(true)" style="padding:0.4rem 0.8rem;font-size:0.85rem;margin-top:0.4rem;">Load appointments</button>
             </section>
 
             <section class="admin-tab-panel hidden" id="adminSettingsPanel" role="tabpanel" aria-labelledby="adminTabSettings">
@@ -5587,25 +5588,37 @@
         }
 
         async function loadAdminAppointments(force = false) {
-            if (!adminPasscode || adminAppointmentsLoading || (adminAppointmentsLoaded && !force)) return;
+            if (adminAppointmentsLoading || (adminAppointmentsLoaded && !force)) return;
+            const status = document.getElementById('adminAppointmentsStatus');
+            const retryButton = document.getElementById('loadAdminAppointmentsButton');
+            const passcode = adminPasscode || prompt('Enter your admin password to see appointments:');
+            if (!passcode) {
+                status.textContent = 'Enter your password to see appointments.';
+                retryButton.classList.remove('hidden');
+                return;
+            }
             adminAppointmentsLoading = true;
-            document.getElementById('adminAppointmentsStatus').textContent = 'Loading appointments…';
+            retryButton.classList.add('hidden');
+            status.textContent = 'Loading appointments…';
             try {
-                const { data, error } = await db.rpc('julis_admin_appointments', { p_passcode: adminPasscode });
+                const { data, error } = await db.rpc('julis_admin_appointments', { p_passcode: passcode });
                 if ((!error && data === null) || isWrongAdminPasscode(error)) {
                     adminPasscode = '';
                     adminAppointmentsLoaded = false;
                     showSuccess('❌ Wrong password (or too many tries — wait 15 minutes).');
+                    status.textContent = '';
                     return;
                 }
                 if (error) throw error;
+                adminPasscode = passcode;
                 adminAppointments = Array.isArray(data) ? data : [];
                 adminAppointmentsLoaded = true;
                 renderAdminAppointments();
-                document.getElementById('adminAppointmentsStatus').textContent = '';
+                status.textContent = '';
             } catch {
                 adminAppointmentsLoaded = false;
-                document.getElementById('adminAppointmentsStatus').textContent = "Couldn't load appointments right now. Please try again.";
+                status.textContent = "Couldn't load appointments right now. Please try again.";
+                if (!adminPasscode) retryButton.classList.remove('hidden');
             } finally {
                 adminAppointmentsLoading = false;
             }
