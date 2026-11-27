@@ -5231,18 +5231,18 @@
             if (!window || schedule.blackouts.includes(ymd)) return [];
             const startMinute = appointmentMinutes(window[0]);
             const endMinute = appointmentMinutes(window[1]);
-            const slotLength = 60;
+            const slotLength = schedule.slotMinutes;
             const now = Date.now();
-            const booked = new Set(appointmentBookedSlots.map(value => {
+            const bookedStarts = appointmentBookedSlots.map(value => {
                 const date = new Date(value);
-                return Number.isNaN(date.getTime()) ? '' : date.toISOString();
-            }));
+                return date.getTime();
+            }).filter(Number.isFinite);
             const slots = [];
             for (let minute = startMinute; minute + slotLength <= endMinute; minute += slotLength) {
                 const hhmm = `${String(Math.floor(minute / 60)).padStart(2, '0')}:${String(minute % 60).padStart(2, '0')}`;
                 const start = chicagoToUtc(ymd, hhmm);
                 if (start.getTime() < now + 60 * 60 * 1000 || start.getTime() > now + 120 * 24 * 60 * 60 * 1000) continue;
-                if (booked.has(start.toISOString())) continue;
+                if (bookedStarts.some(bookedStart => Math.abs(start.getTime() - bookedStart) < slotLength * 60 * 1000)) continue;
                 slots.push(start);
             }
             return slots;
