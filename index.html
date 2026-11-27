@@ -612,7 +612,8 @@
             font-weight: 700;
         }
 
-        #shopQrCanvas {
+        #shopQrCanvas,
+        #bookingQrCanvas {
             display: block;
             width: min(100%, 296px);
             height: auto;
@@ -1128,6 +1129,10 @@
             display: none !important;
         }
 
+        .shop-route-hidden {
+            display: none !important;
+        }
+
         /* Responsive logo */
         .logo-display img {
             height: 160px;
@@ -1243,6 +1248,7 @@
                 font-size: 0.8rem;
                 letter-spacing: 0;
                 white-space: nowrap;
+                transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease, color 0.3s ease;
             }
 
             /* Smaller logo on mobile */
@@ -1259,6 +1265,7 @@
                 font-size: 0.8rem;
                 letter-spacing: 0;
                 white-space: nowrap;
+                transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease, color 0.3s ease;
             }
 
             /* Smaller top banner */
@@ -1457,6 +1464,170 @@
 
         .restock-item:last-child {
             border-bottom: 0;
+        }
+
+        .appointment-page {
+            max-width: 900px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .appointment-card {
+            padding: 1.5rem;
+            border: 2px solid var(--peach);
+            border-radius: 20px;
+            background: white;
+            box-shadow: 0 8px 24px rgba(46, 94, 170, 0.12);
+        }
+
+        .appointment-card h1,
+        .appointment-card h2,
+        .schedule-editor h3 {
+            color: var(--purple);
+            font-family: 'Comfortaa', sans-serif;
+        }
+
+        .appointment-card > p,
+        .schedule-editor > p {
+            color: #555;
+            line-height: 1.5;
+        }
+
+        .appointment-date-options,
+        .appointment-slot-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.55rem;
+            margin: 1rem 0;
+        }
+
+        .appointment-date-button,
+        .appointment-slot-button {
+            min-height: 44px;
+            padding: 0.55rem 0.8rem;
+            border: 2px solid var(--primary-blue);
+            border-radius: 12px;
+            background: white;
+            color: var(--navy);
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .appointment-date-button[aria-pressed="true"],
+        .appointment-slot-button[aria-pressed="true"] {
+            background: var(--primary-blue);
+            color: white;
+        }
+
+        .appointment-form {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 0.75rem;
+            margin-top: 1.25rem;
+        }
+
+        .appointment-form .form-group {
+            margin: 0;
+        }
+
+        .appointment-form button {
+            grid-column: 1 / -1;
+            min-height: 48px;
+        }
+
+        .appointment-status {
+            min-height: 1.5rem;
+            color: var(--purple);
+            font-weight: 700;
+            line-height: 1.5;
+        }
+
+        .appointment-admin-list {
+            display: grid;
+            gap: 0.75rem;
+            margin-top: 0.75rem;
+        }
+
+        .appointment-admin-card {
+            padding: 0.9rem;
+            border: 1px solid #eadff7;
+            border-radius: 12px;
+            background: #fff;
+            overflow-wrap: anywhere;
+        }
+
+        .appointment-admin-card p {
+            margin: 0.35rem 0;
+        }
+
+        .appointment-admin-card a {
+            color: var(--purple);
+        }
+
+        .schedule-editor {
+            margin-top: 2rem;
+            padding: 1.1rem;
+            border: 1px solid #eadff7;
+            border-radius: 14px;
+            background: #fffaf5;
+        }
+
+        .schedule-weekday {
+            display: grid;
+            grid-template-columns: minmax(65px, 1fr) 32px minmax(72px, 1fr) minmax(72px, 1fr);
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.4rem 0;
+            border-bottom: 1px solid #eee4f4;
+        }
+
+        .schedule-weekday input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            margin: auto;
+        }
+
+        .schedule-weekday input[type="time"] {
+            min-width: 0;
+            padding: 0.4rem;
+        }
+
+        @media (max-width: 480px) {
+            .schedule-weekday {
+                grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+                gap: 0.35rem;
+            }
+
+            .schedule-weekday input[type="time"] {
+                width: 100%;
+                padding: 0.35rem;
+                font-size: 0.8rem;
+            }
+        }
+
+        .schedule-weekday-heading {
+            color: var(--purple);
+            font-weight: 700;
+        }
+
+        .blackout-date-controls {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.55rem;
+            margin: 0.75rem 0;
+        }
+
+        .blackout-date-list {
+            padding-left: 1.3rem;
+        }
+
+        .blackout-date-list li {
+            margin: 0.4rem 0;
+        }
+
+        .blackout-date-list button {
+            margin-left: 0.5rem;
         }
 
         .settings-section {
@@ -1666,6 +1837,9 @@
                     🛒 <span class="header-button-label">Cart</span>
                     <span class="cart-badge" id="cartBadge">0</span>
                 </button>
+                <button class="btn btn-secondary" aria-label="Book an Appointment" onclick="navigateToBooking()">
+                    📅 <span class="header-button-label">Book</span>
+                </button>
                 <button class="btn btn-primary" aria-label="Manage your shop" onclick="toggleAdmin()">
                     ⚙️ <span class="header-button-label">Manage</span>
                 </button>
@@ -1673,8 +1847,36 @@
         </div>
     </header>
 
+    <main id="appointmentPage" class="appointment-page hidden" aria-labelledby="appointmentPageHeading">
+        <div class="appointment-card">
+            <h1 id="appointmentPageHeading">📅 Book an Appointment</h1>
+            <p>Choose an available date and one-hour time. All times are shown in Central Time.</p>
+            <div id="appointmentDateOptions" class="appointment-date-options" aria-label="Available dates"></div>
+            <section id="appointmentSlotsSection" class="hidden" aria-labelledby="appointmentSlotsHeading">
+                <h2 id="appointmentSlotsHeading">Choose a time</h2>
+                <div id="appointmentSlotOptions" class="appointment-slot-options"></div>
+            </section>
+            <form id="appointmentForm" class="appointment-form" onsubmit="submitAppointment(event)">
+                <div class="form-group">
+                    <label for="appointmentName">Name *</label>
+                    <input type="text" id="appointmentName" maxlength="60" autocomplete="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="appointmentPhone">Phone *</label>
+                    <input type="tel" id="appointmentPhone" autocomplete="tel" required>
+                </div>
+                <div class="form-group">
+                    <label for="appointmentEmail">Email *</label>
+                    <input type="email" id="appointmentEmail" autocomplete="email" required>
+                </div>
+                <button type="submit" class="btn btn-primary" id="confirmAppointmentButton" disabled>Confirm Appointment</button>
+            </form>
+            <p id="appointmentStatus" class="appointment-status" role="status" aria-live="polite"></p>
+        </div>
+    </main>
+
     <!-- Welcome Section -->
-    <div class="welcome-section" id="home">
+    <div class="welcome-section shopfront-route-section" id="home">
         <div class="welcome-content">
             <h1 class="welcome-title" id="shopNameDisplay">Welcome to Juli's Studios!</h1>
             <div class="welcome-divider"></div>
@@ -1708,6 +1910,7 @@
                 <button type="button" class="admin-tab-button" id="adminTabOrders" role="tab" aria-selected="false" aria-controls="adminOrdersPanel" onclick="setAdminTab('orders')">📦 Orders</button>
                 <button type="button" class="admin-tab-button" id="adminTabInventory" role="tab" aria-selected="false" aria-controls="adminInventoryPanel" onclick="setAdminTab('inventory')">📊 Inventory</button>
                 <button type="button" class="admin-tab-button" id="adminTabReviews" role="tab" aria-selected="false" aria-controls="adminReviewsPanel" onclick="setAdminTab('reviews')">⭐ Reviews <span id="adminReviewPendingCount" class="review-count-badge hidden">0</span></button>
+                <button type="button" class="admin-tab-button" id="adminTabAppointments" role="tab" aria-selected="false" aria-controls="adminAppointmentsPanel" onclick="setAdminTab('appointments')">📅 Appointments</button>
                 <button type="button" class="admin-tab-button" id="adminTabSettings" role="tab" aria-selected="false" aria-controls="adminSettingsPanel" onclick="setAdminTab('settings')">⚙️ Settings</button>
             </div>
 
@@ -1849,6 +2052,36 @@
                 <div id="adminReviewsList" style="margin-top: 1rem;"></div>
             </section>
 
+            <section class="admin-tab-panel hidden" id="adminAppointmentsPanel" role="tabpanel" aria-labelledby="adminTabAppointments">
+                <h3 style="color:var(--purple);">Upcoming appointments</h3>
+                <div id="upcomingAppointmentsList" class="appointment-admin-list"></div>
+                <h3 style="color:var(--purple);margin-top:1.5rem;">Past appointments (last 60 days)</h3>
+                <div id="pastAppointmentsList" class="appointment-admin-list"></div>
+                <section class="schedule-editor" aria-labelledby="scheduleEditorHeading">
+                    <h3 id="scheduleEditorHeading" style="color:var(--purple);">My Schedule</h3>
+                    <p>Set the weekly hours shoppers can book. Times are Central Time.</p>
+                    <div class="schedule-weekdays">
+                        <div class="schedule-weekday schedule-weekday-heading"><span>Day</span><span>Open</span><span>Start</span><span>End</span></div>
+                        <div class="schedule-weekday"><label for="scheduleOpen0">Sunday</label><input type="checkbox" id="scheduleOpen0"><input type="time" id="scheduleStart0" value="10:30"><input type="time" id="scheduleEnd0" value="15:00"></div>
+                        <div class="schedule-weekday"><label for="scheduleOpen1">Monday</label><input type="checkbox" id="scheduleOpen1"><input type="time" id="scheduleStart1" value="10:30"><input type="time" id="scheduleEnd1" value="15:00"></div>
+                        <div class="schedule-weekday"><label for="scheduleOpen2">Tuesday</label><input type="checkbox" id="scheduleOpen2"><input type="time" id="scheduleStart2" value="10:30"><input type="time" id="scheduleEnd2" value="15:00"></div>
+                        <div class="schedule-weekday"><label for="scheduleOpen3">Wednesday</label><input type="checkbox" id="scheduleOpen3"><input type="time" id="scheduleStart3" value="10:30"><input type="time" id="scheduleEnd3" value="15:00"></div>
+                        <div class="schedule-weekday"><label for="scheduleOpen4">Thursday</label><input type="checkbox" id="scheduleOpen4"><input type="time" id="scheduleStart4" value="10:30"><input type="time" id="scheduleEnd4" value="15:00"></div>
+                        <div class="schedule-weekday"><label for="scheduleOpen5">Friday</label><input type="checkbox" id="scheduleOpen5" checked><input type="time" id="scheduleStart5" value="10:30"><input type="time" id="scheduleEnd5" value="15:00"></div>
+                        <div class="schedule-weekday"><label for="scheduleOpen6">Saturday</label><input type="checkbox" id="scheduleOpen6" checked><input type="time" id="scheduleStart6" value="10:30"><input type="time" id="scheduleEnd6" value="15:00"></div>
+                    </div>
+                    <h4 style="color:var(--purple);margin-top:1.25rem;">Blackout dates</h4>
+                    <div class="blackout-date-controls">
+                        <label for="blackoutDateInput">Date to close</label>
+                        <input type="date" id="blackoutDateInput">
+                        <button type="button" class="btn btn-secondary" onclick="addBlackoutDate()">Add</button>
+                    </div>
+                    <ul id="blackoutDateList" class="blackout-date-list"></ul>
+                    <button type="button" class="btn btn-primary" onclick="saveSettings()">💾 Save My Schedule</button>
+                </section>
+                <p id="adminAppointmentsStatus" class="appointment-status" role="status" aria-live="polite"></p>
+            </section>
+
             <section class="admin-tab-panel hidden" id="adminSettingsPanel" role="tabpanel" aria-labelledby="adminTabSettings">
                 <div class="settings-panel">
                     <h3 class="settings-title">⚙️ Settings for Juli's Shop</h3>
@@ -1955,6 +2188,13 @@
                             ⬇️ Download QR code
                         </button>
                         <p class="settings-help">Print it or show it at craft fairs — people scan it to open your shop.</p>
+                        <h4 style="margin-top:1.5rem;">📅 Booking QR code</h4>
+                        <canvas id="bookingQrCanvas" aria-label="QR code for booking an appointment"></canvas>
+                        <p id="bookingQrUrl" class="shop-qr-url">https://julis-studios.vercel.app/#book</p>
+                        <p id="bookingQrFallback" class="settings-help hidden" role="status"></p>
+                        <button type="button" class="btn btn-primary" id="downloadBookingQrButton" onclick="downloadBookingQrCode()">
+                            ⬇️ Download Booking QR code
+                        </button>
                     </div>
 
                     <div class="settings-section">
@@ -2067,20 +2307,20 @@
         </div>
 
         <!-- Products Section -->
-        <section id="featuredVideoSection" class="featured-video-section hidden" aria-label="Featured shop video">
+        <section id="featuredVideoSection" class="featured-video-section hidden shopfront-route-section" aria-label="Featured shop video">
             <div id="featuredVideoEmbed"></div>
         </section>
-        <h2 class="section-title" id="collectionHeading">My Handmade Collection</h2>
-        <div id="collectionTabs" class="collection-tabs hidden" role="tablist"
+        <h2 class="section-title shopfront-route-section" id="collectionHeading">My Handmade Collection</h2>
+        <div id="collectionTabs" class="collection-tabs hidden shopfront-route-section" role="tablist"
             aria-label="Shop collections"></div>
-        <div id="productsGrid" class="products-grid"></div>
+        <div id="productsGrid" class="products-grid shopfront-route-section"></div>
     </div>
 
-    <section class="social-follow hidden" id="followSection" aria-labelledby="followHeading">
+    <section class="social-follow hidden shopfront-route-section" id="followSection" aria-labelledby="followHeading">
         <h2 id="followHeading">💖 Follow Juli's Studios</h2>
         <div class="social-links" id="socialLinks"></div>
     </section>
-    <footer class="site-footer">Handmade with love by Juli 💖</footer>
+    <footer class="site-footer shopfront-route-section">Handmade with love by Juli 💖</footer>
 
     <!-- Product Detail Modal -->
     <div class="modal" id="productModal">
@@ -2204,6 +2444,15 @@
         let adminReviews = [];
         let adminReviewsLoaded = false;
         let adminReviewsLoading = false;
+        let adminAppointments = [];
+        let adminAppointmentsLoaded = false;
+        let adminAppointmentsLoading = false;
+        let appointmentBookedSlots = [];
+        let selectedAppointmentDate = '';
+        let selectedAppointmentStart = '';
+        let appointmentBookingInProgress = false;
+        let appointmentDatesLoading = false;
+        let scheduleBlackoutDates = [];
         let productsLoaded = false;
 
         let cart = (safeParse('julis_cart_v3') || []).map(item => ({
@@ -2228,6 +2477,12 @@
             medium: { label: 'Medium box', length: 12, width: 10, height: 6, weightOz: 8 }
         };
         const SHIPPING_PACKAGE_KEYS = Object.keys(DEFAULT_SHIPPING_PACKAGES);
+        const DEFAULT_APPOINTMENT_SCHEDULE = {
+            weekly: { 5: [['10:30', '15:00']], 6: [['10:30', '15:00']] },
+            blackouts: [],
+            slotMinutes: 60
+        };
+        const APPOINTMENT_WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
         function positiveShippingValue(value, fallback, max) {
             const number = Number(value);
             return Number.isFinite(number) && number > 0 && number <= max ? number : fallback;
@@ -2248,6 +2503,39 @@
                 }];
             }));
         }
+        function validAppointmentDate(value) {
+            if (!/^\d{4}-\d{2}-\d{2}$/.test(String(value || ''))) return false;
+            const date = new Date(`${value}T12:00:00Z`);
+            return !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === value;
+        }
+        function appointmentMinutes(value) {
+            const match = /^([01]\d|2[0-3]):([0-5]\d)$/.exec(String(value || ''));
+            return match ? Number(match[1]) * 60 + Number(match[2]) : NaN;
+        }
+        function normalizeAppointmentSchedule(value) {
+            const source = value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+            const sourceWeekly = source.weekly && typeof source.weekly === 'object' && !Array.isArray(source.weekly)
+                ? source.weekly
+                : DEFAULT_APPOINTMENT_SCHEDULE.weekly;
+            const weekly = {};
+            for (let day = 0; day < 7; day++) {
+                const windows = Array.isArray(sourceWeekly[day]) ? sourceWeekly[day] : [];
+                const window = windows[0];
+                if (!Array.isArray(window) || window.length < 2) continue;
+                const start = String(window[0] || '');
+                const end = String(window[1] || '');
+                const startMinutes = appointmentMinutes(start);
+                const endMinutes = appointmentMinutes(end);
+                if (Number.isFinite(startMinutes) && Number.isFinite(endMinutes) &&
+                    endMinutes > startMinutes && endMinutes - startMinutes >= 60) {
+                    weekly[day] = [[start, end]];
+                }
+            }
+            const blackouts = Array.isArray(source.blackouts)
+                ? [...new Set(source.blackouts.filter(validAppointmentDate))].sort()
+                : [];
+            return { weekly, blackouts, slotMinutes: 60 };
+        }
         const defaultSettings = {
             shipping: 10.00,
             handling: 0,
@@ -2255,6 +2543,7 @@
             packages: DEFAULT_SHIPPING_PACKAGES,
             defaultPackage: 'small',
             defaultItemWeightOz: 4,
+            schedule: DEFAULT_APPOINTMENT_SCHEDULE,
             adminPassword: 'juli2024',
             zelleEmail: 'your-email@example.com',
             cashAppTag: '$YourCashTag',
@@ -2267,11 +2556,14 @@
         function sharedSettingsFrom(data) {
             if (!data || typeof data !== 'object') return {};
             const shared = {};
-                ['shipping', 'handling', 'shippingTime', 'packages', 'defaultPackage', 'defaultItemWeightOz', 'zelleEmail', 'cashAppTag', 'shopName', 'welcomeMessage', 'aboutMe', 'featuredVideo'].forEach(key => {
+                ['shipping', 'handling', 'shippingTime', 'packages', 'defaultPackage', 'defaultItemWeightOz', 'schedule', 'zelleEmail', 'cashAppTag', 'shopName', 'welcomeMessage', 'aboutMe', 'featuredVideo'].forEach(key => {
                 if (Object.prototype.hasOwnProperty.call(data, key)) shared[key] = data[key];
             });
             if (Object.prototype.hasOwnProperty.call(shared, 'packages')) {
                 shared.packages = normalizeShippingPackages(shared.packages);
+            }
+            if (Object.prototype.hasOwnProperty.call(shared, 'schedule')) {
+                shared.schedule = normalizeAppointmentSchedule(shared.schedule);
             }
             if (Object.prototype.hasOwnProperty.call(shared, 'defaultPackage') &&
                 !SHIPPING_PACKAGE_KEYS.includes(shared.defaultPackage)) {
@@ -2300,6 +2592,7 @@
                 ...localValues,
                 ...remoteValues,
                 packages: normalizeShippingPackages(remoteValues.packages ?? localValues.packages),
+                schedule: normalizeAppointmentSchedule(remoteValues.schedule ?? localValues.schedule),
                 defaultPackage: SHIPPING_PACKAGE_KEYS.includes(
                     remoteValues.defaultPackage ?? localValues.defaultPackage
                 ) ? (remoteValues.defaultPackage ?? localValues.defaultPackage) : defaultSettings.defaultPackage,
@@ -2431,6 +2724,7 @@
                     defaultSettings.defaultItemWeightOz,
                     1120
                 ),
+                schedule: normalizeAppointmentSchedule(s.schedule),
                 zelleEmail: s.zelleEmail,
                 cashAppTag: s.cashAppTag,
                 shopName: s.shopName,
@@ -2672,6 +2966,7 @@
             renderShopDashboard();
             setAdminTab(localStorage.getItem('julis_admin_tab') || 'shop', false);
             renderShopQrCode();
+            renderBookingQrCode();
 
             document.getElementById('productForm').addEventListener('submit', function(e) {
                 e.preventDefault();
@@ -2692,6 +2987,7 @@
             });
             collectionTabs?.addEventListener('keydown', handleCollectionTabKeydown);
             window.addEventListener('hashchange', handleCollectionHashChange);
+            handleCollectionHashChange();
 
             if (isAdminLoggedIn) {
                 startActivityTracking();
@@ -2745,6 +3041,7 @@
                 input.value = String(settings.social?.[key] || '');
                 updateSocialPreview(key);
             });
+            loadAppointmentScheduleEditor();
             renderPublicSettings();
             updateSettingsUnsyncedNote();
         }
@@ -2810,6 +3107,8 @@
                 defaultItemWeightInput.focus();
                 return;
             }
+            const schedule = readAppointmentScheduleFromEditor();
+            if (!schedule) return;
 
             settings.shipping   = parseFloat(document.getElementById('shippingCost').value) || 0;
             settings.handling   = parseFloat(document.getElementById('handlingFee').value)  || 0;
@@ -2818,6 +3117,7 @@
             settings.packages = packages;
             settings.defaultPackage = defaultPackage;
             settings.defaultItemWeightOz = defaultItemWeightOz;
+            settings.schedule = schedule;
             settings.zelleEmail = document.getElementById('zelleEmail').value.trim();
             settings.cashAppTag = document.getElementById('cashAppTag').value.trim();
             settings.shopName = document.getElementById('shopName').value.trim() || defaultSettings.shopName;
@@ -2832,7 +3132,7 @@
             const base = loadedShared || {};
             const patch = {};
             Object.keys(shared).forEach(key => {
-                const changed = key === 'social' || key === 'packages'
+                const changed = key === 'social' || key === 'packages' || key === 'schedule'
                     ? JSON.stringify(shared[key]) !== JSON.stringify(base[key])
                     : shared[key] !== base[key];
                 if (changed) patch[key] = shared[key];
@@ -3434,7 +3734,7 @@
                 if (!groups.has(key)) groups.set(key, { name, minId, firstSeen: index });
                 else groups.get(key).minId = Math.min(groups.get(key).minId, minId);
             });
-            const slugs = new Set();
+            const slugs = new Set(['book']);
             return Array.from(groups.values())
                 .sort((a, b) => a.minId - b.minId || a.firstSeen - b.firstSeen)
                 .map((group, index) => {
@@ -3496,6 +3796,15 @@
             selectedTab?.focus({ preventScroll: true });
         }
         function handleCollectionHashChange() {
+            const isBooking = window.location.hash.toLowerCase() === '#book';
+            document.getElementById('appointmentPage').classList.toggle('hidden', !isBooking);
+            document.querySelectorAll('.shopfront-route-section').forEach(section => {
+                section.classList.toggle('shop-route-hidden', isBooking);
+            });
+            if (isBooking) {
+                loadAppointmentAvailability();
+                return;
+            }
             const focusedIndex = document.activeElement?.closest('#collectionTabs [role="tab"]')?.dataset.collectionIndex;
             renderProducts();
             if (focusedIndex !== undefined) {
@@ -4422,6 +4731,7 @@
             { name: 'orders', button: 'adminTabOrders', panel: 'adminOrdersPanel' },
             { name: 'inventory', button: 'adminTabInventory', panel: 'adminInventoryPanel' },
             { name: 'reviews', button: 'adminTabReviews', panel: 'adminReviewsPanel' },
+            { name: 'appointments', button: 'adminTabAppointments', panel: 'adminAppointmentsPanel' },
             { name: 'settings', button: 'adminTabSettings', panel: 'adminSettingsPanel' }
         ];
 
@@ -4564,6 +4874,7 @@
             if (remember) localStorage.setItem('julis_admin_tab', name);
             if (name === 'reviews' && !adminReviewsLoaded) loadAdminReviews();
             if (name === 'inventory') renderInventory();
+            if (name === 'appointments') loadAdminAppointments();
         }
 
         function navigateAdminTabs(event) {
@@ -4828,6 +5139,8 @@
             adminPasscode = '';
             adminReviewsLoaded = false;
             adminReviews = [];
+            adminAppointmentsLoaded = false;
+            adminAppointments = [];
             updatePendingReviewCount();
             mustResetPassword = false;
             adminExpiresAt = 0;
@@ -4856,7 +5169,474 @@
                 modalQuantity = 1;
             }
         }
-        function scrollToHome() { document.getElementById('home').scrollIntoView({ behavior: 'smooth' }); }
+        function currentChicagoDate() {
+            const parts = new Intl.DateTimeFormat('en-US', {
+                timeZone: 'America/Chicago', year: 'numeric', month: '2-digit', day: '2-digit'
+            }).formatToParts(new Date());
+            const values = Object.fromEntries(parts.map(part => [part.type, part.value]));
+            return `${values.year}-${values.month}-${values.day}`;
+        }
+
+        function addDateDays(ymd, days) {
+            const date = new Date(`${ymd}T12:00:00Z`);
+            date.setUTCDate(date.getUTCDate() + days);
+            return date.toISOString().slice(0, 10);
+        }
+
+        function chicagoToUtc(ymd, time) {
+            const [year, month, day] = ymd.split('-').map(Number);
+            const [hour, minute] = time.split(':').map(Number);
+            const target = Date.UTC(year, month - 1, day, hour, minute);
+            let candidate = target;
+            for (let attempt = 0; attempt < 4; attempt++) {
+                const parts = new Intl.DateTimeFormat('en-US', {
+                    timeZone: 'America/Chicago', year: 'numeric', month: '2-digit', day: '2-digit',
+                    hour: '2-digit', minute: '2-digit', hourCycle: 'h23'
+                }).formatToParts(new Date(candidate));
+                const values = Object.fromEntries(parts.map(part => [part.type, Number(part.value)]));
+                const observed = Date.UTC(values.year, values.month - 1, values.day, values.hour, values.minute);
+                const adjustment = target - observed;
+                candidate += adjustment;
+                if (adjustment === 0) break;
+            }
+            return new Date(candidate);
+        }
+
+        function formatCentralAppointmentTime(value, options = {}) {
+            const date = new Intl.DateTimeFormat('en-US', {
+                timeZone: 'America/Chicago',
+                weekday: options.weekday || 'short',
+                month: 'short',
+                day: 'numeric'
+            }).format(new Date(value));
+            return `${date} at ${formatCentralClock(value)}`;
+        }
+
+        function formatCentralClock(value) {
+            return new Intl.DateTimeFormat('en-US', {
+                timeZone: 'America/Chicago', hour: 'numeric', minute: '2-digit', hour12: true
+            }).format(new Date(value));
+        }
+
+        function appointmentDateLabel(ymd) {
+            return new Intl.DateTimeFormat('en-US', {
+                timeZone: 'America/Chicago', weekday: 'short', month: 'short', day: 'numeric'
+            }).format(new Date(`${ymd}T18:00:00Z`));
+        }
+
+        function appointmentSlotsForDate(ymd) {
+            const schedule = normalizeAppointmentSchedule(settings.schedule);
+            const weekday = new Date(`${ymd}T12:00:00Z`).getUTCDay();
+            const window = schedule.weekly[weekday]?.[0];
+            if (!window || schedule.blackouts.includes(ymd)) return [];
+            const startMinute = appointmentMinutes(window[0]);
+            const endMinute = appointmentMinutes(window[1]);
+            const slotLength = 60;
+            const now = Date.now();
+            const booked = new Set(appointmentBookedSlots.map(value => {
+                const date = new Date(value);
+                return Number.isNaN(date.getTime()) ? '' : date.toISOString();
+            }));
+            const slots = [];
+            for (let minute = startMinute; minute + slotLength <= endMinute; minute += slotLength) {
+                const hhmm = `${String(Math.floor(minute / 60)).padStart(2, '0')}:${String(minute % 60).padStart(2, '0')}`;
+                const start = chicagoToUtc(ymd, hhmm);
+                if (start.getTime() < now + 60 * 60 * 1000 || start.getTime() > now + 120 * 24 * 60 * 60 * 1000) continue;
+                if (booked.has(start.toISOString())) continue;
+                slots.push(start);
+            }
+            return slots;
+        }
+
+        function renderAppointmentDates() {
+            const container = document.getElementById('appointmentDateOptions');
+            const slotSection = document.getElementById('appointmentSlotsSection');
+            const slotsContainer = document.getElementById('appointmentSlotOptions');
+            const status = document.getElementById('appointmentStatus');
+            if (!container || !slotsContainer) return;
+            const dates = [];
+            const today = currentChicagoDate();
+            for (let offset = 0; offset < 56; offset++) {
+                const ymd = addDateDays(today, offset);
+                if (appointmentSlotsForDate(ymd).length) dates.push(ymd);
+            }
+            container.replaceChildren();
+            dates.forEach(ymd => {
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = 'appointment-date-button';
+                button.textContent = appointmentDateLabel(ymd);
+                button.setAttribute('aria-pressed', String(ymd === selectedAppointmentDate));
+                button.addEventListener('click', () => selectAppointmentDate(ymd));
+                container.append(button);
+            });
+            if (!dates.length && !appointmentDatesLoading) {
+                status.textContent = 'No appointment dates are available in the next eight weeks.';
+            } else if (appointmentDatesLoading) {
+                status.textContent = 'Loading available appointment times…';
+            } else if (status.textContent.startsWith('Loading')) {
+                status.textContent = '';
+            }
+            slotSection?.classList.toggle('hidden', !selectedAppointmentDate || !dates.includes(selectedAppointmentDate));
+            if (!dates.includes(selectedAppointmentDate)) {
+                selectedAppointmentDate = '';
+                selectedAppointmentStart = '';
+                slotsContainer.replaceChildren();
+            }
+            const confirmButton = document.getElementById('confirmAppointmentButton');
+            if (confirmButton) confirmButton.disabled = !selectedAppointmentStart || appointmentBookingInProgress;
+        }
+
+        async function loadAppointmentAvailability() {
+            const status = document.getElementById('appointmentStatus');
+            const requestId = (window.appointmentAvailabilitySequence || 0) + 1;
+            window.appointmentAvailabilitySequence = requestId;
+            appointmentDatesLoading = true;
+            if (status) status.textContent = 'Loading available appointment times…';
+            renderAppointmentDates();
+            try {
+                const from = chicagoToUtc(currentChicagoDate(), '00:00').toISOString();
+                const to = chicagoToUtc(addDateDays(currentChicagoDate(), 56), '00:00').toISOString();
+                const { data, error } = await db.rpc('julis_booked_slots', { p_from: from, p_to: to });
+                if (requestId !== window.appointmentAvailabilitySequence) return;
+                if (error) throw error;
+                appointmentBookedSlots = Array.isArray(data) ? data : [];
+                if (!appointmentBookedSlots.length) selectedAppointmentDate = '';
+            } catch {
+                if (requestId === window.appointmentAvailabilitySequence && status) {
+                    status.textContent = "Couldn't load appointment times right now. Please try again.";
+                }
+            } finally {
+                if (requestId === window.appointmentAvailabilitySequence) {
+                    appointmentDatesLoading = false;
+                    renderAppointmentDates();
+                    if (status?.textContent.startsWith('Loading')) status.textContent = '';
+                }
+            }
+        }
+
+        function renderAppointmentSlots() {
+            const container = document.getElementById('appointmentSlotOptions');
+            const section = document.getElementById('appointmentSlotsSection');
+            if (!container || !section) return;
+            const slots = appointmentSlotsForDate(selectedAppointmentDate);
+            container.replaceChildren();
+            slots.forEach(start => {
+                const button = document.createElement('button');
+                const end = new Date(start.getTime() + 60 * 60 * 1000);
+                button.type = 'button';
+                button.className = 'appointment-slot-button';
+                button.textContent = `${formatCentralClock(start)} – ${formatCentralClock(end)}`;
+                button.setAttribute('aria-pressed', String(start.toISOString() === selectedAppointmentStart));
+                button.addEventListener('click', () => {
+                    selectedAppointmentStart = start.toISOString();
+                    renderAppointmentSlots();
+                    const confirmButton = document.getElementById('confirmAppointmentButton');
+                    if (confirmButton) confirmButton.disabled = appointmentBookingInProgress;
+                });
+                container.append(button);
+            });
+            section.classList.toggle('hidden', !selectedAppointmentDate);
+            if (!slots.length) container.textContent = 'No times remain for this date.';
+        }
+
+        function selectAppointmentDate(ymd) {
+            selectedAppointmentDate = ymd;
+            selectedAppointmentStart = '';
+            renderAppointmentDates();
+            renderAppointmentSlots();
+            document.getElementById('appointmentStatus').textContent = '';
+        }
+
+        function navigateToBooking() {
+            if (window.location.hash !== '#book') window.location.hash = 'book';
+            else handleCollectionHashChange();
+            document.getElementById('appointmentPage').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function renderBookingQrCode() {
+            const canvas = document.getElementById('bookingQrCanvas');
+            const url = SHOP_URL + '#book';
+            const fallback = document.getElementById('bookingQrFallback');
+            const button = document.getElementById('downloadBookingQrButton');
+            const urlText = document.getElementById('bookingQrUrl');
+            if (urlText) urlText.textContent = url;
+            if (!canvas || typeof window.qrcode !== 'function') {
+                canvas?.classList.add('hidden');
+                button?.classList.add('hidden');
+                if (fallback) {
+                    fallback.textContent = 'QR code is unavailable right now. Share the booking link above instead.';
+                    fallback.classList.remove('hidden');
+                }
+                return;
+            }
+            try {
+                const code = window.qrcode(0, 'M');
+                code.addData(url);
+                code.make();
+                const count = code.getModuleCount();
+                const moduleSize = 8;
+                const quietZone = 4;
+                const size = (count + quietZone * 2) * moduleSize;
+                canvas.width = size;
+                canvas.height = size;
+                const context = canvas.getContext('2d');
+                context.fillStyle = '#fff';
+                context.fillRect(0, 0, size, size);
+                context.fillStyle = '#000';
+                for (let row = 0; row < count; row++) {
+                    for (let column = 0; column < count; column++) {
+                        if (code.isDark(row, column)) context.fillRect((column + quietZone) * moduleSize, (row + quietZone) * moduleSize, moduleSize, moduleSize);
+                    }
+                }
+                canvas.classList.remove('hidden');
+                button?.classList.remove('hidden');
+                fallback?.classList.add('hidden');
+            } catch {
+                canvas.classList.add('hidden');
+                button?.classList.add('hidden');
+                if (fallback) {
+                    fallback.textContent = 'QR code is unavailable right now. Share the booking link above instead.';
+                    fallback.classList.remove('hidden');
+                }
+            }
+        }
+
+        function downloadBookingQrCode() {
+            const canvas = document.getElementById('bookingQrCanvas');
+            if (!canvas || canvas.classList.contains('hidden')) return;
+            canvas.toBlob(blob => {
+                if (!blob) return;
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = 'julis-studios-booking-qr.png';
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+                setTimeout(() => URL.revokeObjectURL(url), 1000);
+            });
+        }
+
+        async function submitAppointment(event) {
+            event.preventDefault();
+            if (appointmentBookingInProgress || !selectedAppointmentStart) return;
+            const nameInput = document.getElementById('appointmentName');
+            const phoneInput = document.getElementById('appointmentPhone');
+            const emailInput = document.getElementById('appointmentEmail');
+            const status = document.getElementById('appointmentStatus');
+            const name = nameInput.value.trim();
+            const phone = phoneInput.value.trim();
+            const email = emailInput.value.trim();
+            if (!name || name.length > 60 || !/^\+?[0-9\s().-]{7,25}$/.test(phone) || !emailInput.checkValidity() || !email) {
+                status.textContent = 'Please enter a name, valid phone number, and valid email address.';
+                return;
+            }
+            appointmentBookingInProgress = true;
+            const button = document.getElementById('confirmAppointmentButton');
+            button.disabled = true;
+            status.textContent = 'Saving your appointment…';
+            const startSnapshot = selectedAppointmentStart;
+            try {
+                const { data, error } = await db.rpc('julis_book_appointment', {
+                    p_start: startSnapshot,
+                    p_name: name,
+                    p_phone: phone,
+                    p_email: email
+                });
+                if (error) {
+                    const errorMessage = error.code === 'P0001'
+                        ? String(error.message || 'That time is no longer available.')
+                        : "Couldn't save your appointment right now. Please try again.";
+                    if (error.code === 'P0001' && /someone just booked/i.test(String(error.message || ''))) {
+                        selectedAppointmentStart = '';
+                        await loadAppointmentAvailability();
+                    }
+                    status.textContent = errorMessage;
+                    return;
+                }
+                if (!data || !Number.isInteger(Number(data.id)) || !/^[0-9a-f]{36}$/.test(String(data.token || ''))) {
+                    status.textContent = "Couldn't save your appointment right now. Please try again.";
+                    return;
+                }
+                let emailSent = false;
+                try {
+                    const response = await fetch('/api/appointment-email', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ id: data.id, token: data.token })
+                    });
+                    emailSent = response.ok;
+                } catch {}
+                await loadAppointmentAvailability();
+                selectedAppointmentStart = '';
+                renderAppointmentSlots();
+                const appointmentTime = `${formatCentralAppointmentTime(startSnapshot)} (Central Time)`;
+                status.textContent = `You're booked! 💖 ${appointmentTime}. A confirmation email is on its way.${emailSent ? '' : " (we couldn't send the email, but your spot is saved)"}`;
+                document.getElementById('appointmentForm').reset();
+            } catch {
+                status.textContent = "Couldn't save your appointment right now. Please try again.";
+            } finally {
+                appointmentBookingInProgress = false;
+                button.disabled = !selectedAppointmentStart;
+            }
+        }
+
+        function loadAppointmentScheduleEditor() {
+            const schedule = normalizeAppointmentSchedule(settings.schedule);
+            scheduleBlackoutDates = schedule.blackouts.slice();
+            for (let day = 0; day < 7; day++) {
+                const window = schedule.weekly[day]?.[0];
+                document.getElementById(`scheduleOpen${day}`).checked = Boolean(window);
+                document.getElementById(`scheduleStart${day}`).value = window?.[0] || '10:30';
+                document.getElementById(`scheduleEnd${day}`).value = window?.[1] || '15:00';
+            }
+            renderBlackoutDates();
+        }
+
+        function renderBlackoutDates() {
+            const list = document.getElementById('blackoutDateList');
+            if (!list) return;
+            list.replaceChildren();
+            [...new Set(scheduleBlackoutDates.filter(validAppointmentDate))].sort().forEach(date => {
+                const item = document.createElement('li');
+                item.append(document.createTextNode(date));
+                const remove = document.createElement('button');
+                remove.type = 'button';
+                remove.className = 'btn-delete';
+                remove.textContent = 'Remove';
+                remove.addEventListener('click', () => {
+                    scheduleBlackoutDates = scheduleBlackoutDates.filter(value => value !== date);
+                    renderBlackoutDates();
+                });
+                item.append(remove);
+                list.append(item);
+            });
+        }
+
+        function addBlackoutDate() {
+            const input = document.getElementById('blackoutDateInput');
+            if (!validAppointmentDate(input.value)) {
+                input.focus();
+                return;
+            }
+            scheduleBlackoutDates = [...new Set([...scheduleBlackoutDates, input.value])].sort();
+            input.value = '';
+            renderBlackoutDates();
+        }
+
+        function readAppointmentScheduleFromEditor() {
+            const weekly = {};
+            for (let day = 0; day < 7; day++) {
+                if (!document.getElementById(`scheduleOpen${day}`).checked) continue;
+                const start = document.getElementById(`scheduleStart${day}`).value;
+                const end = document.getElementById(`scheduleEnd${day}`).value;
+                if (!Number.isFinite(appointmentMinutes(start)) || !Number.isFinite(appointmentMinutes(end)) ||
+                    appointmentMinutes(end) - appointmentMinutes(start) < 60) {
+                    alert(`${APPOINTMENT_WEEKDAYS[day]} needs an end time at least 60 minutes after its start time.`);
+                    document.getElementById(`scheduleStart${day}`).focus();
+                    return null;
+                }
+                weekly[day] = [[start, end]];
+            }
+            return normalizeAppointmentSchedule({
+                weekly,
+                blackouts: [...new Set(scheduleBlackoutDates.filter(validAppointmentDate))]
+                    .filter(date => date >= currentChicagoDate()).sort(),
+                slotMinutes: 60
+            });
+        }
+
+        function renderAdminAppointments() {
+            const now = Date.now();
+            const pastLimit = now - 60 * 24 * 60 * 60 * 1000;
+            const upcoming = [];
+            const past = [];
+            adminAppointments.forEach(appointment => {
+                if (appointment.status && appointment.status !== 'booked') return;
+                const start = new Date(appointment.start_at || appointment.start || appointment.appointment_start).getTime();
+                if (!Number.isFinite(start)) return;
+                if (start >= now) upcoming.push(appointment);
+                else if (start >= pastLimit) past.push(appointment);
+            });
+            upcoming.sort((a, b) => new Date(a.start_at || a.start).getTime() - new Date(b.start_at || b.start).getTime());
+            past.sort((a, b) => new Date(b.start_at || b.start).getTime() - new Date(a.start_at || a.start).getTime());
+            const renderList = (rows, pastList) => rows.length ? rows.map(appointment => {
+                const name = String(appointment.name || '');
+                const phone = String(appointment.phone || '');
+                const email = String(appointment.email || '');
+                const start = appointment.start_at || appointment.start || appointment.appointment_start;
+                const dateTime = `${formatCentralAppointmentTime(start)} (Central Time)`;
+                const phoneHref = phone.replace(/[^\d+]/g, '');
+                const emailHref = encodeURIComponent(email);
+                const id = Number(appointment.id);
+                return `<article class="appointment-admin-card">
+                    <strong>${escapeHtml(name)}</strong>
+                    <p>${escapeHtml(dateTime)}</p>
+                    <p><a href="tel:${escapeHtml(phoneHref)}">${escapeHtml(phone)}</a></p>
+                    <p><a href="mailto:${escapeHtml(emailHref)}">${escapeHtml(email)}</a></p>
+                    ${pastList ? '' : `<button type="button" class="btn-delete" onclick="cancelAppointment(${id})">Cancel</button>`}
+                </article>`;
+            }).join('') : '<p class="review-empty">No appointments.</p>';
+            document.getElementById('upcomingAppointmentsList').innerHTML = renderList(upcoming, false);
+            document.getElementById('pastAppointmentsList').innerHTML = renderList(past, true);
+        }
+
+        async function loadAdminAppointments(force = false) {
+            if (!adminPasscode || adminAppointmentsLoading || (adminAppointmentsLoaded && !force)) return;
+            adminAppointmentsLoading = true;
+            document.getElementById('adminAppointmentsStatus').textContent = 'Loading appointments…';
+            try {
+                const { data, error } = await db.rpc('julis_admin_appointments', { p_passcode: adminPasscode });
+                if ((!error && data === null) || isWrongAdminPasscode(error)) {
+                    adminPasscode = '';
+                    adminAppointmentsLoaded = false;
+                    showSuccess('❌ Wrong password (or too many tries — wait 15 minutes).');
+                    return;
+                }
+                if (error) throw error;
+                adminAppointments = Array.isArray(data) ? data : [];
+                adminAppointmentsLoaded = true;
+                renderAdminAppointments();
+                document.getElementById('adminAppointmentsStatus').textContent = '';
+            } catch {
+                adminAppointmentsLoaded = false;
+                document.getElementById('adminAppointmentsStatus').textContent = "Couldn't load appointments right now. Please try again.";
+            } finally {
+                adminAppointmentsLoading = false;
+            }
+        }
+
+        async function cancelAppointment(id) {
+            const appointment = adminAppointments.find(item => Number(item.id) === Number(id));
+            if (!appointment || !confirm(`Cancel the appointment for ${String(appointment.name || 'this customer')}?`)) return;
+            try {
+                const { data, error } = await db.rpc('julis_cancel_appointment', {
+                    p_passcode: adminPasscode,
+                    p_id: Number(id)
+                });
+                if (isWrongAdminPasscode(error) || data === null || data === false) {
+                    adminPasscode = '';
+                    showSuccess('❌ Wrong password (or too many tries — wait 15 minutes).');
+                    return;
+                }
+                if (error || data !== true) {
+                    document.getElementById('adminAppointmentsStatus').textContent = "Couldn't cancel that appointment right now. Please try again.";
+                    return;
+                }
+                await loadAdminAppointments(true);
+            } catch {
+                document.getElementById('adminAppointmentsStatus').textContent = "Couldn't cancel that appointment right now. Please try again.";
+            }
+        }
+
+        function scrollToHome() {
+            if (window.location.hash.toLowerCase() === '#book') {
+                history.replaceState(null, '', window.location.pathname + window.location.search);
+                handleCollectionHashChange();
+            }
+            document.getElementById('home').scrollIntoView({ behavior: 'smooth' });
+        }
 
         function showSuccess(message) {
             const container = document.getElementById('successMessage');
